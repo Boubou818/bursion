@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "target": "es5"
+    },
+    "files": [
+        "babylon.d.ts",
+        "Viewer.ts", 
+        "Timer.ts"
+    ]
+}

@@ -1,2 +1,2 @@
-# Train
+# Bursion - Real time puzzle game
 

@@ -5,6 +5,8 @@
     "files": [
         "babylon.d.ts",
         "Viewer.ts", 
-        "Timer.ts"
+        "Timer.ts",
+        "shapes/Shape.ts",
+        "shapes/RandomShapeGenerator.ts"
     ]
 }

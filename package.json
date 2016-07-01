@@ -1,5 +1,5 @@
 {
-  "name": "train",
+  "name": "bursion",
   "version": "1.0.0",
   "devDependencies": {
     "autoprefixer": "^6.1.2",
@@ -18,7 +18,7 @@
     "time-grunt": "latest"
   },
   "licence": "",
-  "repository": "https://github.com/Temechon/character-controller.git",
+  "repository": "https://github.com/Temechon/bursion.git",
   "contributors": [
     {
       "name": "Julian Chenard",

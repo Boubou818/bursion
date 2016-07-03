@@ -15,6 +15,9 @@ module.exports = function (grunt) {
 
         // Compilation from TypeScript to ES5²
         ts: {
+            options: {
+                fast: 'always'
+            },
             dev: {
                 src : ['ts/**/*.ts'],
                 outDir: "dist/js",

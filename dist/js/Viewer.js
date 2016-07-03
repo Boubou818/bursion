@@ -1,3 +1,6 @@
+/// <reference path="babylon.d.ts"/>
+/// <reference path="shapes/HexagonSet.ts"/>
+/// <reference path="shapes/HexagonGrid.ts"/>
 var Viewer = (function () {
     function Viewer(canvasId) {
         var _this = this;
@@ -31,7 +34,58 @@ var Viewer = (function () {
         this.scene.debugLayer.show();
     };
     Viewer.prototype._initGame = function () {
-        var ground = BABYLON.Mesh.CreateGround("ground1", 100, 100, 2, this.scene);
+        var _this = this;
+        var ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 2, this.scene);
+        ground.isVisible = false;
+        var s = new HexagonSet(this.scene);
+        var green = new BABYLON.StandardMaterial('', this.scene);
+        green.diffuseColor = BABYLON.Color3.Green();
+        var red = new BABYLON.StandardMaterial('', this.scene);
+        red.diffuseColor = BABYLON.Color3.Red();
+        var grid = new HexagonGrid(10);
+        this.scene.pointerMovePredicate = function (mesh) {
+            return mesh.name === 'ground';
+        };
+        // grid.draw(this.scene);
+        var shapes = [];
+        this.scene.onPointerMove = function (evt, pr) {
+            if (pr.hit) {
+                var overlaps = false;
+                // Update shape color
+                if (canBuildHere(s)) {
+                    s.material = green;
+                }
+                else {
+                    s.material = red;
+                }
+                var p = pr.pickedPoint;
+                p.y = 0;
+                // get nearest hex
+                var nearest = grid.getNearestHex(p);
+                if (nearest) {
+                    s.position.copyFrom(nearest.center);
+                }
+            }
+        };
+        /**
+         * Retursn true if the given shape can be built here
+         */
+        var canBuildHere = function (shape) {
+            for (var _i = 0, shapes_1 = shapes; _i < shapes_1.length; _i++) {
+                var s_1 = shapes_1[_i];
+                if (shape.overlaps(s_1)) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        this.scene.onPointerDown = function (evt, pr) {
+            if (pr.hit && canBuildHere(s)) {
+                console.log(s);
+                shapes.push(s);
+                s = new HexagonSet(_this.scene);
+            }
+        };
     };
     return Viewer;
 }());

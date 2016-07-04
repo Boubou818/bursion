@@ -1,18 +1,14 @@
 /// <reference path="Hexagon.ts" />
 /// <reference path="../babylon.d.ts" />
 /**
- * The hexagonal grid, whre the player will be able to build.
+ * The hexagonal grid, whre the player will be able to build. Used to track mouse movement and snap the current shape on hexagons.
  */
 var HexagonGrid = (function () {
     function HexagonGrid(size) {
         var _this = this;
         // The Hexagon grid
         this._grid = [];
-        var grid = new Grid();
-        grid.tileSize = 1;
-        grid.tileSpacing = 0;
-        grid.pointyTiles = true;
-        this._mapGrid = grid;
+        var grid = Hexagon.getDefaultGrid();
         var coordinates = grid.hexagon(0, 0, size, true);
         coordinates.forEach(function (c) {
             _this._grid.push(new Hexagon(c.q, c.r, grid));

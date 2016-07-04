@@ -72,12 +72,15 @@ class Viewer {
         // grid.draw(this.scene);
         
         let shapes = [];
+
+        
+        let base = new Base();
         
         this.scene.onPointerMove = (evt, pr) => {
             if (pr.hit) {
                 let overlaps = false;
                 // Update shape color
-                if (canBuildHere(s)) {
+                if (base.canBuildHere(s)) {
                     s.material = green;
                 } else {
                     s.material = red;
@@ -93,23 +96,8 @@ class Viewer {
             }
         }
         
-        /**
-         * Retursn true if the given shape can be built here
-         */
-        let canBuildHere = (shape:HexagonSet) => {
-            for (let s of shapes) {
-                if (shape.overlaps(s)) {
-                    return false;
-                } 
-            }
-            return true;
-        };
-
-        
-        let base = new Base();
-        
         this.scene.onPointerDown = (evt, pr) => {
-            if (canBuildHere(s)) {
+            if (base.canBuildHere(s)) {
                 shapes.push(s);
                 base.addBuilding(s);
                 s = new HexagonSet(this.scene);

@@ -13,10 +13,7 @@ class HexagonSet extends BABYLON.Mesh {
     
     // The shape mesh    
     private _child : BABYLON.AbstractMesh;
-    
-    // The map of this shape
-    private _map : Array<any> = [];
-    
+        
     constructor(scene: BABYLON.Scene) {
         super('_shape_', scene);       
         
@@ -24,17 +21,13 @@ class HexagonSet extends BABYLON.Mesh {
     }
     
     /**
-     * Create the shape
+     * Create the shape, which has a random size between 3 and 5 hexs.
      */
     private _initShape () {
         
-        let grid         = new Grid();
-        grid.tileSize    = 1;
-        grid.tileSpacing = 0;
-        grid.pointyTiles = true;
-        
+        let grid = Hexagon.getDefaultGrid();
         let coordinates = grid.hexagon(0,0,3, true);  
-        let size = this._randomInt(3,6);
+        let size = Math.floor(((Math.random() * (6 - 3)) + 3)); // random [3;6[
         
         // Shuffle an array
         let shuffle = (a) => {
@@ -85,24 +78,6 @@ class HexagonSet extends BABYLON.Mesh {
         this._child = BABYLON.Mesh.MergeMeshes(hexes, true);
         this._child.parent = this;    
         
-        // Returns neighbors of the given hexagon
-        let getNeighborsInShape = (hex:Hexagon) => {
-            let neighbors = [];
-            for (let h of this.hexagons) {
-                if (grid.axialDistance(hex.q, hex.r, h.q, h.r) == 1) {
-                    neighbors.push(h);
-                }
-            }
-            return neighbors;
-        } 
-                     
-        // Build shape map  
-        for (let h of this.hexagons) {
-            let neighbors = getNeighborsInShape(h);
-            for (let n of neighbors) {
-                h.addNeighbor(n);
-            }
-        }      
     }    
     
     /**
@@ -116,15 +91,6 @@ class HexagonSet extends BABYLON.Mesh {
         }
         return false;
     }
-    
-    
-    private _randomInt (min, max) {
-        if (min === max) {
-            return (min);
-        }
-        var random = Math.random();
-        return Math.floor(((random * (max - min)) + min));
-    }    
     
     /**
      * Returns true if two shapes are overlapping. 

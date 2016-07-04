@@ -5,8 +5,6 @@
  */
 var Hexagon = (function () {
     function Hexagon(q, r, grid, shape) {
-        // The list of hexagons names that are linked to this hexagon
-        this.neighbors = [];
         this.q = q;
         this.r = r;
         var center = grid.getCenterXY(q, r);
@@ -17,6 +15,9 @@ var Hexagon = (function () {
     Hexagon.prototype.equals = function (other) {
         return this.q === other.q && this.r === other.r;
     };
+    /**
+     * Returns an unique ID
+     */
     Hexagon.uniqueID = function () {
         function chr4() {
             return Math.random().toString(16).slice(-4);
@@ -27,12 +28,30 @@ var Hexagon = (function () {
             '-' + chr4() +
             '-' + chr4() + chr4() + chr4();
     };
-    Hexagon.prototype.addNeighbor = function (hex) {
-        this.neighbors.push(hex.name);
+    /**
+     * Returns the default hexagon grid used in the game.
+     */
+    Hexagon.getDefaultGrid = function () {
+        var grid = new Grid();
+        grid.tileSize = 1;
+        grid.tileSpacing = 0;
+        grid.pointyTiles = true;
+        return grid;
     };
+    /**
+     * Returns the center of this hexagon in world coordinates (relative to the shape);
+     */
     Hexagon.prototype.getWorldCenter = function () {
-        return this.center.add(this._shape.position);
+        if (this._shape) {
+            return this.center.add(this._shape.position);
+        }
+        else {
+            return this.center;
+        }
     };
+    /**
+     * Returns true if this hexagon overlaps the given one (if the two world center are separated by a very small distance)
+     */
     Hexagon.prototype.overlaps = function (other) {
         // Get world center
         var center = this.getWorldCenter();

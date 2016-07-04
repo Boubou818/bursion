@@ -59,6 +59,22 @@ class Base {
         console.warn('No hexagon with name ', name);
         return null;
     }
+        
+    /**
+     * Retursn true if the given shape can be built here : 
+     * that means no overlap with another shape, and it must be 
+     * connected with at least one shape.
+     */
+    public canBuildHere (shape:HexagonSet) {
+        for (let s of this._buildings) {
+            if (shape.overlaps(s)) {
+                return false;
+            } 
+        }
+        // Connected with at least one shape : there is at least one 
+        // hexagon of the new shape with distance < DISTANCE_BETWEEN_NEIGHBORS
+        return true;
+    }
 
        
     

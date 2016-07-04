@@ -12,8 +12,7 @@ class Hexagon {
     public center: BABYLON.Vector3;
     // The unique name of this hex
     public name : string;
-    // The list of hexagons names that are linked to this hexagon
-    public neighbors : Array<string> = [];
+    
     // The shape this hex belongs to
     private _shape : HexagonSet;
     
@@ -26,10 +25,13 @@ class Hexagon {
         this._shape = shape;
     }
      
-    public equals(other:Hexagon) {
+    public equals(other:Hexagon) : boolean{
         return this.q === other.q && this.r === other.r;
     }
     
+    /**
+     * Returns an unique ID
+     */
     static uniqueID() : string { 
         function chr4(){
             return Math.random().toString(16).slice(-4);
@@ -41,15 +43,34 @@ class Hexagon {
             '-' + chr4() + chr4() + chr4();
     }
     
-    public addNeighbor(hex:Hexagon) {
-        this.neighbors.push(hex.name);
+    /**
+     * Returns the default hexagon grid used in the game.
+     */
+    static getDefaultGrid() : any {
+        
+        let grid         = new Grid();
+        grid.tileSize    = 1;
+        grid.tileSpacing = 0;
+        grid.pointyTiles = true;
+        
+        return grid;
     }
     
+    /**
+     * Returns the center of this hexagon in world coordinates (relative to the shape);
+     */
     public getWorldCenter() {
-        return this.center.add(this._shape.position);
+        if (this._shape) {
+            return this.center.add(this._shape.position);
+        } else {
+            return this.center;
+        }
     }
     
-    public overlaps(other:Hexagon) {
+    /**
+     * Returns true if this hexagon overlaps the given one (if the two world center are separated by a very small distance)
+     */
+    public overlaps(other:Hexagon) :boolean {
         // Get world center
         let center = this.getWorldCenter();
         // Get world center

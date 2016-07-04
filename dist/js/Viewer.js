@@ -49,11 +49,12 @@ var Viewer = (function () {
         };
         // grid.draw(this.scene);
         var shapes = [];
+        var base = new Base();
         this.scene.onPointerMove = function (evt, pr) {
             if (pr.hit) {
                 var overlaps = false;
                 // Update shape color
-                if (canBuildHere(s)) {
+                if (base.canBuildHere(s)) {
                     s.material = green;
                 }
                 else {
@@ -68,21 +69,8 @@ var Viewer = (function () {
                 }
             }
         };
-        /**
-         * Retursn true if the given shape can be built here
-         */
-        var canBuildHere = function (shape) {
-            for (var _i = 0, shapes_1 = shapes; _i < shapes_1.length; _i++) {
-                var s_1 = shapes_1[_i];
-                if (shape.overlaps(s_1)) {
-                    return false;
-                }
-            }
-            return true;
-        };
-        var base = new Base();
         this.scene.onPointerDown = function (evt, pr) {
-            if (canBuildHere(s)) {
+            if (base.canBuildHere(s)) {
                 shapes.push(s);
                 base.addBuilding(s);
                 s = new HexagonSet(_this.scene);

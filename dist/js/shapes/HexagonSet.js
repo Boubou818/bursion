@@ -16,21 +16,16 @@ var HexagonSet = (function (_super) {
         _super.call(this, '_shape_', scene);
         // The set of hexagons
         this.hexagons = [];
-        // The map of this shape
-        this._map = [];
         this._initShape();
     }
     /**
-     * Create the shape
+     * Create the shape, which has a random size between 3 and 5 hexs.
      */
     HexagonSet.prototype._initShape = function () {
         var _this = this;
-        var grid = new Grid();
-        grid.tileSize = 1;
-        grid.tileSpacing = 0;
-        grid.pointyTiles = true;
+        var grid = Hexagon.getDefaultGrid();
         var coordinates = grid.hexagon(0, 0, 3, true);
-        var size = this._randomInt(3, 6);
+        var size = Math.floor(((Math.random() * (6 - 3)) + 3)); // random [3;6[
         // Shuffle an array
         var shuffle = function (a) {
             var j, x, i;
@@ -76,26 +71,6 @@ var HexagonSet = (function (_super) {
         });
         this._child = BABYLON.Mesh.MergeMeshes(hexes, true);
         this._child.parent = this;
-        // Returns neighbors of the given hexagon
-        var getNeighborsInShape = function (hex) {
-            var neighbors = [];
-            for (var _i = 0, _a = _this.hexagons; _i < _a.length; _i++) {
-                var h = _a[_i];
-                if (grid.axialDistance(hex.q, hex.r, h.q, h.r) == 1) {
-                    neighbors.push(h);
-                }
-            }
-            return neighbors;
-        };
-        // Build shape map  
-        for (var _i = 0, _a = this.hexagons; _i < _a.length; _i++) {
-            var h = _a[_i];
-            var neighbors = getNeighborsInShape(h);
-            for (var _b = 0, neighbors_1 = neighbors; _b < neighbors_1.length; _b++) {
-                var n = neighbors_1[_b];
-                h.addNeighbor(n);
-            }
-        }
     };
     /**
      * Returns -1 if the given hex is not in the shape
@@ -107,13 +82,6 @@ var HexagonSet = (function (_super) {
             }
         }
         return false;
-    };
-    HexagonSet.prototype._randomInt = function (min, max) {
-        if (min === max) {
-            return (min);
-        }
-        var random = Math.random();
-        return Math.floor(((random * (max - min)) + min));
     };
     /**
      * Returns true if two shapes are overlapping.

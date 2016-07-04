@@ -48,6 +48,22 @@ var Base = (function () {
         console.warn('No hexagon with name ', name);
         return null;
     };
+    /**
+     * Retursn true if the given shape can be built here :
+     * that means no overlap with another shape, and it must be
+     * connected with at least one shape.
+     */
+    Base.prototype.canBuildHere = function (shape) {
+        for (var _i = 0, _a = this._buildings; _i < _a.length; _i++) {
+            var s = _a[_i];
+            if (shape.overlaps(s)) {
+                return false;
+            }
+        }
+        // Connected with at least one shape : there is at least one 
+        // hexagon of the new shape with distance < DISTANCE_BETWEEN_NEIGHBORS
+        return true;
+    };
     return Base;
 }());
 //# sourceMappingURL=Base.js.map

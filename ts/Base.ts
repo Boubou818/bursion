@@ -8,9 +8,11 @@ class Base {
     
     // The list of buildings of the base. Minions can walk on each one of these buildings
     private _buildings : Array<any> = [];
+
+    private _hexUnfolded : Array<Hexagon> = [];
     
     // The Djikstra graph
-    private _graph : any;
+    public graph : any;
     
     constructor() {
     }
@@ -21,27 +23,44 @@ class Base {
     public addBuilding(building : HexagonSet) {
         this._buildings.push(building);
         
+        // Unfold all hexagons of the map
+        for (let hex of building.hexagons) {               
+            this._hexUnfolded.push(hex);              
+        }
+        
         this._createMap();
     }
     
     private _createMap() {
         
-        this._graph = new Graph();
-        
-        let allHexs = [];
-        for (let b of this._buildings) {
-            for (let hex of b.hexagons) {               
-                allHexs.push(hex);              
+        this.graph = new Graph();
+
+        for (let hex1 of this._hexUnfolded) {
+            let neighbors = {}; 
+            for (let hex2 of this._hexUnfolded) { 
+                let dist = BABYLON.Vector3.Distance(hex1.getWorldCenter(), hex2.getWorldCenter()); 
+                if (dist < 1.75) { // FIXME HARDCODED VALUE = distance between two neighbors hexagons
+                    neighbors[hex2.name] = 1;
+                } 
             }
-        }
-         for (let hex1 of allHexs) {
-            for (let hex2 of allHexs) {   
-                console.log(BABYLON.Vector3.DistanceSquared(hex1.getWorldCenter(), hex2.getWorldCenter()));     
-            }
-        }
-        
+            this.graph.addVertex(hex1.name, neighbors);
+        }        
     }
-    
+
+    /**
+     * Returns the hexagon corresponding to the given name
+     */
+    public getHexByName(name:string) {
+        for (let hex1 of this._hexUnfolded) {
+            if (hex1.name === name) {
+                return hex1;
+            }
+        }
+        console.warn('No hexagon with name ', name);
+        return null;
+    }
+
+       
     
     
 }

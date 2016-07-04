@@ -9,13 +9,17 @@ declare var Grid : any;
 class HexagonGrid {
     
     // The Hexagon grid
-    private  _grid : Array<Hexagon> = [];        
+    private  _grid : Array<Hexagon> = [];    
+
+    private _mapGrid : any;    
     
     constructor(size:number) {
         var grid         = new Grid();
         grid.tileSize    = 1;
         grid.tileSpacing = 0;
         grid.pointyTiles = true;
+
+        this._mapGrid = grid;
         
         let coordinates = grid.hexagon(0,0,size, true);  
         coordinates.forEach((c) => {

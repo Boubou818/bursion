@@ -12,6 +12,7 @@ var HexagonGrid = (function () {
         grid.tileSize = 1;
         grid.tileSpacing = 0;
         grid.pointyTiles = true;
+        this._mapGrid = grid;
         var coordinates = grid.hexagon(0, 0, size, true);
         coordinates.forEach(function (c) {
             _this._grid.push(new Hexagon(c.q, c.r, grid));

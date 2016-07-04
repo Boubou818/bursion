@@ -43,6 +43,15 @@ var Hexagon = (function () {
         }
         return false;
     };
+    /**
+     * Returns the axial distance between two hexagon.
+     * The two hexagon should belong to the same original grid!!
+     */
+    Hexagon.prototype.axialDistance = function (other) {
+        var q1 = this.q, r1 = this.r;
+        var q2 = other.q, r2 = other.r;
+        return (Math.abs(q1 - q2) + Math.abs(r1 - r2) + Math.abs(q1 + r1 - q2 - r2)) / 2;
+    };
     return Hexagon;
 }());
 //# sourceMappingURL=Hexagon.js.map

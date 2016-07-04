@@ -17,7 +17,7 @@ class Hexagon {
     // The shape this hex belongs to
     private _shape : HexagonSet;
     
-    constructor(q, r, grid, shape) {
+    constructor(q, r, grid, shape?: HexagonSet) {
         this.q = q;
         this.r = r;
         let center = grid.getCenterXY(q, r);
@@ -58,5 +58,15 @@ class Hexagon {
             return true;
         } 
         return false;
+    }          
+
+    /** 
+     * Returns the axial distance between two hexagon. 
+     * The two hexagon should belong to the same original grid!!
+     */
+    public axialDistance (other:Hexagon) {
+        let q1 = this.q, r1 = this.r;
+        let q2 = other.q, r2 = other.r;
+        return (Math.abs(q1 - q2) + Math.abs(r1 - r2) + Math.abs(q1 + r1 - q2 - r2)) / 2;
     }
 }

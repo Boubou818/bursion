@@ -1,6 +1,7 @@
 /// <reference path="babylon.d.ts"/>
 /// <reference path="shapes/HexagonSet.ts"/>
 /// <reference path="shapes/HexagonGrid.ts"/>
+/// <reference path="Base.ts" />
 var Viewer = (function () {
     function Viewer(canvasId) {
         var _this = this;
@@ -79,13 +80,40 @@ var Viewer = (function () {
             }
             return true;
         };
+        var base = new Base();
         this.scene.onPointerDown = function (evt, pr) {
-            if (pr.hit && canBuildHere(s)) {
-                console.log(s);
+            if (canBuildHere(s)) {
                 shapes.push(s);
+                base.addBuilding(s);
                 s = new HexagonSet(_this.scene);
             }
         };
+        // DEBUG : VIEW GRAPH BETWEEN HEXAGONS
+        var viewLink = function (hex, neighbors) {
+            // center of the hexagon
+            var b = BABYLON.Mesh.CreateBox('', 0.2, _this.scene);
+            b.position.copyFrom(hex.getWorldCenter());
+            b.position.y = 0.75;
+            console.log(neighbors);
+            for (var n in neighbors) {
+                // get hex by name
+                var hexn = base.getHexByName(n);
+                var pos = hexn.getWorldCenter();
+                pos.y = 0.75;
+                BABYLON.Mesh.CreateLines('', [b.position.clone(), pos], _this.scene);
+            }
+        };
+        var viewGraph = function (graph) {
+            for (var vertex in graph.vertices) {
+                // get hex by name
+                var hex = base.getHexByName(vertex);
+                viewLink(hex, graph.vertices[vertex]);
+            }
+        };
+        window.addEventListener('keydown', function () {
+            viewGraph(base.graph);
+        });
+        // END DEBUG
     };
     return Viewer;
 }());

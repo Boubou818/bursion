@@ -2,6 +2,7 @@
 /// <reference path="shapes/HexagonSet.ts"/>
 /// <reference path="shapes/HexagonGrid.ts"/>
 /// <reference path="Base.ts" />
+/// <reference path="minions/Minion.ts" />
 var Viewer = (function () {
     function Viewer(canvasId) {
         var _this = this;
@@ -32,48 +33,65 @@ var Viewer = (function () {
         });
         // Load first level
         this._initGame();
+        this._initGui();
         this.scene.debugLayer.show();
+    };
+    Viewer.prototype._initGui = function () {
+        var _this = this;
+        var gui = new BABYLON.ScreenSpaceCanvas2D(this.scene, { id: "ScreenCanvas" });
+        var buttonBuild = new BABYLON.Rectangle2D({ parent: gui, id: "button", x: 60, y: 100, width: 100, height: 40,
+            fill: "#40C040FF",
+            children: [
+                new BABYLON.Text2D("Build", { marginAlignment: "h: center, v: center" })
+            ]
+        });
+        buttonBuild.pointerEventObservable.add(function () {
+            if (!_this._currentShape) {
+                _this._currentShape = new HexagonSet(_this.scene);
+            }
+        }, BABYLON.PrimitivePointerInfo.PointerUp);
     };
     Viewer.prototype._initGame = function () {
         var _this = this;
         var ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 2, this.scene);
         ground.isVisible = false;
-        var s = new HexagonSet(this.scene);
         var green = new BABYLON.StandardMaterial('', this.scene);
         green.diffuseColor = BABYLON.Color3.Green();
         var red = new BABYLON.StandardMaterial('', this.scene);
         red.diffuseColor = BABYLON.Color3.Red();
-        var grid = new HexagonGrid(10);
+        var grid = new HexagonGrid(20);
+        grid.draw(this.scene);
         this.scene.pointerMovePredicate = function (mesh) {
             return mesh.name === 'ground';
         };
-        // grid.draw(this.scene);
-        var shapes = [];
-        var base = new Base();
+        var base = new Base(this.scene);
         this.scene.onPointerMove = function (evt, pr) {
-            if (pr.hit) {
-                var overlaps = false;
-                // Update shape color
-                if (base.canBuildHere(s)) {
-                    s.material = green;
-                }
-                else {
-                    s.material = red;
-                }
-                var p = pr.pickedPoint;
-                p.y = 0;
-                // get nearest hex
-                var nearest = grid.getNearestHex(p);
-                if (nearest) {
-                    s.position.copyFrom(nearest.center);
+            if (_this._currentShape) {
+                if (pr.hit) {
+                    var overlaps = false;
+                    // Update shape color
+                    if (base.canBuildHere(_this._currentShape)) {
+                        _this._currentShape.material = green;
+                    }
+                    else {
+                        _this._currentShape.material = red;
+                    }
+                    var p = pr.pickedPoint;
+                    p.y = 0;
+                    // get nearest hex
+                    var nearest = grid.getNearestHex(p);
+                    if (nearest) {
+                        _this._currentShape.position.copyFrom(nearest.center);
+                    }
                 }
             }
         };
         this.scene.onPointerDown = function (evt, pr) {
-            if (base.canBuildHere(s)) {
-                shapes.push(s);
-                base.addBuilding(s);
-                s = new HexagonSet(_this.scene);
+            if (_this._currentShape) {
+                if (base.canBuildHere(_this._currentShape)) {
+                    base.addBuilding(_this._currentShape);
+                    _this._currentShape = null;
+                }
             }
         };
         // DEBUG : VIEW GRAPH BETWEEN HEXAGONS
@@ -82,7 +100,6 @@ var Viewer = (function () {
             var b = BABYLON.Mesh.CreateBox('', 0.2, _this.scene);
             b.position.copyFrom(hex.getWorldCenter());
             b.position.y = 0.75;
-            console.log(neighbors);
             for (var n in neighbors) {
                 // get hex by name
                 var hexn = base.getHexByName(n);
@@ -102,6 +119,7 @@ var Viewer = (function () {
             viewGraph(base.graph);
         });
         // END DEBUG
+        var bobby = new Minion('bobby', this.scene);
     };
     return Viewer;
 }());

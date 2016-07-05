@@ -13,20 +13,31 @@ class HexagonSet extends BABYLON.Mesh {
     
     // The shape mesh    
     private _child : BABYLON.AbstractMesh;
+
+    // Q and R coordinates of a starter platform
+    public static STARTER_TEMPLATE : Array<number> = [
+        0, 0,
+        1, 0, 
+        2, 0, 
+        3, 0, 
+        0, 1, 
+        1, 1,
+        2, 1, 
+        3, 1];
         
-    constructor(scene: BABYLON.Scene) {
-        super('_shape_', scene);       
-        
-        this._initShape();
+    constructor(scene: BABYLON.Scene, template?:Array<number>) {
+        super('_shape_', scene);
+        this._initShape(template);
     }
-    
+
     /**
      * Create the shape, which has a random size between 3 and 5 hexs.
      */
-    private _initShape () {
+    private _initShape (template?:Array<number>) {
         
         let grid = Hexagon.getDefaultGrid();
-        let coordinates = grid.hexagon(0,0,3, true);  
+        let coordinates = grid.hexagon(0,0,3, true);
+ 
         let size = Math.floor(((Math.random() * (6 - 3)) + 3)); // random [3;6[
         
         // Shuffle an array
@@ -52,33 +63,47 @@ class HexagonSet extends BABYLON.Mesh {
             }                    
             return null;        
         }
-        
-        // Start with the center of the grid and iterate over neighbors
-        let currentHex = coordinates[0];
-        let first = new Hexagon(currentHex.q, currentHex.r, grid, this);
-        this.hexagons.push(first);
-        
-        for (let i=0; i<size; i++) {
-            let next = getNext(currentHex.q, currentHex.r);
-            if (!next) break;                        
-            this.hexagons.push(next);
-            currentHex.q = next.q, currentHex.r = next.r;
-        }  
-        
-        // Merge all cylinders
-        let hexes = [];        
-        this.hexagons.forEach((hex) => {
-            let center = grid.getCenterXY(hex.q, hex.r);
-            let myhex = BABYLON.Mesh.CreateCylinder('', 1, 2, 2, 6, 1, this.getScene());
-            myhex.rotation.y = Math.PI/2;
-            myhex.position.x = center.x; 
-            myhex.position.z = center.y; 
-            hexes.push(myhex);
-        })
-        this._child = BABYLON.Mesh.MergeMeshes(hexes, true);
+        // If a template is given in parameter, use template
+        if (template) {
+            for (let i=0; i<template.length-1; i+=2) {
+                this.hexagons.push(new Hexagon(template[i], template[i+1], grid, this));
+            }
+        } else {
+            // Else start a random shape
+            // Start with the center of the grid and iterate over neighbors
+            let currentHex = coordinates[0];
+            let first = new Hexagon(currentHex.q, currentHex.r, grid, this);
+            this.hexagons.push(first);
+            
+            for (let i=0; i<size; i++) {
+                let next = getNext(currentHex.q, currentHex.r);
+                if (!next) break;                        
+                this.hexagons.push(next);
+                currentHex.q = next.q, currentHex.r = next.r;
+            }  
+        }
+
+        // Create 3D model        
+        this._child = this._createModel();
         this._child.parent = this;    
         
     }    
+
+    /** 
+     * Returns a 3D model corresponding to this shape
+        */
+    private _createModel() : BABYLON.Mesh {
+        // Merge all cylinders
+        let hexes = [];        
+        this.hexagons.forEach((hex) => {
+            let center = hex.center;
+            let myhex = BABYLON.Mesh.CreateCylinder('', 1, 2, 2, 6, 1, this.getScene());
+            myhex.rotation.y = Math.PI/2;
+            myhex.position.copyFrom(center);
+            hexes.push(myhex);
+        });
+        return BABYLON.Mesh.MergeMeshes(hexes, true);
+    }
     
     /**
      * Returns -1 if the given hex is not in the shape

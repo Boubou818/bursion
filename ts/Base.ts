@@ -2,19 +2,26 @@
 
 declare var Graph : any;
 /**
- * Contains the player base : the field where minions can walk on.
+ * Contains the player base : 
+ * - the field where minions can walk on,
+ * - all building built by the player
+ * 
  */
 class Base {
     
     // The list of buildings of the base. Minions can walk on each one of these buildings
     private _buildings : Array<any> = [];
 
+    // All hexagones of all building unfolded in a single array. Updated each time a new building is built
     private _hexUnfolded : Array<Hexagon> = [];
     
     // The Djikstra graph
     public graph : any;
     
-    constructor() {
+    // The base is always composed of a starting platform, composed of a set of 4*4 hex
+    constructor(scene:BABYLON.Scene) {
+        let starter = new HexagonSet(scene, HexagonSet.STARTER_TEMPLATE);
+        this.addBuilding(starter);
     }
     
     /**
@@ -39,7 +46,7 @@ class Base {
             let neighbors = {}; 
             for (let hex2 of this._hexUnfolded) { 
                 let dist = BABYLON.Vector3.Distance(hex1.getWorldCenter(), hex2.getWorldCenter()); 
-                if (dist < 1.75) { // FIXME HARDCODED VALUE = distance between two neighbors hexagons
+                if (dist < Hexagon.DISTANCE_BETWEEN_TWO_NEIGHBORS) { 
                     neighbors[hex2.name] = 1;
                 } 
             }

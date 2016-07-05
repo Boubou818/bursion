@@ -28,13 +28,16 @@ var HexagonGrid = (function () {
         });
         return res;
     };
+    /**
+     * Draw the hexagon grid in the given scene
+     */
     HexagonGrid.prototype.draw = function (scene) {
-        var ref = BABYLON.Mesh.CreateCylinder('', 1, 1.8, 1.8, 6, 1, scene);
+        var ref = BABYLON.Mesh.CreateCylinder('', 0.1, 1.9, 1.9, 6, 1, scene);
+        ref.rotation.y = Math.PI / 2;
         ref.isVisible = false;
         this._grid.forEach(function (h) {
-            var hex = ref.clone('' + h.q + ' ' + h.r);
+            var hex = ref.createInstance('' + h.q + ' ' + h.r);
             hex.isVisible = true;
-            hex.rotation.y = Math.PI / 2;
             hex.position.copyFrom(h.center);
         });
     };

@@ -1,12 +1,19 @@
 /// <reference path="shapes/HexagonSet.ts" />
 /**
- * Contains the player base : the field where minions can walk on.
+ * Contains the player base :
+ * - the field where minions can walk on,
+ * - all building built by the player
+ *
  */
 var Base = (function () {
-    function Base() {
+    // The base is always composed of a starting platform, composed of a set of 4*4 hex
+    function Base(scene) {
         // The list of buildings of the base. Minions can walk on each one of these buildings
         this._buildings = [];
+        // All hexagones of all building unfolded in a single array. Updated each time a new building is built
         this._hexUnfolded = [];
+        var starter = new HexagonSet(scene, HexagonSet.STARTER_TEMPLATE);
+        this.addBuilding(starter);
     }
     /**
      * Add a building to the player base. The graph is updated.
@@ -28,7 +35,7 @@ var Base = (function () {
             for (var _b = 0, _c = this._hexUnfolded; _b < _c.length; _b++) {
                 var hex2 = _c[_b];
                 var dist = BABYLON.Vector3.Distance(hex1.getWorldCenter(), hex2.getWorldCenter());
-                if (dist < 1.75) {
+                if (dist < Hexagon.DISTANCE_BETWEEN_TWO_NEIGHBORS) {
                     neighbors[hex2.name] = 1;
                 }
             }

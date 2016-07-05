@@ -15,6 +15,9 @@ class Hexagon {
     
     // The shape this hex belongs to
     private _shape : HexagonSet;
+
+    // The distance between two neighbors
+    public static DISTANCE_BETWEEN_TWO_NEIGHBORS = 1.75;
     
     constructor(q, r, grid, shape?: HexagonSet) {
         this.q = q;
@@ -25,6 +28,9 @@ class Hexagon {
         this._shape = shape;
     }
      
+    /**
+     * Two hexs are equals if their coordinates are the same. This should be used with the same reference grid !
+     */
     public equals(other:Hexagon) : boolean{
         return this.q === other.q && this.r === other.r;
     }

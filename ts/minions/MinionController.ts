@@ -1,0 +1,187 @@
+/// <reference path="../babylon.d.ts" />
+/// <reference path="Minion.ts" />
+
+
+class MinionController {
+    
+    static Epsilon : number = 0.1;
+    
+    // The minion attached this controller
+    private _minion : Minion; 
+    
+    // The character skeleton (if any). Can be null
+    public skeleton : BABYLON.Skeleton = null;
+        
+    // The direction this character is heading to
+    private _direction : BABYLON.Vector3 = new BABYLON.Vector3(0,0,0);
+
+    // The destination this character is heading to
+    private _destination : BABYLON.Vector3 = new BABYLON.Vector3(0,0,0);
+
+    // The last distance computed between the minion position and its destination
+    private _lastDistance : number = Number.POSITIVE_INFINITY; 
+
+    // A set of destination. The character will navigate through all these positions.
+    public destinations : Array<BABYLON.Vector3> = [];
+
+    // The character speed
+    public speed : number = 1;
+
+    // True if the character is moving, false otherwise
+    public isMoving : boolean = false;
+    
+    
+    constructor(minion : Minion) {
+        this._minion = minion;
+
+        this.skeleton = minion.skeleton;
+
+        // Add move function to the character
+        this._minion.getScene().registerBeforeRender(() => {
+            this._move();
+        });
+    }
+
+    /**
+     * Add a destination to this character
+     */
+    public addDestination(value:BABYLON.Vector3) {
+        // Add this destination to the set of destination
+        this.destinations.push(value);
+
+        // Return this to chain destination if needed
+        return this;
+    }
+
+    /**
+     * Move to the next character destination
+     */
+    private _moveToNextDestination() {
+        // Get the next destination
+        this._destination = this.destinations.shift();
+
+        // reset distance check
+        this._lastDistance= Number.POSITIVE_INFINITY; 
+        this.isMoving = true;
+
+        // Compute direction
+        this._direction = this._destination.subtract(this._minion.position);
+        this._direction.normalize();        
+        
+        // Rotate
+        this.lookAt(this._destination);
+    }    
+    
+    /**
+     * The character looks at the given position, but rotates only along Y-axis 
+     * */
+    private lookAt(value:BABYLON.Vector3){
+        var dv = value.subtract(this._minion.position);
+        var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
+        this._minion.rotation.y = yaw ;
+    }
+
+    /** 
+     * Attach the given mesh to this controller, and found the character skeleton.
+     * The skeleton used for the mesh animation (and the debug viewer) is the first found one.
+     */    
+    // public attachTo(meshes: Array<BABYLON.Mesh>) {
+    //     let skeletonFound = false;
+        
+    //     for (let m of meshes) {
+    //         // Attach this mesh as children
+    //         m.parent = this._minion;
+    //         this._meshes.push(m);
+            
+    //         // Stop mesh animations
+    //         this._minion.getScene().stopAnimation(m);
+            
+    //         // Find skeleton if possible
+    //         if (m.skeleton && !skeletonFound) { 
+    //             this.skeleton = m.skeleton;
+    //             skeletonFound = true;            
+    //             // Activate animation blending    
+	// 		    this.skeleton.enableBlending(0.08);
+    //         }
+    //     }
+    // }
+
+    /**
+     * Run the animation between the character position and its first destination
+     */
+    public start() {
+        // If at least one destination
+        if (this.destinations.length >= 1) {
+            // Animate the character
+            this.playAnimation('walk', true, 1);
+            // Move to the next destination
+            this._moveToNextDestination();
+        }
+    }
+
+    /**
+     * Pause the character movement
+     */
+    public pause() {
+        this.isMoving = false;
+    }
+
+    /**
+     * Resume the character movement
+     */
+    public resume() {
+        this.isMoving = true;
+    }
+
+    /**
+     * Move the character to its destination.
+     * The character y position is set according to the ground position (or 0 if no ground).
+     * The attribute _canMove is reset to false when the destination is reached.
+     */
+    private _move() {
+        // If a destination has been set and the character has not been stopped
+        if (this.isMoving && this._destination) {
+            // Compute distance to destination
+            let distance = BABYLON.Vector3.Distance(this._minion.position, this._destination);
+            // Change destination if th distance is increasing (should not)
+            if (distance < MinionController.Epsilon || distance > this._lastDistance) {
+                // Set the minion position to the curent destination
+                this._minion.position.copyFrom(this._destination);
+
+                // Destination has been reached
+                this.isMoving = false;
+
+                if (this.destinations.length == 0) {
+                    // Animate the character in idle animation
+                    this.playAnimation('idle', true, 1);
+                } else {
+                    this._moveToNextDestination();
+                }
+
+            } else {
+                this._lastDistance = distance;
+                // Add direction to the position
+                let delta = this._direction.scale(this._minion.getScene().getAnimationRatio()*this.speed);
+                this._minion.position.addInPlace(delta);
+            }
+        }
+    }
+
+    /**
+     * Add an animation to this character 
+     */
+    public addAnimation(name:string, from:number, to:number) {
+        if (this.skeleton) {
+            this.skeleton.createAnimationRange(name, from, to);
+        }
+    }
+
+    /**
+     * Play the given animation if skeleton found
+     */
+    public playAnimation(name:string, loop:boolean, speed:number) {
+        if (this.skeleton){
+            this.skeleton.beginAnimation(name, loop, speed);
+        }
+    }
+}

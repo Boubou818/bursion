@@ -12,6 +12,9 @@ var Hexagon = (function () {
         this.name = Hexagon.uniqueID();
         this._shape = shape;
     }
+    /**
+     * Two hexs are equals if their coordinates are the same. This should be used with the same reference grid !
+     */
     Hexagon.prototype.equals = function (other) {
         return this.q === other.q && this.r === other.r;
     };
@@ -71,6 +74,8 @@ var Hexagon = (function () {
         var q2 = other.q, r2 = other.r;
         return (Math.abs(q1 - q2) + Math.abs(r1 - r2) + Math.abs(q1 + r1 - q2 - r2)) / 2;
     };
+    // The distance between two neighbors
+    Hexagon.DISTANCE_BETWEEN_TWO_NEIGHBORS = 1.75;
     return Hexagon;
 }());
 //# sourceMappingURL=Hexagon.js.map

@@ -14,6 +14,9 @@ class HexagonSet extends BABYLON.Mesh {
     // The shape mesh    
     private _child : BABYLON.AbstractMesh;
 
+    // The subset of hexagons that can generate resources
+    private _resourceSlots : Array<Hexagon> = [];
+
     // Q and R coordinates of a starter platform
     public static STARTER_TEMPLATE : Array<number> = [
         0, 0,
@@ -81,6 +84,13 @@ class HexagonSet extends BABYLON.Mesh {
                 this.hexagons.push(next);
                 currentHex.q = next.q, currentHex.r = next.r;
             }  
+
+            // Choose resources slots
+            for (let i=0; i<size; i++) {
+                if (Math.random() < 0.5){
+                    // 
+                }
+            } 
         }
 
         // Create 3D model        

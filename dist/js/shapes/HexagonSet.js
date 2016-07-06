@@ -16,6 +16,8 @@ var HexagonSet = (function (_super) {
         _super.call(this, '_shape_', scene);
         // The set of hexagons
         this.hexagons = [];
+        // The subset of hexagons that can generate resources
+        this._resourceSlots = [];
         this._initShape(template);
     }
     /**

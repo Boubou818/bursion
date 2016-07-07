@@ -1,6 +1,6 @@
 /// <reference path="babylon.d.ts"/>
-/// <reference path="shapes/HexagonSet.ts"/>
-/// <reference path="shapes/HexagonGrid.ts"/>
+/// <reference path="buildings/Building.ts"/>
+/// <reference path="buildings/HexagonGrid.ts"/>
 /// <reference path="Base.ts" />
 /// <reference path="minions/Minion.ts" />
 var Viewer = (function () {
@@ -47,7 +47,7 @@ var Viewer = (function () {
         });
         buttonBuild.pointerEventObservable.add(function () {
             if (!_this._currentShape) {
-                _this._currentShape = new HexagonSet(_this.scene);
+                _this._currentShape = new Building(_this.scene);
             }
         }, BABYLON.PrimitivePointerInfo.PointerUp);
     };
@@ -95,31 +95,31 @@ var Viewer = (function () {
             }
         };
         // DEBUG : VIEW GRAPH BETWEEN HEXAGONS
-        var viewLink = function (hex, neighbors) {
-            // center of the hexagon
-            var b = BABYLON.Mesh.CreateBox('', 0.2, _this.scene);
-            b.position.copyFrom(hex.getWorldCenter());
-            b.position.y = 0.75;
-            for (var n in neighbors) {
-                // get hex by name
-                var hexn = base.getHexByName(n);
-                var pos = hexn.getWorldCenter();
-                pos.y = 0.75;
-                BABYLON.Mesh.CreateLines('', [b.position.clone(), pos], _this.scene);
-            }
-        };
-        var viewGraph = function (graph) {
-            for (var vertex in graph.vertices) {
-                // get hex by name
-                var hex = base.getHexByName(vertex);
-                viewLink(hex, graph.vertices[vertex]);
-            }
-        };
-        window.addEventListener('keydown', function () {
-            viewGraph(base.graph);
-        });
+        // let viewLink = (hex:Hexagon, neighbors) => {
+        //     // center of the hexagon
+        //     let b = BABYLON.Mesh.CreateBox('', 0.2, this.scene);
+        //     b.position.copyFrom(hex.getWorldCenter());
+        //     b.position.y = 0.75;
+        //     for(let n in neighbors) {
+        //         // get hex by name
+        //         let hexn = base.getHexByName(n);
+        //         let pos = hexn.getWorldCenter();
+        //         pos.y = 0.75;
+        //         BABYLON.Mesh.CreateLines('', [b.position.clone(),pos], this.scene);
+        //     }
+        // }
+        // let viewGraph = (graph) => {
+        //     for(let vertex in graph.vertices) {
+        //         // get hex by name
+        //         let hex = base.getHexByName(vertex);
+        //         viewLink(hex, graph.vertices[vertex]);
+        //     }
+        // }
+        // window.addEventListener('keydown', () => {            
+        //     viewGraph(base.graph);
+        // });
         // END DEBUG
-        var bobby = new Minion('bobby', this.scene);
+        var bobby = new Minion('bobby', base, this.scene);
     };
     return Viewer;
 }());

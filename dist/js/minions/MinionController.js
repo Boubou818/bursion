@@ -8,7 +8,7 @@ var MinionController = (function () {
         // The direction this character is heading to
         this._direction = new BABYLON.Vector3(0, 0, 0);
         // The destination this character is heading to
-        this._destination = new BABYLON.Vector3(0, 0, 0);
+        this._destination = null;
         // The last distance computed between the minion position and its destination
         this._lastDistance = Number.POSITIVE_INFINITY;
         // A set of destination. The character will navigate through all these positions.
@@ -25,11 +25,13 @@ var MinionController = (function () {
         });
     }
     /**
-     * Add a destination to this character
+     * Add a destination to this character.
+     * data is a parameter that can be link to a destination. It will be called
+     * when the minion arrives at this destination.
      */
-    MinionController.prototype.addDestination = function (value) {
+    MinionController.prototype.addDestination = function (value, data) {
         // Add this destination to the set of destination
-        this.destinations.push(value);
+        this.destinations.push({ position: value, data: data });
         // Return this to chain destination if needed
         return this;
     };
@@ -43,10 +45,10 @@ var MinionController = (function () {
         this._lastDistance = Number.POSITIVE_INFINITY;
         this.isMoving = true;
         // Compute direction
-        this._direction = this._destination.subtract(this._minion.position);
+        this._direction = this._destination.position.subtract(this._minion.position);
         this._direction.normalize();
         // Rotate
-        this.lookAt(this._destination);
+        this.lookAt(this._destination.position);
     };
     /**
      * The character looks at the given position, but rotates only along Y-axis
@@ -110,11 +112,14 @@ var MinionController = (function () {
         // If a destination has been set and the character has not been stopped
         if (this.isMoving && this._destination) {
             // Compute distance to destination
-            var distance = BABYLON.Vector3.Distance(this._minion.position, this._destination);
+            var distance = BABYLON.Vector3.Distance(this._minion.position, this._destination.position);
             // Change destination if th distance is increasing (should not)
             if (distance < MinionController.Epsilon || distance > this._lastDistance) {
                 // Set the minion position to the curent destination
-                this._minion.position.copyFrom(this._destination);
+                this._minion.position.copyFrom(this._destination.position);
+                if (this.atEachDestination) {
+                    this.atEachDestination(this._destination.data);
+                }
                 // Destination has been reached
                 this.isMoving = false;
                 if (this.destinations.length == 0) {

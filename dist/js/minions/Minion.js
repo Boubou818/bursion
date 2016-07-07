@@ -1,5 +1,7 @@
 /// <reference path="../babylon.d.ts"/>
 /// <reference path="MinionController.ts" />
+/// <reference path="../buildings/Hexagon.ts" />
+/// <reference path="../Base.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -13,7 +15,8 @@ var __extends = (this && this.__extends) || function (d, b) {
  */
 var Minion = (function (_super) {
     __extends(Minion, _super);
-    function Minion(name, scene) {
+    function Minion(name, base, scene) {
+        var _this = this;
         _super.call(this, name, scene);
         // Give it a circular shape
         this._child = BABYLON.Mesh.CreateSphere('', 3, 0.5, scene);
@@ -25,7 +28,40 @@ var Minion = (function (_super) {
         this.position.y = 0.75;
         this._controller = new MinionController(this);
         this._controller.speed = 0.025;
+        this.currentHexagon = base.getStarterHex();
+        this.base = base;
+        // Update minion position
+        this.position.copyFrom(this.currentHexagon.getWorldCenter());
+        this.position.y = 0.75;
+        // At each destination, the current hexagon where the minion lives is updated.
+        this._controller.atEachDestination = function (hx) {
+            _this.currentHexagon = hx;
+        };
     }
+    /**
+     * Make the minion walk to the given hexagon:
+     * - Find shortest path to this hex
+     * - Add a destination for each hex of the path
+     * - make it moooove \o/
+     */
+    Minion.prototype.moveTo = function (hex) {
+        var path = this.base.getPathFromTo(this.currentHexagon, hex);
+        for (var _i = 0, path_1 = path; _i < path_1.length; _i++) {
+            var hex_1 = path_1[_i];
+            var tmp = hex_1.getWorldCenter();
+            tmp.y = 0.75;
+            this._controller.addDestination(tmp, hex_1);
+        }
+        this._controller.start();
+    };
+    /**
+     * Order given to the minion to generate the specific kind of resource given in parameter.
+     * The minion will :
+     * - find the nearest slot of the specified resource,
+     * - walk with it and start to generate resources
+     */
+    Minion.prototype.generateResource = function (resource) {
+    };
     return Minion;
 }(BABYLON.Mesh));
 //# sourceMappingURL=Minion.js.map

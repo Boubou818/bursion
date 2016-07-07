@@ -1,4 +1,4 @@
-/// <reference path="shapes/HexagonSet.ts" />
+/// <reference path="buildings/Building.ts" />
 /**
  * Contains the player base :
  * - the field where minions can walk on,
@@ -12,9 +12,15 @@ var Base = (function () {
         this._buildings = [];
         // All hexagones of all building unfolded in a single array. Updated each time a new building is built
         this._hexUnfolded = [];
-        var starter = new HexagonSet(scene, HexagonSet.STARTER_TEMPLATE);
+        var starter = new Building(scene, Building.STARTER_TEMPLATE);
         this.addBuilding(starter);
     }
+    /**
+     * Returns the first hexagon of the base
+     */
+    Base.prototype.getStarterHex = function () {
+        return this._hexUnfolded[0];
+    };
     /**
      * Add a building to the player base. The graph is updated.
      */
@@ -27,6 +33,11 @@ var Base = (function () {
         }
         this._createMap();
     };
+    /**
+     * Create the base map :
+     * - link between neighbors
+     * - Locate resources
+     */
     Base.prototype._createMap = function () {
         this.graph = new Graph();
         for (var _i = 0, _a = this._hexUnfolded; _i < _a.length; _i++) {
@@ -45,7 +56,7 @@ var Base = (function () {
     /**
      * Returns the hexagon corresponding to the given name
      */
-    Base.prototype.getHexByName = function (name) {
+    Base.prototype._getHexByName = function (name) {
         for (var _i = 0, _a = this._hexUnfolded; _i < _a.length; _i++) {
             var hex1 = _a[_i];
             if (hex1.name === name) {
@@ -67,9 +78,26 @@ var Base = (function () {
                 return false;
             }
         }
-        // Connected with at least one shape : there is at least one 
+        //  TODO Connected with at least one shape : there is at least one 
         // hexagon of the new shape with distance < DISTANCE_BETWEEN_NEIGHBORS
         return true;
+    };
+    /**
+     * Returns the shortest path from the given hex to the given hex.
+     */
+    Base.prototype.getPathFromTo = function (from, to) {
+        var pathString = this.graph.shortestPath(from.name, to.name).reverse();
+        var pathHex = [];
+        for (var _i = 0, pathString_1 = pathString; _i < pathString_1.length; _i++) {
+            var str = pathString_1[_i];
+            pathHex.push(this._getHexByName(str));
+        }
+        return pathHex;
+    };
+    /**
+     * Locate the nearest resource slot containing the given resource
+     */
+    Base.prototype._findResource = function (resource) {
     };
     return Base;
 }());

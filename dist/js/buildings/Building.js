@@ -1,5 +1,6 @@
 /// <reference path="../babylon.d.ts"/>
 /// <reference path="Hexagon.ts"/>
+/// <reference path="ResourceSlot.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -10,20 +11,18 @@ var __extends = (this && this.__extends) || function (d, b) {
  * Hexagon coordinates are relative to the shape.
  * The center of the shape is the first hexagon at (0,0).
  */
-var HexagonSet = (function (_super) {
-    __extends(HexagonSet, _super);
-    function HexagonSet(scene, template) {
+var Building = (function (_super) {
+    __extends(Building, _super);
+    function Building(scene, template) {
         _super.call(this, '_shape_', scene);
         // The set of hexagons
         this.hexagons = [];
-        // The subset of hexagons that can generate resources
-        this._resourceSlots = [];
         this._initShape(template);
     }
     /**
      * Create the shape, which has a random size between 3 and 5 hexs.
      */
-    HexagonSet.prototype._initShape = function (template) {
+    Building.prototype._initShape = function (template) {
         var _this = this;
         var grid = Hexagon.getDefaultGrid();
         var coordinates = grid.hexagon(0, 0, 3, true);
@@ -76,8 +75,8 @@ var HexagonSet = (function (_super) {
     };
     /**
      * Returns a 3D model corresponding to this shape
-        */
-    HexagonSet.prototype._createModel = function () {
+     */
+    Building.prototype._createModel = function () {
         var _this = this;
         // Merge all cylinders
         var hexes = [];
@@ -93,7 +92,7 @@ var HexagonSet = (function (_super) {
     /**
      * Returns -1 if the given hex is not in the shape
      */
-    HexagonSet.prototype._isInShape = function (hex) {
+    Building.prototype._isInShape = function (hex) {
         for (var i = 0; i < this.hexagons.length; i++) {
             if (this.hexagons[i].equals(hex)) {
                 return true;
@@ -102,10 +101,10 @@ var HexagonSet = (function (_super) {
         return false;
     };
     /**
-     * Returns true if two shapes are overlapping.
+     * Returns true if two buildings are overlapping.
      * There is an overlap if at least one hexagon is overlapping wioth another one
      */
-    HexagonSet.prototype.overlaps = function (other) {
+    Building.prototype.overlaps = function (other) {
         for (var _i = 0, _a = this.hexagons; _i < _a.length; _i++) {
             var hex = _a[_i];
             for (var _b = 0, _c = other.hexagons; _b < _c.length; _b++) {
@@ -117,7 +116,7 @@ var HexagonSet = (function (_super) {
         }
         return false;
     };
-    Object.defineProperty(HexagonSet.prototype, "material", {
+    Object.defineProperty(Building.prototype, "material", {
         set: function (value) {
             this._child.material = value;
         },
@@ -125,7 +124,7 @@ var HexagonSet = (function (_super) {
         configurable: true
     });
     // Q and R coordinates of a starter platform
-    HexagonSet.STARTER_TEMPLATE = [
+    Building.STARTER_TEMPLATE = [
         0, 0,
         1, 0,
         2, 0,
@@ -134,6 +133,6 @@ var HexagonSet = (function (_super) {
         1, 1,
         2, 1,
         3, 1];
-    return HexagonSet;
+    return Building;
 }(BABYLON.Mesh));
-//# sourceMappingURL=HexagonSet.js.map
+//# sourceMappingURL=Building.js.map

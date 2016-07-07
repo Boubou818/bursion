@@ -1,21 +1,20 @@
 /// <reference path="../babylon.d.ts"/>
 /// <reference path="Hexagon.ts"/>
+/// <reference path="ResourceSlot.ts" />
+
 
 /**
  * A shape is a set of 3/4/5 hexagons.
  * Hexagon coordinates are relative to the shape.
  * The center of the shape is the first hexagon at (0,0).
  */
-class HexagonSet extends BABYLON.Mesh {
+class Building extends BABYLON.Mesh {
     
     // The set of hexagons
-    public hexagons : Array<Hexagon> = [];
+    public hexagons : Array<Hexagon> = []; 
     
     // The shape mesh    
-    private _child : BABYLON.AbstractMesh;
-
-    // The subset of hexagons that can generate resources
-    private _resourceSlots : Array<Hexagon> = [];
+    protected _child : BABYLON.AbstractMesh;
 
     // Q and R coordinates of a starter platform
     public static STARTER_TEMPLATE : Array<number> = [
@@ -71,6 +70,7 @@ class HexagonSet extends BABYLON.Mesh {
             for (let i=0; i<template.length-1; i+=2) {
                 this.hexagons.push(new Hexagon(template[i], template[i+1], grid, this));
             }
+            // No resources slots for template
         } else {
             // Else start a random shape
             // Start with the center of the grid and iterate over neighbors
@@ -84,13 +84,6 @@ class HexagonSet extends BABYLON.Mesh {
                 this.hexagons.push(next);
                 currentHex.q = next.q, currentHex.r = next.r;
             }  
-
-            // Choose resources slots
-            for (let i=0; i<size; i++) {
-                if (Math.random() < 0.5){
-                    // 
-                }
-            } 
         }
 
         // Create 3D model        
@@ -101,7 +94,7 @@ class HexagonSet extends BABYLON.Mesh {
 
     /** 
      * Returns a 3D model corresponding to this shape
-        */
+     */
     private _createModel() : BABYLON.Mesh {
         // Merge all cylinders
         let hexes = [];        
@@ -128,10 +121,10 @@ class HexagonSet extends BABYLON.Mesh {
     }
     
     /**
-     * Returns true if two shapes are overlapping. 
+     * Returns true if two buildings are overlapping. 
      * There is an overlap if at least one hexagon is overlapping wioth another one
      */
-    public overlaps (other:HexagonSet) : boolean {
+    public overlaps (other:Building) : boolean {
         for (let hex of this.hexagons) {
             for (let otherHex of other.hexagons) { 
                 if (hex.overlaps(otherHex)) {

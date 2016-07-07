@@ -1,4 +1,4 @@
-/// <reference path="shapes/HexagonSet.ts" />
+/// <reference path="buildings/Building.ts" />
 
 declare var Graph : any;
 /**
@@ -20,14 +20,21 @@ class Base {
     
     // The base is always composed of a starting platform, composed of a set of 4*4 hex
     constructor(scene:BABYLON.Scene) {
-        let starter = new HexagonSet(scene, HexagonSet.STARTER_TEMPLATE);
+        let starter = new Building(scene, Building.STARTER_TEMPLATE);
         this.addBuilding(starter);
+    }
+
+    /**
+     * Returns the first hexagon of the base
+     */
+    public getStarterHex() : Hexagon {
+        return this._hexUnfolded[0];
     }
     
     /**
      * Add a building to the player base. The graph is updated.
      */
-    public addBuilding(building : HexagonSet) {
+    public addBuilding(building : Building) {
         this._buildings.push(building);
         
         // Unfold all hexagons of the map
@@ -38,6 +45,11 @@ class Base {
         this._createMap();
     }
     
+    /**
+     * Create the base map : 
+     * - link between neighbors
+     * - Locate resources
+     */
     private _createMap() {
         
         this.graph = new Graph();
@@ -57,7 +69,7 @@ class Base {
     /**
      * Returns the hexagon corresponding to the given name
      */
-    public getHexByName(name:string) {
+    private _getHexByName(name:string) {
         for (let hex1 of this._hexUnfolded) {
             if (hex1.name === name) {
                 return hex1;
@@ -72,16 +84,37 @@ class Base {
      * that means no overlap with another shape, and it must be 
      * connected with at least one shape.
      */
-    public canBuildHere (shape:HexagonSet) {
+    public canBuildHere (shape:Building) {
         for (let s of this._buildings) {
             if (shape.overlaps(s)) {
                 return false;
             } 
         }
-        // Connected with at least one shape : there is at least one 
+        //  TODO Connected with at least one shape : there is at least one 
         // hexagon of the new shape with distance < DISTANCE_BETWEEN_NEIGHBORS
         return true;
     }
+
+    /**
+     * Returns the shortest path from the given hex to the given hex.
+     */
+    public getPathFromTo(from: Hexagon, to:Hexagon) : Array<Hexagon>{
+        let pathString = this.graph.shortestPath(from.name, to.name).reverse();
+        let pathHex = [];
+        for (let str of pathString) {
+            pathHex.push(this._getHexByName(str));
+        }
+        return pathHex;
+    }
+
+    /**
+     * Locate the nearest resource slot containing the given resource
+     */
+    private _findResource(resource:any) {
+        
+    }
+
+
 
        
     

@@ -1,4 +1,3 @@
-/// <reference path="buildings/Building.ts" />
 /**
  * Contains the player base :
  * - the field where minions can walk on,
@@ -7,11 +6,12 @@
  */
 var Base = (function () {
     // The base is always composed of a starting platform, composed of a set of 4*4 hex
-    function Base(scene) {
+    function Base(scene, map) {
         // The list of buildings of the base. Minions can walk on each one of these buildings
         this._buildings = [];
-        // All hexagones of all building unfolded in a single array. Updated each time a new building is built
+        // All resources hexagones unfolded in a single array. Updated each time a new building is built
         this._hexUnfolded = [];
+        this._map = map;
         var starter = new Building(scene, Building.STARTER_TEMPLATE);
         this.addBuilding(starter);
     }
@@ -27,7 +27,7 @@ var Base = (function () {
     Base.prototype.addBuilding = function (building) {
         this._buildings.push(building);
         // Unfold all hexagons of the map
-        for (var _i = 0, _a = building.hexagons; _i < _a.length; _i++) {
+        for (var _i = 0, _a = building.getResourcesOnMap(this._map); _i < _a.length; _i++) {
             var hex = _a[_i];
             this._hexUnfolded.push(hex);
         }
@@ -45,8 +45,7 @@ var Base = (function () {
             var neighbors = {};
             for (var _b = 0, _c = this._hexUnfolded; _b < _c.length; _b++) {
                 var hex2 = _c[_b];
-                var dist = BABYLON.Vector3.Distance(hex1.getWorldCenter(), hex2.getWorldCenter());
-                if (dist < Hexagon.DISTANCE_BETWEEN_TWO_NEIGHBORS) {
+                if (Hexagon.areNeighbors(hex1, hex2)) {
                     neighbors[hex2.name] = 1;
                 }
             }
@@ -66,6 +65,9 @@ var Base = (function () {
         console.warn('No hexagon with name ', name);
         return null;
     };
+    Base.prototype.getHexByName = function (name) {
+        return this._getHexByName(name);
+    };
     /**
      * Retursn true if the given shape can be built here :
      * that means no overlap with another shape, and it must be
@@ -80,7 +82,15 @@ var Base = (function () {
         }
         //  TODO Connected with at least one shape : there is at least one 
         // hexagon of the new shape with distance < DISTANCE_BETWEEN_NEIGHBORS
-        return true;
+        var areConnected = false;
+        for (var _b = 0, _c = shape.hexagons; _b < _c.length; _b++) {
+            var sHex = _c[_b];
+            for (var _d = 0, _e = this._hexUnfolded; _d < _e.length; _d++) {
+                var bHex = _e[_d];
+                areConnected = areConnected || Hexagon.areNeighbors(sHex, bHex);
+            }
+        }
+        return areConnected;
     };
     /**
      * Returns the shortest path from the given hex to the given hex.
@@ -95,9 +105,29 @@ var Base = (function () {
         return pathHex;
     };
     /**
-     * Locate the nearest resource slot containing the given resource
+     * Locate the nearest resource slot containing wood on the map.
+     * Returns the hexagon (containing a woodresource not empty)
+     * which is the nearest of the given position. Returns null if no such hexagon is found.
      */
-    Base.prototype._findResource = function (resource) {
+    Base.prototype.getNearestWoodHexagon = function (hexagon) {
+        var nearest = null;
+        var distance = Number.POSITIVE_INFINITY;
+        for (var _i = 0, _a = this._hexUnfolded; _i < _a.length; _i++) {
+            var hex = _a[_i];
+            if (hex.resourceSlot.resource instanceof Wood) {
+                // Check availability of the resource
+                if (hex.resourceSlot.isAvailable()) {
+                    // Check distance
+                    var currentDist = this.getPathFromTo(hexagon, hex).length;
+                    console.log(currentDist);
+                    if (currentDist < distance) {
+                        nearest = hex;
+                        distance = currentDist;
+                    }
+                }
+            }
+        }
+        return nearest;
     };
     return Base;
 }());

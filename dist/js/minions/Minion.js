@@ -1,7 +1,3 @@
-/// <reference path="../babylon.d.ts"/>
-/// <reference path="MinionController.ts" />
-/// <reference path="../buildings/Hexagon.ts" />
-/// <reference path="../Base.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -27,7 +23,7 @@ var Minion = (function (_super) {
         this._child.parent = this;
         this.position.y = 0.75;
         this._controller = new MinionController(this);
-        this._controller.speed = 0.025;
+        this._controller.speed = 0.05;
         this.currentHexagon = base.getStarterHex();
         this.base = base;
         // Update minion position
@@ -55,12 +51,19 @@ var Minion = (function (_super) {
         this._controller.start();
     };
     /**
-     * Order given to the minion to generate the specific kind of resource given in parameter.
+     * Order given to the minion to gather wood.
      * The minion will :
-     * - find the nearest slot of the specified resource,
+     * - find the nearest slot of wood present in the map,
      * - walk with it and start to generate resources
      */
-    Minion.prototype.generateResource = function (resource) {
+    Minion.prototype.gatherWood = function () {
+        var nearestWoodHexagon = this.base.getNearestWoodHexagon(this.currentHexagon);
+        if (nearestWoodHexagon) {
+            this.moveTo(nearestWoodHexagon);
+        }
+        else {
+            console.warn('no wood found in base');
+        }
     };
     return Minion;
 }(BABYLON.Mesh));

@@ -1,9 +1,3 @@
-/// <reference path="../babylon.d.ts"/>
-/// <reference path="MinionController.ts" />
-/// <reference path="../buildings/Hexagon.ts" />
-/// <reference path="../Base.ts" />
-
-
 /**
  * Represent a worker : 
  * - can walk on the player base, 
@@ -38,7 +32,7 @@ class Minion extends BABYLON.Mesh {
 
         this.position.y = 0.75;
         this._controller = new MinionController(this);
-        this._controller.speed = 0.025;
+        this._controller.speed = 0.05;
         
         this.currentHexagon = base.getStarterHex();
         this.base = base;
@@ -71,13 +65,18 @@ class Minion extends BABYLON.Mesh {
     }
 
     /** 
-     * Order given to the minion to generate the specific kind of resource given in parameter.
+     * Order given to the minion to gather wood.
      * The minion will : 
-     * - find the nearest slot of the specified resource, 
+     * - find the nearest slot of wood present in the map, 
      * - walk with it and start to generate resources
      */
-    public generateResource(resource:any) {
-
+    public gatherWood() {
+        let nearestWoodHexagon = this.base.getNearestWoodHexagon(this.currentHexagon);
+        if (nearestWoodHexagon) {
+            this.moveTo(nearestWoodHexagon);
+        } else {
+            console.warn('no wood found in base');
+        }
     }
 
 }

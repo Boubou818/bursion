@@ -1,4 +1,3 @@
-/// <reference path="Resource.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -9,7 +8,6 @@ var Wood = (function (_super) {
     function Wood() {
         _super.call(this);
         this.gain = 1;
-        this.probability = 0.075;
     }
     return Wood;
 }(Resource));

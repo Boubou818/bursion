@@ -1,8 +1,3 @@
-/// <reference path="../babylon.d.ts"/>
-/// <reference path="Hexagon.ts"/>
-/// <reference path="ResourceSlot.ts" />
-
-
 /**
  * A shape is a set of 3/4/5 hexagons.
  * Hexagon coordinates are relative to the shape.
@@ -10,7 +5,7 @@
  */
 class Building extends BABYLON.Mesh {
     
-    // The set of hexagons
+    // The set of hexagons. These hexagons does not contains any resources
     public hexagons : Array<Hexagon> = []; 
     
     // The shape mesh    
@@ -99,7 +94,7 @@ class Building extends BABYLON.Mesh {
         // Merge all cylinders
         let hexes = [];        
         this.hexagons.forEach((hex) => {
-            let center = hex.center;
+            let center = hex.getWorldCenter();
             let myhex = BABYLON.Mesh.CreateCylinder('', 1, 2, 2, 6, 1, this.getScene());
             myhex.rotation.y = Math.PI/2;
             myhex.position.copyFrom(center);
@@ -137,5 +132,19 @@ class Building extends BABYLON.Mesh {
     
     set material(value:BABYLON.Material) {
         this._child.material = value;
+    }
+
+    /**
+     * Setup this building on the map, and retrieve the list of hexagon present on the map.
+     */
+    public getResourcesOnMap(map:HexagonGrid) : Array<Hexagon> {
+        let resourcesHex = [];
+
+        // For each hexagon, get the corresponding resource 
+        for (let hex of this.hexagons) {
+            resourcesHex.push(map.getResourceHex(hex));
+        }
+
+        return resourcesHex;
     }
 }

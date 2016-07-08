@@ -1,10 +1,3 @@
-/// <reference path="Hexagon.ts" />
-/// <reference path="../babylon.d.ts" />
-/// <reference path="../resources/Wood.ts" />
-/// <reference path="../resources/Empty.ts" />
-/// <reference path="../resources/Rock.ts" />
-
-
 declare var Grid : any;
 
 /**
@@ -14,24 +7,30 @@ declare var Grid : any;
 class HexagonGrid {
     
     // The Hexagon grid
-    private  _grid : Array<Hexagon> = [];    
-
-    private _resources : Array<Resource> = [];
+    private  _grid : Array<Hexagon> = [];   
     
     constructor(size:number) {
         let grid         = Hexagon.getDefaultGrid();
-        
-        this._resources = [new Wood(), new Empty(), new Rock()];
-
         
         let coordinates = grid.hexagon(0, 0 ,size, true);  
         for (let c of coordinates) {
             let hex = new Hexagon(c.q, c.r, grid);
 
-            let randomInt = Math.floor(Math.random() * this._resources.length); // random int between 0 and 1
+            let randomInt = Math.floor(Math.random() * 2); // random int between 0 and 1, two resources : wood and rock
             let randomProba = Math.random();
-            if (randomProba < this._resources[randomInt].probability) {
-                hex.resource = this._resources[randomInt];
+            switch (randomInt) {
+                case 0:
+                    if (randomProba < Resource.WOOD_PROBABILITY) {
+                        hex.resourceSlot.resource = new Wood();
+                    } //else it's empty by default
+                    break;
+                case 1 : 
+                    if (randomProba < Resource.ROCK_PROBABILITY) {
+                        hex.resourceSlot.resource = new Rock();
+                    } //else it's empty by default
+            
+                default:
+                    break;
             }
 
             this._grid.push(hex); 
@@ -45,13 +44,28 @@ class HexagonGrid {
         let min = 99999,
         res = null;
         this._grid.forEach((hex:Hexagon) => {
-            let dist = BABYLON.Vector3.DistanceSquared(hex.center, p);
+            let dist = BABYLON.Vector3.DistanceSquared(hex.getWorldCenter(), p);
             if (dist < min) {
                 min = dist;
                 res = hex;
             }
         });
         return res;
+    }
+
+    /**
+     * Returns the hexagon present on the map corresponding to the given position
+     */
+    public getResourceHex(hexagon : Hexagon) : Hexagon {
+
+        for (let hex of this._grid) {
+            let dist = Hexagon.distanceSquared(hexagon, hex);
+            if (dist < BABYLON.Epsilon) {
+               return hex;
+            }
+        }
+
+        return null;
     }
     
     /**
@@ -64,7 +78,7 @@ class HexagonGrid {
         ref.isVisible = false;
 
         // Wood
-        let woodRef = BABYLON.Mesh.CreateCylinder('_wood_', 1, 0.3, 0.3, 6, 1, scene);
+        let woodRef = BABYLON.Mesh.CreateCylinder('_wood_', 2, 0.3, 0.3, 6, 1, scene);
         woodRef.isVisible = false;
         let woodMaterial = new BABYLON.StandardMaterial('', scene);
         woodMaterial.diffuseColor = BABYLON.Color3.FromInts(120, 216, 17);
@@ -81,20 +95,18 @@ class HexagonGrid {
            
             let hex = ref.createInstance(''+h.q+' '+h.r);
             hex.isVisible = true;
-            hex.position.copyFrom(h.center);     
+            hex.position.copyFrom(h.getWorldCenter());     
 
             // Resource
-            if (h.resource) {
-                if (h.resource instanceof Wood) {
-                    let wood = woodRef.createInstance('wood');
-                    wood.isVisible = true;
-                    wood.position.copyFrom(h.center);
-                }
-                if (h.resource instanceof Rock) {
-                    let rock = rockRef.createInstance('rock');
-                    rock.isVisible = true;
-                    rock.position.copyFrom(h.center);
-                }
+            if (h.resourceSlot.resource instanceof Wood) {
+                let wood = woodRef.createInstance('wood');
+                wood.isVisible = true;
+                wood.position.copyFrom(h.getWorldCenter());
+            }
+            if (h.resourceSlot.resource instanceof Rock) {
+                let rock = rockRef.createInstance('rock');
+                rock.isVisible = true;
+                rock.position.copyFrom(h.getWorldCenter());
             }
                  
         };

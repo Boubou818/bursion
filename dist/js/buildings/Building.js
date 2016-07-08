@@ -1,6 +1,3 @@
-/// <reference path="../babylon.d.ts"/>
-/// <reference path="Hexagon.ts"/>
-/// <reference path="ResourceSlot.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -15,7 +12,7 @@ var Building = (function (_super) {
     __extends(Building, _super);
     function Building(scene, template) {
         _super.call(this, '_shape_', scene);
-        // The set of hexagons
+        // The set of hexagons. These hexagons does not contains any resources
         this.hexagons = [];
         this._initShape(template);
     }
@@ -81,7 +78,7 @@ var Building = (function (_super) {
         // Merge all cylinders
         var hexes = [];
         this.hexagons.forEach(function (hex) {
-            var center = hex.center;
+            var center = hex.getWorldCenter();
             var myhex = BABYLON.Mesh.CreateCylinder('', 1, 2, 2, 6, 1, _this.getScene());
             myhex.rotation.y = Math.PI / 2;
             myhex.position.copyFrom(center);
@@ -123,6 +120,18 @@ var Building = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    /**
+     * Setup this building on the map, and retrieve the list of hexagon present on the map.
+     */
+    Building.prototype.getResourcesOnMap = function (map) {
+        var resourcesHex = [];
+        // For each hexagon, get the corresponding resource 
+        for (var _i = 0, _a = this.hexagons; _i < _a.length; _i++) {
+            var hex = _a[_i];
+            resourcesHex.push(map.getResourceHex(hex));
+        }
+        return resourcesHex;
+    };
     // Q and R coordinates of a starter platform
     Building.STARTER_TEMPLATE = [
         0, 0,

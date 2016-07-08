@@ -1,14 +1,10 @@
-/// <reference path="../babylon.d.ts" />
-/// <reference path="Building.ts" />
-/// <reference path="../resources/Resource.ts" />
 /**
  * An hexagon is represented by its coordinates (q,r). Two hexagons are the same if their coordinates are the same
  */
 var Hexagon = (function () {
     function Hexagon(q, r, grid, shape) {
-        // The resource of this hex. Can be null if no resource.
-        // Resource are randomly generated during the map creation.
-        this.resource = null;
+        // The resource slot this hexagon contains
+        this.resourceSlot = new ResourceSlot();
         this.q = q;
         this.r = r;
         var center = grid.getCenterXY(q, r);
@@ -46,6 +42,19 @@ var Hexagon = (function () {
         return grid;
     };
     /**
+     * Returns true if the two given hexagons are neighbors
+     */
+    Hexagon.areNeighbors = function (hex1, hex2) {
+        console.log('distance neighbours ?', BABYLON.Vector3.Distance(hex1.getWorldCenter(), hex2.getWorldCenter()));
+        return BABYLON.Vector3.Distance(hex1.getWorldCenter(), hex2.getWorldCenter()) < Hexagon.DISTANCE_BETWEEN_TWO_NEIGHBORS;
+    };
+    /**
+     * Returns the squared distance between the two hexagons.
+     */
+    Hexagon.distanceSquared = function (hex1, hex2) {
+        return BABYLON.Vector3.DistanceSquared(hex1.getWorldCenter(), hex2.getWorldCenter());
+    };
+    /**
      * Returns the center of this hexagon in world coordinates (relative to the shape);
      */
     Hexagon.prototype.getWorldCenter = function () {
@@ -53,21 +62,14 @@ var Hexagon = (function () {
             return this.center.add(this._shape.position);
         }
         else {
-            return this.center;
+            return this.center.clone();
         }
     };
     /**
      * Returns true if this hexagon overlaps the given one (if the two world center are separated by a very small distance)
      */
     Hexagon.prototype.overlaps = function (other) {
-        // Get world center
-        var center = this.getWorldCenter();
-        // Get world center
-        var otherCenter = other.getWorldCenter();
-        if (BABYLON.Vector3.DistanceSquared(center, otherCenter) < BABYLON.Epsilon) {
-            return true;
-        }
-        return false;
+        return Hexagon.distanceSquared(this, other) < BABYLON.Epsilon;
     };
     /**
      * Returns the axial distance between two hexagon.

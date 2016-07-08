@@ -1,4 +1,3 @@
-/// <reference path="../buildings/Hexagon.ts" />
 /**
  * A resource is located on the original map.
  * There is 3 kind of resources:
@@ -11,9 +10,13 @@ var Resource = (function () {
     function Resource() {
         // The amount of material this resource will generate every 10 seconds
         this.gain = 0;
-        // The probability this resource has to appear in a hexagon
-        this.probability = 0;
+        // The number of material this resource can generate.
+        this.amount = 100;
     }
+    // The probability a Wood resource has to appear in a hexagon
+    Resource.WOOD_PROBABILITY = 0.15;
+    // The probability a Rock resource has to appear in a hexagon
+    Resource.ROCK_PROBABILITY = 0.15;
     return Resource;
 }());
 //# sourceMappingURL=Resource.js.map

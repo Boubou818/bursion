@@ -1,11 +1,3 @@
-/// <reference path="babylon.d.ts"/>
-/// <reference path="buildings/Building.ts"/>
-/// <reference path="buildings/HexagonGrid.ts"/>
-/// <reference path="Base.ts" />
-/// <reference path="minions/Minion.ts" />
-
-
-
 declare var Grid : any;
 
 class Viewer {
@@ -15,6 +7,7 @@ class Viewer {
     public scene    : BABYLON.Scene;
 
     private _currentShape : Building;
+    private _hoard : Array<Minion> = [];
 
     constructor(canvasId:string) {
         
@@ -62,8 +55,9 @@ class Viewer {
 
     private _initGui() {
         let gui = new BABYLON.ScreenSpaceCanvas2D(this.scene, {id: "ScreenCanvas"});
+        // Build button
         let buttonBuild = new BABYLON.Rectangle2D(
-		{ 	parent: gui, id: "button", x: 60, y: 100, width: 100, height: 40, 
+		{ 	parent: gui, id: "build", x: 60, y: 100, width: 100, height: 40, 
 			fill: "#40C040FF",
 			children: 
 			[
@@ -75,6 +69,22 @@ class Viewer {
                 this._currentShape = new Building(this.scene);
             }
         }, BABYLON.PrimitivePointerInfo.PointerUp); 
+
+        // Gather wood
+        let buttonWood = new BABYLON.Rectangle2D(
+		{ 	parent: gui, id: "gatherWood", x: 180, y: 100, width: 120, height: 40, 
+			fill: "#40C040FF",
+			children: 
+			[
+				new BABYLON.Text2D("Gather Wood", { marginAlignment: "h: center, v: center" })
+			]
+		});
+        buttonWood.pointerEventObservable.add(() => {
+            for (let m of this._hoard) {
+                m.gatherWood();
+            }
+        }, BABYLON.PrimitivePointerInfo.PointerUp); 
+
     }
 
      private _initGame() {     
@@ -86,14 +96,14 @@ class Viewer {
         let red = new BABYLON.StandardMaterial('', this.scene);
         red.diffuseColor = BABYLON.Color3.Red();
         
-        let grid = new HexagonGrid(20);
+        let grid = new HexagonGrid(15);
         grid.draw(this.scene); 
         
         this.scene.pointerMovePredicate = (mesh) => {
             return mesh.name === 'ground';
         }        
                 
-        let base = new Base(this.scene);
+        let base = new Base(this.scene, grid);
         
         this.scene.onPointerMove = (evt, pr) => {
             if (this._currentShape) {
@@ -111,7 +121,7 @@ class Viewer {
                     // get nearest hex
                     let nearest = grid.getNearestHex(p);
                     if (nearest) {
-                        this._currentShape.position.copyFrom(nearest.center);
+                        this._currentShape.position.copyFrom(nearest.getWorldCenter());
                     }
                 }
             }
@@ -127,33 +137,34 @@ class Viewer {
         }
 
         // DEBUG : VIEW GRAPH BETWEEN HEXAGONS
-        // let viewLink = (hex:Hexagon, neighbors) => {
-        //     // center of the hexagon
-        //     let b = BABYLON.Mesh.CreateBox('', 0.2, this.scene);
-        //     b.position.copyFrom(hex.getWorldCenter());
-        //     b.position.y = 0.75;
+        let viewLink = (hex:Hexagon, neighbors) => {
+            // center of the hexagon
+            let b = BABYLON.Mesh.CreateBox('', 0.2, this.scene);
+            b.position.copyFrom(hex.getWorldCenter());
+            b.position.y = 0.75;
             
-        //     for(let n in neighbors) {
-        //         // get hex by name
-        //         let hexn = base.getHexByName(n);
-        //         let pos = hexn.getWorldCenter();
-        //         pos.y = 0.75;
-        //         BABYLON.Mesh.CreateLines('', [b.position.clone(),pos], this.scene);
-        //     }
-        // }
-        // let viewGraph = (graph) => {
-        //     for(let vertex in graph.vertices) {
-        //         // get hex by name
-        //         let hex = base.getHexByName(vertex);
-        //         viewLink(hex, graph.vertices[vertex]);
-        //     }
-        // }
-        // window.addEventListener('keydown', () => {            
-        //     viewGraph(base.graph);
-        // });
+            for(let n in neighbors) {
+                // get hex by name
+                let hexn = base.getHexByName(n);
+                let pos = hexn.getWorldCenter();
+                pos.y = 0.75;
+                BABYLON.Mesh.CreateLines('', [b.position.clone(),pos], this.scene);
+            }
+        }
+        let viewGraph = (graph) => {
+            for(let vertex in graph.vertices) {
+                // get hex by name
+                let hex = base.getHexByName(vertex);
+                viewLink(hex, graph.vertices[vertex]);
+            }
+        }
+        window.addEventListener('keydown', () => {  
+            viewGraph(base.graph);       
+        });
         // END DEBUG
 
         let bobby = new Minion('bobby', base, this.scene);
+        this._hoard.push(bobby);
 
     }
 }

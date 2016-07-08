@@ -1,5 +1,3 @@
-/// <reference path="buildings/Building.ts" />
-
 declare var Graph : any;
 /**
  * Contains the player base : 
@@ -12,14 +10,18 @@ class Base {
     // The list of buildings of the base. Minions can walk on each one of these buildings
     private _buildings : Array<any> = [];
 
-    // All hexagones of all building unfolded in a single array. Updated each time a new building is built
+    // All resources hexagones unfolded in a single array. Updated each time a new building is built
     private _hexUnfolded : Array<Hexagon> = [];
     
     // The Djikstra graph
     public graph : any;
+
+    // The map where the player base will be built on
+    private _map : HexagonGrid;
     
     // The base is always composed of a starting platform, composed of a set of 4*4 hex
-    constructor(scene:BABYLON.Scene) {
+    constructor(scene:BABYLON.Scene, map : HexagonGrid) {
+        this._map = map;
         let starter = new Building(scene, Building.STARTER_TEMPLATE);
         this.addBuilding(starter);
     }
@@ -38,8 +40,8 @@ class Base {
         this._buildings.push(building);
         
         // Unfold all hexagons of the map
-        for (let hex of building.hexagons) {               
-            this._hexUnfolded.push(hex);              
+        for (let hex of building.getResourcesOnMap(this._map)) {               
+            this._hexUnfolded.push(hex);           
         }
         
         this._createMap();
@@ -57,8 +59,7 @@ class Base {
         for (let hex1 of this._hexUnfolded) {
             let neighbors = {}; 
             for (let hex2 of this._hexUnfolded) { 
-                let dist = BABYLON.Vector3.Distance(hex1.getWorldCenter(), hex2.getWorldCenter()); 
-                if (dist < Hexagon.DISTANCE_BETWEEN_TWO_NEIGHBORS) { 
+                if (Hexagon.areNeighbors(hex1, hex2)) {
                     neighbors[hex2.name] = 1;
                 } 
             }
@@ -78,6 +79,10 @@ class Base {
         console.warn('No hexagon with name ', name);
         return null;
     }
+
+    public getHexByName(name) {
+        return this._getHexByName(name);
+    }
         
     /**
      * Retursn true if the given shape can be built here : 
@@ -92,7 +97,13 @@ class Base {
         }
         //  TODO Connected with at least one shape : there is at least one 
         // hexagon of the new shape with distance < DISTANCE_BETWEEN_NEIGHBORS
-        return true;
+        let areConnected = false;
+        for (let sHex of shape.hexagons) {
+            for (let bHex of this._hexUnfolded) {
+                areConnected = areConnected || Hexagon.areNeighbors(sHex, bHex)
+            }
+        }
+        return areConnected;
     }
 
     /**
@@ -108,10 +119,29 @@ class Base {
     }
 
     /**
-     * Locate the nearest resource slot containing the given resource
+     * Locate the nearest resource slot containing wood on the map.
+     * Returns the hexagon (containing a woodresource not empty) 
+     * which is the nearest of the given position. Returns null if no such hexagon is found.
      */
-    private _findResource(resource:any) {
-        
+    public getNearestWoodHexagon(hexagon:Hexagon) : Hexagon {
+        let nearest = null;
+        let distance = Number.POSITIVE_INFINITY;
+
+        for (let hex of this._hexUnfolded) {
+            if (hex.resourceSlot.resource instanceof Wood) {
+                // Check availability of the resource
+                if (hex.resourceSlot.isAvailable()) {
+                    // Check distance
+                    let currentDist = this.getPathFromTo(hexagon, hex).length;
+                    console.log(currentDist);
+                    if (currentDist < distance) {
+                        nearest = hex;
+                        distance = currentDist;
+                    }
+                }
+            }
+        }
+        return nearest;
     }
 
 

@@ -1,0 +1,21 @@
+{
+    "files": [
+        "babylon.d.ts",
+        "Base.ts", 
+        "Timer.ts",
+        "Viewer.ts",
+
+        "buildings/Building.ts",
+        "buildings/Hexagon.ts",
+        "buildings/HexagonGrid.ts",
+        "buildings/ResourceSlot.ts",
+
+        "minions/Minion.ts",
+        "minions/MinionController.ts",
+
+        "resources/Empty.ts",
+        "resources/Resource.ts",
+        "resources/Rock.ts",
+        "resources/Wood.ts"
+    ]
+}

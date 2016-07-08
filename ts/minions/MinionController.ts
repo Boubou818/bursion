@@ -1,7 +1,3 @@
-/// <reference path="../babylon.d.ts" />
-/// <reference path="Minion.ts" />
-
-
 class MinionController {
     
     static Epsilon : number = 0.1;

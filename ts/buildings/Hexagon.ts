@@ -1,8 +1,3 @@
-/// <reference path="../babylon.d.ts" />
-/// <reference path="Building.ts" />
-/// <reference path="../resources/Resource.ts" />
-
-
 declare var Grid : any;
 
 /**
@@ -11,19 +6,18 @@ declare var Grid : any;
 class Hexagon {
     public q:number;
     public r:number;
-    public center: BABYLON.Vector3;
+    private center: BABYLON.Vector3;
     // The unique name of this hex
     public name : string;
     
     // The shape this hex belongs to
     private _shape : Building;
-
-    // The resource of this hex. Can be null if no resource.
-    // Resource are randomly generated during the map creation.
-    public resource : Resource = null;
-
+    
+    // The resource slot this hexagon contains
+    public resourceSlot : ResourceSlot = new ResourceSlot();
+    
     // The distance between two neighbors
-    public static DISTANCE_BETWEEN_TWO_NEIGHBORS = 1.75;
+    private static DISTANCE_BETWEEN_TWO_NEIGHBORS = 1.75;
     
     constructor(q, r, grid, shape?: Building) {
         this.q = q;
@@ -67,6 +61,21 @@ class Hexagon {
         
         return grid;
     }
+
+    /**
+     * Returns true if the two given hexagons are neighbors
+     */
+    static areNeighbors(hex1: Hexagon, hex2:Hexagon) {
+        console.log('distance neighbours ?',BABYLON.Vector3.Distance(hex1.getWorldCenter(), hex2.getWorldCenter())  );
+        return BABYLON.Vector3.Distance(hex1.getWorldCenter(), hex2.getWorldCenter()) < Hexagon.DISTANCE_BETWEEN_TWO_NEIGHBORS; 
+    }
+
+    /**
+     * Returns the squared distance between the two hexagons.
+     */
+    static distanceSquared(hex1: Hexagon, hex2:Hexagon) {
+        return BABYLON.Vector3.DistanceSquared(hex1.getWorldCenter(), hex2.getWorldCenter());
+    }
     
     /**
      * Returns the center of this hexagon in world coordinates (relative to the shape);
@@ -75,7 +84,7 @@ class Hexagon {
         if (this._shape) {
             return this.center.add(this._shape.position);
         } else {
-            return this.center;
+            return this.center.clone();
         }
     }
     
@@ -83,14 +92,7 @@ class Hexagon {
      * Returns true if this hexagon overlaps the given one (if the two world center are separated by a very small distance)
      */
     public overlaps(other:Hexagon) :boolean {
-        // Get world center
-        let center = this.getWorldCenter();
-        // Get world center
-        let otherCenter = other.getWorldCenter();
-        if (BABYLON.Vector3.DistanceSquared(center, otherCenter) < BABYLON.Epsilon) {
-            return true;
-        } 
-        return false;
+        return Hexagon.distanceSquared(this, other) < BABYLON.Epsilon;
     }          
 
     /** 

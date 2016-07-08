@@ -1,5 +1,3 @@
-/// <reference path="../babylon.d.ts" />
-/// <reference path="Minion.ts" />
 var MinionController = (function () {
     function MinionController(minion) {
         var _this = this;

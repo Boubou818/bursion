@@ -90,16 +90,27 @@ var MinionController = (function () {
         }
     };
     /**
+     * Removes all destination of the minion
+     */
+    MinionController.prototype.stop = function () {
+        this.destinations = [];
+        this.pause();
+    };
+    /**
      * Pause the character movement
      */
     MinionController.prototype.pause = function () {
         this.isMoving = false;
+        // Animate the character in idle animation
+        this.playAnimation('idle', true, 1);
     };
     /**
      * Resume the character movement
      */
     MinionController.prototype.resume = function () {
         this.isMoving = true;
+        // Animate the character
+        this.playAnimation('walk', true, 1);
     };
     /**
      * Move the character to its destination.
@@ -123,6 +134,10 @@ var MinionController = (function () {
                 if (this.destinations.length == 0) {
                     // Animate the character in idle animation
                     this.playAnimation('idle', true, 1);
+                    // Call function when final destination is reached
+                    if (this.atFinalDestination) {
+                        this.atFinalDestination(this._destination.data);
+                    }
                 }
                 else {
                     this._moveToNextDestination();

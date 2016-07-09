@@ -37,7 +37,7 @@ class Timer {
     public autodestroy : boolean;
 
 
-    constructor(time: number, scene:BABYLON.Scene, options:any) {
+    constructor(time: number, scene:BABYLON.Scene, options:{repeat?:number, autostart?:boolean, autodestroy?:boolean, immediate?:boolean}) {
 
         this.scene = scene;
 

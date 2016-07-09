@@ -22,6 +22,9 @@ class MinionController {
 
     // Function called at each destination if defined
     public atEachDestination : (data:any) => void;
+    
+    // Function called (if defined) when the final destination is reached
+    public atFinalDestination : (data:any) => void;
 
     // The character speed
     public speed : number = 1;
@@ -119,12 +122,23 @@ class MinionController {
             this._moveToNextDestination();
         }
     }
+    
+
+    /**
+     * Removes all destination of the minion
+     */
+    public stop() {
+        this.destinations = [];
+        this.pause();
+    }
 
     /**
      * Pause the character movement
      */
     public pause() {
         this.isMoving = false;
+        // Animate the character in idle animation
+        this.playAnimation('idle', true, 1);
     }
 
     /**
@@ -132,6 +146,8 @@ class MinionController {
      */
     public resume() {
         this.isMoving = true;
+        // Animate the character
+        this.playAnimation('walk', true, 1);
     }
 
     /**
@@ -159,6 +175,10 @@ class MinionController {
                 if (this.destinations.length == 0) {
                     // Animate the character in idle animation
                     this.playAnimation('idle', true, 1);
+                    // Call function when final destination is reached
+                    if (this.atFinalDestination) {
+                        this.atFinalDestination(this._destination.data);
+                    }
                 } else {
                     this._moveToNextDestination();
                 }

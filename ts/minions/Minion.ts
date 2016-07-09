@@ -16,6 +16,15 @@ class Minion extends BABYLON.Mesh {
 
     // The player base graph where the minion can walk on.
     public base : Base;
+    
+    // Will manage the 'strategy clock'. At each callback, the minion will apply its strategy.
+    private _strategyTimer : Timer;
+    
+    // The strategy is applied each 150ms
+    private static STRATEGY_CLOCK = 150;
+    
+    // The working schedule of this minion.
+    public strategy : WorkingStrategy;
 
     constructor(name:string, base:Base, scene:BABYLON.Scene) {
         super(name, scene);
@@ -44,7 +53,23 @@ class Minion extends BABYLON.Mesh {
         // At each destination, the current hexagon where the minion lives is updated.
         this._controller.atEachDestination = (hx:Hexagon) => {
             this.currentHexagon = hx;
-        };
+        };        
+        
+        // Notify the strategy when the final destination has been reached
+        this._controller.atFinalDestination = (data :Hexagon) => {
+            if (this.strategy) {
+                console.log(data);
+                this.strategy.finishedWalkingOn(data);
+            }
+        }
+        
+        this._strategyTimer = new Timer(Minion.STRATEGY_CLOCK, this.getScene(), {repeat:-1, autostart:true});
+        this._strategyTimer.callback = () => {
+            // If a strategy is available, apply it
+            if (this.strategy) {
+                this.strategy.applyStrategy();
+            }
+        }
 
     }
 
@@ -55,7 +80,12 @@ class Minion extends BABYLON.Mesh {
      * - make it moooove \o/
      */
     public moveTo(hex:Hexagon) : void {
+        
         let path = this.base.getPathFromTo(this.currentHexagon, hex);
+        if (path.length != 0) {
+            // If a path is found, reset destinations
+            this._controller.stop();
+        }
         for (let hex of path) {
             let tmp = hex.getWorldCenter();
             tmp.y = 0.75;
@@ -65,18 +95,18 @@ class Minion extends BABYLON.Mesh {
     }
 
     /** 
-     * Order given to the minion to gather wood.
-     * The minion will : 
-     * - find the nearest slot of wood present in the map, 
-     * - walk with it and start to generate resources
+     * Returns the nearest heaxgon containing the given resource.
      */
-    public gatherWood() {
-        let nearestWoodHexagon = this.base.getNearestWoodHexagon(this.currentHexagon);
-        if (nearestWoodHexagon) {
-            this.moveTo(nearestWoodHexagon);
-        } else {
-            console.warn('no wood found in base');
+    public getNearestResource(res : Resources) {
+        return this.base.getNearestResource(this.currentHexagon, res);
+    }
+    
+    public setStrategy(strat:WorkingStrategy) {
+        // If the minion already had a strategy, delete it
+        if (this.strategy) {
+            this.strategy.dispose();
         }
+        this.strategy = strat;
     }
 
 }

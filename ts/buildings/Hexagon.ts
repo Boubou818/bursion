@@ -66,7 +66,6 @@ class Hexagon {
      * Returns true if the two given hexagons are neighbors
      */
     static areNeighbors(hex1: Hexagon, hex2:Hexagon) {
-        console.log('distance neighbours ?',BABYLON.Vector3.Distance(hex1.getWorldCenter(), hex2.getWorldCenter())  );
         return BABYLON.Vector3.Distance(hex1.getWorldCenter(), hex2.getWorldCenter()) < Hexagon.DISTANCE_BETWEEN_TWO_NEIGHBORS; 
     }
 

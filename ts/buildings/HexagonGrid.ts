@@ -20,13 +20,13 @@ class HexagonGrid {
             let randomProba = Math.random();
             switch (randomInt) {
                 case 0:
-                    if (randomProba < Resource.WOOD_PROBABILITY) {
-                        hex.resourceSlot.resource = new Wood();
+                    if (randomProba < Resources.getProbability(Resources.Wood)) {
+                        hex.resourceSlot.resource = Resources.Wood;
                     } //else it's empty by default
                     break;
                 case 1 : 
-                    if (randomProba < Resource.ROCK_PROBABILITY) {
-                        hex.resourceSlot.resource = new Rock();
+                    if (randomProba < Resources.getProbability(Resources.Rock)) {
+                        hex.resourceSlot.resource =Resources.Rock;
                     } //else it's empty by default
             
                 default:
@@ -85,7 +85,7 @@ class HexagonGrid {
         woodRef.material = woodMaterial;
 
         // Rock
-        let rockRef = BABYLON.Mesh.CreateBox('_rock_', 0.4, scene);
+        let rockRef = BABYLON.Mesh.CreateCylinder('_rock_', 2, 0.3, 0.3, 6, 1, scene);
         rockRef.isVisible = false;
         let rockMaterial = new BABYLON.StandardMaterial('', scene);
         rockMaterial.diffuseColor = BABYLON.Color3.FromInts(170,170,170);
@@ -98,12 +98,12 @@ class HexagonGrid {
             hex.position.copyFrom(h.getWorldCenter());     
 
             // Resource
-            if (h.resourceSlot.resource instanceof Wood) {
+            if (h.resourceSlot.resource === Resources.Wood) {
                 let wood = woodRef.createInstance('wood');
                 wood.isVisible = true;
                 wood.position.copyFrom(h.getWorldCenter());
             }
-            if (h.resourceSlot.resource instanceof Rock) {
+            if (h.resourceSlot.resource === Resources.Rock) {
                 let rock = rockRef.createInstance('rock');
                 rock.isVisible = true;
                 rock.position.copyFrom(h.getWorldCenter());

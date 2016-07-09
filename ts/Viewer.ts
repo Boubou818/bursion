@@ -8,6 +8,8 @@ class Viewer {
 
     private _currentShape : Building;
     private _hoard : Array<Minion> = [];
+    
+    private _gui : GUIManager;
 
     constructor(canvasId:string) {
         
@@ -34,6 +36,9 @@ class Viewer {
         camera.attachControl(this.engine.getRenderingCanvas()); 
         let light  = new BABYLON.HemisphericLight('', new BABYLON.Vector3(0,1,0), this.scene);
         light.intensity = 1;
+        
+        
+        this._gui = new GUIManager(this);
     }
 
     private run() {
@@ -48,43 +53,35 @@ class Viewer {
         // Load first level
         this._initGame();
 
-        this._initGui();
+        this._gui.initHUD();
 
         this.scene.debugLayer.show(); 
     }
 
-    private _initGui() {
-        let gui = new BABYLON.ScreenSpaceCanvas2D(this.scene, {id: "ScreenCanvas"});
-        // Build button
-        let buttonBuild = new BABYLON.Rectangle2D(
-		{ 	parent: gui, id: "build", x: 60, y: 100, width: 100, height: 40, 
-			fill: "#40C040FF",
-			children: 
-			[
-				new BABYLON.Text2D("Build", { marginAlignment: "h: center, v: center" })
-			]
-		});
-        buttonBuild.pointerEventObservable.add(() => {
-            if (!this._currentShape){
-                this._currentShape = new Building(this.scene);
-            }
-        }, BABYLON.PrimitivePointerInfo.PointerUp); 
-
-        // Gather wood
-        let buttonWood = new BABYLON.Rectangle2D(
-		{ 	parent: gui, id: "gatherWood", x: 180, y: 100, width: 120, height: 40, 
-			fill: "#40C040FF",
-			children: 
-			[
-				new BABYLON.Text2D("Gather Wood", { marginAlignment: "h: center, v: center" })
-			]
-		});
-        buttonWood.pointerEventObservable.add(() => {
-            for (let m of this._hoard) {
-                m.gatherWood();
-            }
-        }, BABYLON.PrimitivePointerInfo.PointerUp); 
-
+    /**
+     * Build a new shape
+     */
+    public build() {
+        if (!this._currentShape){
+            this._currentShape = new Building(this.scene);
+        }
+    }
+    
+    /**
+     * Order to all minions to gather wood
+     */
+    public gatherWood() {
+        for (let m of this._hoard) {
+            m.setStrategy(new ResourceStrategy(m, Resources.Wood));
+        }
+    }
+    /**
+     * Order to all minions to gather wood
+     */
+    public gatherRock() {
+        for (let m of this._hoard) {
+            m.setStrategy(new ResourceStrategy(m, Resources.Rock));
+        }
     }
 
      private _initGame() {     
@@ -164,7 +161,8 @@ class Viewer {
         // END DEBUG
 
         let bobby = new Minion('bobby', base, this.scene);
+        let bobby2 = new Minion('bobby2', base, this.scene);
         this._hoard.push(bobby);
-
+        this._hoard.push(bobby2);        
     }
 }

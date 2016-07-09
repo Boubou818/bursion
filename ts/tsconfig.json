@@ -9,13 +9,15 @@
         "buildings/Hexagon.ts",
         "buildings/HexagonGrid.ts",
         "buildings/ResourceSlot.ts",
+        
+        "resources/Resource.ts",
 
         "minions/Minion.ts",
         "minions/MinionController.ts",
+        
+        "minions/strategies/WorkingStrategy.ts",
+        "minions/strategies/ResourceStrategy.ts",
 
-        "resources/Empty.ts",
-        "resources/Resource.ts",
-        "resources/Rock.ts",
-        "resources/Wood.ts"
+        "resources/Resource.ts"
     ]
 }

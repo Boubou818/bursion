@@ -19,6 +19,7 @@ var Viewer = (function () {
         camera.attachControl(this.engine.getRenderingCanvas());
         var light = new BABYLON.HemisphericLight('', new BABYLON.Vector3(0, 1, 0), this.scene);
         light.intensity = 1;
+        this._gui = new GUIManager(this);
     };
     Viewer.prototype.run = function () {
         var _this = this;
@@ -29,37 +30,34 @@ var Viewer = (function () {
         });
         // Load first level
         this._initGame();
-        this._initGui();
+        this._gui.initHUD();
         this.scene.debugLayer.show();
     };
-    Viewer.prototype._initGui = function () {
-        var _this = this;
-        var gui = new BABYLON.ScreenSpaceCanvas2D(this.scene, { id: "ScreenCanvas" });
-        // Build button
-        var buttonBuild = new BABYLON.Rectangle2D({ parent: gui, id: "build", x: 60, y: 100, width: 100, height: 40,
-            fill: "#40C040FF",
-            children: [
-                new BABYLON.Text2D("Build", { marginAlignment: "h: center, v: center" })
-            ]
-        });
-        buttonBuild.pointerEventObservable.add(function () {
-            if (!_this._currentShape) {
-                _this._currentShape = new Building(_this.scene);
-            }
-        }, BABYLON.PrimitivePointerInfo.PointerUp);
-        // Gather wood
-        var buttonWood = new BABYLON.Rectangle2D({ parent: gui, id: "gatherWood", x: 180, y: 100, width: 120, height: 40,
-            fill: "#40C040FF",
-            children: [
-                new BABYLON.Text2D("Gather Wood", { marginAlignment: "h: center, v: center" })
-            ]
-        });
-        buttonWood.pointerEventObservable.add(function () {
-            for (var _i = 0, _a = _this._hoard; _i < _a.length; _i++) {
-                var m = _a[_i];
-                m.gatherWood();
-            }
-        }, BABYLON.PrimitivePointerInfo.PointerUp);
+    /**
+     * Build a new shape
+     */
+    Viewer.prototype.build = function () {
+        if (!this._currentShape) {
+            this._currentShape = new Building(this.scene);
+        }
+    };
+    /**
+     * Order to all minions to gather wood
+     */
+    Viewer.prototype.gatherWood = function () {
+        for (var _i = 0, _a = this._hoard; _i < _a.length; _i++) {
+            var m = _a[_i];
+            m.setStrategy(new ResourceStrategy(m, Resources.Wood));
+        }
+    };
+    /**
+     * Order to all minions to gather wood
+     */
+    Viewer.prototype.gatherRock = function () {
+        for (var _i = 0, _a = this._hoard; _i < _a.length; _i++) {
+            var m = _a[_i];
+            m.setStrategy(new ResourceStrategy(m, Resources.Rock));
+        }
     };
     Viewer.prototype._initGame = function () {
         var _this = this;
@@ -130,7 +128,9 @@ var Viewer = (function () {
         });
         // END DEBUG
         var bobby = new Minion('bobby', base, this.scene);
+        var bobby2 = new Minion('bobby2', base, this.scene);
         this._hoard.push(bobby);
+        this._hoard.push(bobby2);
     };
     return Viewer;
 }());

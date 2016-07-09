@@ -6,17 +6,27 @@
  * - meat, coming from boars
  * Each onne of these resources will be subclasses of this one
  */
-var Resource = (function () {
-    function Resource() {
-        // The amount of material this resource will generate every 10 seconds
-        this.gain = 0;
-        // The number of material this resource can generate.
-        this.amount = 100;
+var Resources;
+(function (Resources) {
+    Resources[Resources["Empty"] = 0] = "Empty";
+    Resources[Resources["Wood"] = 1] = "Wood";
+    Resources[Resources["Rock"] = 2] = "Rock";
+    Resources[Resources["Meat"] = 3] = "Meat";
+})(Resources || (Resources = {}));
+var Resources;
+(function (Resources) {
+    /**
+     * Returns the probabilty of a resource to be in an hexagon
+     */
+    function getProbability(res) {
+        switch (res) {
+            case Resources.Wood:
+            case Resources.Rock:
+                return 0.15;
+            default:
+                return 0;
+        }
     }
-    // The probability a Wood resource has to appear in a hexagon
-    Resource.WOOD_PROBABILITY = 0.15;
-    // The probability a Rock resource has to appear in a hexagon
-    Resource.ROCK_PROBABILITY = 0.15;
-    return Resource;
-}());
+    Resources.getProbability = getProbability;
+})(Resources || (Resources = {}));
 //# sourceMappingURL=Resource.js.map

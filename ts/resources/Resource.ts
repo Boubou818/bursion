@@ -6,20 +6,25 @@
  * - meat, coming from boars
  * Each onne of these resources will be subclasses of this one 
  */
-abstract class Resource {
 
-    // The amount of material this resource will generate every 10 seconds
-    public gain : number = 0;   
+enum Resources {
+    Empty,
+    Wood, 
+    Rock,
+    Meat
+}
 
-    // The number of material this resource can generate.
-    public amount : number = 100;
-
-    // The probability a Wood resource has to appear in a hexagon
-    public static WOOD_PROBABILITY : number = 0.15;
-    
-    // The probability a Rock resource has to appear in a hexagon
-    public static ROCK_PROBABILITY : number = 0.15;
-
-    constructor() {
+namespace Resources {
+    /**
+     * Returns the probabilty of a resource to be in an hexagon
+     */
+    export function getProbability(res : Resources) {
+        switch (res) {
+            case Resources.Wood:
+            case Resources.Rock:
+                return 0.15;        
+            default:
+                return 0;
+        }
     }
 }

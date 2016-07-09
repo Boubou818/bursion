@@ -33,6 +33,20 @@ var Minion = (function (_super) {
         this._controller.atEachDestination = function (hx) {
             _this.currentHexagon = hx;
         };
+        // Notify the strategy when the final destination has been reached
+        this._controller.atFinalDestination = function (data) {
+            if (_this.strategy) {
+                console.log(data);
+                _this.strategy.finishedWalkingOn(data);
+            }
+        };
+        this._strategyTimer = new Timer(Minion.STRATEGY_CLOCK, this.getScene(), { repeat: -1, autostart: true });
+        this._strategyTimer.callback = function () {
+            // If a strategy is available, apply it
+            if (_this.strategy) {
+                _this.strategy.applyStrategy();
+            }
+        };
     }
     /**
      * Make the minion walk to the given hexagon:
@@ -42,6 +56,10 @@ var Minion = (function (_super) {
      */
     Minion.prototype.moveTo = function (hex) {
         var path = this.base.getPathFromTo(this.currentHexagon, hex);
+        if (path.length != 0) {
+            // If a path is found, reset destinations
+            this._controller.stop();
+        }
         for (var _i = 0, path_1 = path; _i < path_1.length; _i++) {
             var hex_1 = path_1[_i];
             var tmp = hex_1.getWorldCenter();
@@ -51,20 +69,20 @@ var Minion = (function (_super) {
         this._controller.start();
     };
     /**
-     * Order given to the minion to gather wood.
-     * The minion will :
-     * - find the nearest slot of wood present in the map,
-     * - walk with it and start to generate resources
+     * Returns the nearest heaxgon containing the given resource.
      */
-    Minion.prototype.gatherWood = function () {
-        var nearestWoodHexagon = this.base.getNearestWoodHexagon(this.currentHexagon);
-        if (nearestWoodHexagon) {
-            this.moveTo(nearestWoodHexagon);
-        }
-        else {
-            console.warn('no wood found in base');
-        }
+    Minion.prototype.getNearestResource = function (res) {
+        return this.base.getNearestResource(this.currentHexagon, res);
     };
+    Minion.prototype.setStrategy = function (strat) {
+        // If the minion already had a strategy, delete it
+        if (this.strategy) {
+            this.strategy.dispose();
+        }
+        this.strategy = strat;
+    };
+    // The strategy is applied each 150ms
+    Minion.STRATEGY_CLOCK = 150;
     return Minion;
 }(BABYLON.Mesh));
 //# sourceMappingURL=Minion.js.map

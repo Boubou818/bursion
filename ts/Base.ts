@@ -119,21 +119,20 @@ class Base {
     }
 
     /**
-     * Locate the nearest resource slot containing wood on the map.
-     * Returns the hexagon (containing a woodresource not empty) 
-     * which is the nearest of the given position. Returns null if no such hexagon is found.
+     * Locate the nearest resource slot containing the given resource on the map 
+     * (the resource is available) and return it. 
+     * Returns null if no such hexagon is found.
      */
-    public getNearestWoodHexagon(hexagon:Hexagon) : Hexagon {
+    public getNearestResource(hexagon:Hexagon, resource:Resources) : Hexagon {
         let nearest = null;
         let distance = Number.POSITIVE_INFINITY;
 
         for (let hex of this._hexUnfolded) {
-            if (hex.resourceSlot.resource instanceof Wood) {
+            if (hex.resourceSlot.resource === resource) {
                 // Check availability of the resource
                 if (hex.resourceSlot.isAvailable()) {
                     // Check distance
                     let currentDist = this.getPathFromTo(hexagon, hex).length;
-                    console.log(currentDist);
                     if (currentDist < distance) {
                         nearest = hex;
                         distance = currentDist;

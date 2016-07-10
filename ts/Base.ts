@@ -8,22 +8,40 @@ declare var Graph : any;
 class Base {
     
     // The list of buildings of the base. Minions can walk on each one of these buildings
-    private _buildings : Array<any> = [];
+    private _extensions : Array<BaseExtension> = [];
 
     // All resources hexagones unfolded in a single array. Updated each time a new building is built
     private _hexUnfolded : Array<Hexagon> = [];
     
     // The Djikstra graph
     public graph : any;
+    
+    // The game instance
+    private _game : Game;
 
     // The map where the player base will be built on
     private _map : HexagonGrid;
     
     // The base is always composed of a starting platform, composed of a set of 4*4 hex
-    constructor(scene:BABYLON.Scene, map : HexagonGrid) {
+    constructor(game:Game, map : HexagonGrid) {
         this._map = map;
-        let starter = new Building(scene, Building.STARTER_TEMPLATE);
-        this.addBuilding(starter);
+        this._game = game;
+        let starter = new BaseExtension(game.scene, BaseExtension.STARTER_TEMPLATE);
+        this.addExtension(starter);
+    }
+    
+    /**
+     * Returns the base material (earth texture)
+     */
+    public getBaseMaterial() : BABYLON.Material {
+        let mat : BABYLON.Material = this._game.scene.getMaterialByName('_baseMaterial_');
+        if (!mat) {
+            let mymat = new BABYLON.StandardMaterial('_baseMaterial_', this._game.scene);
+            mymat.diffuseTexture = new BABYLON.Texture('img/textures/earth.jpg', this._game.scene);
+            mymat.specularColor = BABYLON.Color3.Black();
+            mat = mymat;
+        }
+        return mat;
     }
 
     /**
@@ -36,23 +54,40 @@ class Base {
     /**
      * Add a building to the player base. The graph is updated.
      */
-    public addBuilding(building : Building) {
-        this._buildings.push(building);
+    public addExtension(building : BaseExtension) {  
+        building.material = this.getBaseMaterial();
+             
+        this._extensions.push(building);
         
         // Unfold all hexagons of the map
-        for (let hex of building.getResourcesOnMap(this._map)) {               
-            this._hexUnfolded.push(hex);           
+        let resourcesHex = this._getResourcesOnMap(building)
+        for (let hex of resourcesHex) {               
+            this._hexUnfolded.push(hex);  
+            this._map.removeMapHex(hex);         
         }
         
-        this._createMap();
+        // Update walking graph
+        this._createWalkingGraph();
+    }
+
+    /**
+     * Setup this building on the map, and retrieve the list of hexagon present on the map.
+     */
+    private _getResourcesOnMap(ext : BaseExtension) : Array<Hexagon> {
+        let resourcesHex = [];
+
+        // For each hexagon, get the corresponding resource 
+        for (let hex of ext.hexagons) {
+            resourcesHex.push(this._map.getResourceHex(hex));
+        }
+
+        return resourcesHex;
     }
     
     /**
-     * Create the base map : 
-     * - link between neighbors
-     * - Locate resources
+     * Create the base map by adding a link between all neighbors
      */
-    private _createMap() {
+    private _createWalkingGraph() {
         
         this.graph = new Graph();
 
@@ -89,8 +124,8 @@ class Base {
      * that means no overlap with another shape, and it must be 
      * connected with at least one shape.
      */
-    public canBuildHere (shape:Building) {
-        for (let s of this._buildings) {
+    public canBuildHere (shape:BaseExtension) {
+        for (let s of this._extensions) {
             if (shape.overlaps(s)) {
                 return false;
             } 

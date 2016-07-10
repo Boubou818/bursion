@@ -4,13 +4,16 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 /**
- * A shape is a set of 3/4/5 hexagons.
+ * A base extension is a set of 3/4/5 hexagons, used to expand the player base.
+ * Minion can only walk on base extension, and buildings can only be built on base extension.
+ * Resource can only be harvested on base extension.
+ * When a base extension is setup, all hexagon of the map below are disposed.
  * Hexagon coordinates are relative to the shape.
  * The center of the shape is the first hexagon at (0,0).
  */
-var Building = (function (_super) {
-    __extends(Building, _super);
-    function Building(scene, template) {
+var BaseExtension = (function (_super) {
+    __extends(BaseExtension, _super);
+    function BaseExtension(scene, template) {
         _super.call(this, '_shape_', scene);
         // The set of hexagons. These hexagons does not contains any resources
         this.hexagons = [];
@@ -19,7 +22,7 @@ var Building = (function (_super) {
     /**
      * Create the shape, which has a random size between 3 and 5 hexs.
      */
-    Building.prototype._initShape = function (template) {
+    BaseExtension.prototype._initShape = function (template) {
         var _this = this;
         var grid = Hexagon.getDefaultGrid();
         var coordinates = grid.hexagon(0, 0, 3, true);
@@ -73,13 +76,13 @@ var Building = (function (_super) {
     /**
      * Returns a 3D model corresponding to this shape
      */
-    Building.prototype._createModel = function () {
+    BaseExtension.prototype._createModel = function () {
         var _this = this;
         // Merge all cylinders
         var hexes = [];
         this.hexagons.forEach(function (hex) {
             var center = hex.getWorldCenter();
-            var myhex = BABYLON.Mesh.CreateCylinder('', 1, 2, 2, 6, 1, _this.getScene());
+            var myhex = BABYLON.Mesh.CreateCylinder('', 0.5, 2, 2, 6, 1, _this.getScene());
             myhex.rotation.y = Math.PI / 2;
             myhex.position.copyFrom(center);
             hexes.push(myhex);
@@ -89,7 +92,7 @@ var Building = (function (_super) {
     /**
      * Returns -1 if the given hex is not in the shape
      */
-    Building.prototype._isInShape = function (hex) {
+    BaseExtension.prototype._isInShape = function (hex) {
         for (var i = 0; i < this.hexagons.length; i++) {
             if (this.hexagons[i].equals(hex)) {
                 return true;
@@ -98,10 +101,10 @@ var Building = (function (_super) {
         return false;
     };
     /**
-     * Returns true if two buildings are overlapping.
+     * Returns true if two extensions are overlapping.
      * There is an overlap if at least one hexagon is overlapping wioth another one
      */
-    Building.prototype.overlaps = function (other) {
+    BaseExtension.prototype.overlaps = function (other) {
         for (var _i = 0, _a = this.hexagons; _i < _a.length; _i++) {
             var hex = _a[_i];
             for (var _b = 0, _c = other.hexagons; _b < _c.length; _b++) {
@@ -113,27 +116,15 @@ var Building = (function (_super) {
         }
         return false;
     };
-    Object.defineProperty(Building.prototype, "material", {
+    Object.defineProperty(BaseExtension.prototype, "material", {
         set: function (value) {
             this._child.material = value;
         },
         enumerable: true,
         configurable: true
     });
-    /**
-     * Setup this building on the map, and retrieve the list of hexagon present on the map.
-     */
-    Building.prototype.getResourcesOnMap = function (map) {
-        var resourcesHex = [];
-        // For each hexagon, get the corresponding resource 
-        for (var _i = 0, _a = this.hexagons; _i < _a.length; _i++) {
-            var hex = _a[_i];
-            resourcesHex.push(map.getResourceHex(hex));
-        }
-        return resourcesHex;
-    };
     // Q and R coordinates of a starter platform
-    Building.STARTER_TEMPLATE = [
+    BaseExtension.STARTER_TEMPLATE = [
         0, 0,
         1, 0,
         2, 0,
@@ -142,6 +133,6 @@ var Building = (function (_super) {
         1, 1,
         2, 1,
         3, 1];
-    return Building;
+    return BaseExtension;
 }(BABYLON.Mesh));
-//# sourceMappingURL=Building.js.map
+//# sourceMappingURL=BaseExtension.js.map

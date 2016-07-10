@@ -6993,6 +6993,46 @@ var BABYLON;
                 effect.onBind(effect);
             }
         };
+        Engine.prototype.setIntArray = function (uniform, array) {
+            if (!uniform)
+                return;
+            this._gl.uniform1iv(uniform, array);
+        };
+        Engine.prototype.setIntArray2 = function (uniform, array) {
+            if (!uniform || array.length % 2 !== 0)
+                return;
+            this._gl.uniform2iv(uniform, array);
+        };
+        Engine.prototype.setIntArray3 = function (uniform, array) {
+            if (!uniform || array.length % 3 !== 0)
+                return;
+            this._gl.uniform3iv(uniform, array);
+        };
+        Engine.prototype.setIntArray4 = function (uniform, array) {
+            if (!uniform || array.length % 4 !== 0)
+                return;
+            this._gl.uniform4iv(uniform, array);
+        };
+        Engine.prototype.setFloatArray = function (uniform, array) {
+            if (!uniform)
+                return;
+            this._gl.uniform1fv(uniform, array);
+        };
+        Engine.prototype.setFloatArray2 = function (uniform, array) {
+            if (!uniform || array.length % 2 !== 0)
+                return;
+            this._gl.uniform2fv(uniform, array);
+        };
+        Engine.prototype.setFloatArray3 = function (uniform, array) {
+            if (!uniform || array.length % 3 !== 0)
+                return;
+            this._gl.uniform3fv(uniform, array);
+        };
+        Engine.prototype.setFloatArray4 = function (uniform, array) {
+            if (!uniform || array.length % 4 !== 0)
+                return;
+            this._gl.uniform4fv(uniform, array);
+        };
         Engine.prototype.setArray = function (uniform, array) {
             if (!uniform)
                 return;
@@ -8034,6 +8074,12 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Engine.prototype.attachContextLostEvent = function (callback) {
+            this._renderingCanvas.addEventListener("webglcontextlost", callback, false);
+        };
+        Engine.prototype.attachContextRestoredEvent = function (callback) {
+            this._renderingCanvas.addEventListener("webglcontextrestored", callback, false);
+        };
         // FPS
         Engine.prototype.getFps = function () {
             return this.fps;
@@ -21992,7 +22038,11 @@ var BABYLON;
                 return null;
             }
             var texture = BABYLON.SerializationHelper.Parse(function () {
-                if (parsedTexture.mirrorPlane) {
+                if (parsedTexture.customType) {
+                    var customTexture = BABYLON.Tools.Instantiate(parsedTexture.customType);
+                    return customTexture.Parse(parsedTexture, scene, rootUrl);
+                }
+                else if (parsedTexture.mirrorPlane) {
                     var mirrorTexture = new BABYLON.MirrorTexture(parsedTexture.name, parsedTexture.renderTargetSize, scene);
                     mirrorTexture._waitingRenderList = parsedTexture.renderList;
                     mirrorTexture.mirrorPlane = BABYLON.Plane.FromArray(parsedTexture.mirrorPlane);
@@ -23600,6 +23650,46 @@ var BABYLON;
                 changed = true;
             }
             return changed;
+        };
+        Effect.prototype.setIntArray = function (uniformName, array) {
+            this._valueCache[uniformName] = null;
+            this._engine.setIntArray(this.getUniform(uniformName), array);
+            return this;
+        };
+        Effect.prototype.setIntArray2 = function (uniformName, array) {
+            this._valueCache[uniformName] = null;
+            this._engine.setIntArray2(this.getUniform(uniformName), array);
+            return this;
+        };
+        Effect.prototype.setIntArray3 = function (uniformName, array) {
+            this._valueCache[uniformName] = null;
+            this._engine.setIntArray3(this.getUniform(uniformName), array);
+            return this;
+        };
+        Effect.prototype.setIntArray4 = function (uniformName, array) {
+            this._valueCache[uniformName] = null;
+            this._engine.setIntArray4(this.getUniform(uniformName), array);
+            return this;
+        };
+        Effect.prototype.setFloatArray = function (uniformName, array) {
+            this._valueCache[uniformName] = null;
+            this._engine.setFloatArray(this.getUniform(uniformName), array);
+            return this;
+        };
+        Effect.prototype.setFloatArray2 = function (uniformName, array) {
+            this._valueCache[uniformName] = null;
+            this._engine.setFloatArray2(this.getUniform(uniformName), array);
+            return this;
+        };
+        Effect.prototype.setFloatArray3 = function (uniformName, array) {
+            this._valueCache[uniformName] = null;
+            this._engine.setFloatArray3(this.getUniform(uniformName), array);
+            return this;
+        };
+        Effect.prototype.setFloatArray4 = function (uniformName, array) {
+            this._valueCache[uniformName] = null;
+            this._engine.setFloatArray4(this.getUniform(uniformName), array);
+            return this;
         };
         Effect.prototype.setArray = function (uniformName, array) {
             this._valueCache[uniformName] = null;
@@ -41445,7 +41535,7 @@ var BABYLON;
             return this.typeInfo;
         };
         InstanceDataBase.prototype.allocElements = function () {
-            if (!this.dataBuffer) {
+            if (!this.dataBuffer || this.dataElements) {
                 return;
             }
             var res = new Array(this.dataElementCount);
@@ -44169,6 +44259,7 @@ var BABYLON;
                 else {
                     texture.onLoadObservable.add(function () {
                         _this.size = texture.getSize();
+                        _this._positioningDirty();
                     });
                 }
             }
@@ -49731,8 +49822,10 @@ var BABYLON;
             serializationObject.shadowGenerators = [];
             for (index = 0; index < scene.lights.length; index++) {
                 light = scene.lights[index];
-                if (light.getShadowGenerator()) {
-                    serializationObject.shadowGenerators.push(light.getShadowGenerator().serialize());
+                var shadowGenerator = light.getShadowGenerator();
+                // Only support serialization for official generator so far.
+                if (shadowGenerator && shadowGenerator instanceof BABYLON.ShadowGenerator) {
+                    serializationObject.shadowGenerators.push(shadowGenerator.serialize());
                 }
             }
             // Action Manager
@@ -58527,6 +58620,7 @@ var BABYLON;
             serializationObject.generateHarmonics = this._generateHarmonics;
             serializationObject.usePMREMGenerator = this._usePMREMGenerator;
             serializationObject.isBABYLONPreprocessed = this._isBABYLONPreprocessed;
+            serializationObject.customType = "BABYLON.HDRCubeTexture";
             return serializationObject;
         };
         /**
@@ -58990,6 +59084,7 @@ var BABYLON;
             var serializationObject = {};
             serializationObject.name = this.name;
             serializationObject.level = this.level;
+            serializationObject.customType = "BABYLON.ColorGradingTexture";
             return serializationObject;
         };
         /**

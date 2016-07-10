@@ -9,6 +9,9 @@ class HexagonGrid {
     // The Hexagon grid
     private  _grid : Array<Hexagon> = [];   
     
+    // The list of all hexagons meshes on the map, indexed by hexagon name
+    private _meshes : {[hexName:string] : BABYLON.AbstractMesh} = {};
+    
     constructor(size:number) {
         let grid         = Hexagon.getDefaultGrid();
         
@@ -69,13 +72,29 @@ class HexagonGrid {
     }
     
     /**
-     * Draw the hexagon grid in the given scene
+     * Remove the given hex from the map
+     */
+    public removeMapHex(hexagon:Hexagon) {
+        let mapHex = this._meshes[hexagon.name];
+        if (mapHex) {
+            mapHex.dispose();
+            this._meshes[hexagon.name] = null;
+        }
+    }
+    
+    /**
+     * Draw the hexagon grid in the given scene.
+     * Hexagons and resources are two different models.
      */
     public draw(scene) {
         
         let ref = BABYLON.Mesh.CreateCylinder('', 0.1, 1.9, 1.9, 6, 1, scene);
         ref.rotation.y = Math.PI/2;
         ref.isVisible = false;
+        let grassMaterial = new BABYLON.StandardMaterial('grass', scene);
+        grassMaterial.diffuseTexture = new BABYLON.Texture('img/textures/grass.jpg', scene);
+        grassMaterial.specularColor = BABYLON.Color3.Black();
+        ref.material = grassMaterial;
 
         // Wood
         let woodRef = BABYLON.Mesh.CreateCylinder('_wood_', 2, 0.3, 0.3, 6, 1, scene);
@@ -96,7 +115,10 @@ class HexagonGrid {
             let hex = ref.createInstance(''+h.q+' '+h.r);
             hex.isVisible = true;
             hex.position.copyFrom(h.getWorldCenter());     
-
+            
+            // Add the mesh instance to the meshes list
+            this._meshes[h.name] = hex;
+            
             // Resource
             if (h.resourceSlot.resource === Resources.Wood) {
                 let wood = woodRef.createInstance('wood');

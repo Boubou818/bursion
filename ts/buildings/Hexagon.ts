@@ -11,7 +11,7 @@ class Hexagon {
     public name : string;
     
     // The shape this hex belongs to
-    private _shape : Building;
+    private _shape : BaseExtension;
     
     // The resource slot this hexagon contains
     public resourceSlot : ResourceSlot = new ResourceSlot();
@@ -19,7 +19,7 @@ class Hexagon {
     // The distance between two neighbors
     private static DISTANCE_BETWEEN_TWO_NEIGHBORS = 1.75;
     
-    constructor(q, r, grid, shape?: Building) {
+    constructor(q, r, grid, shape?: BaseExtension) {
         this.q = q;
         this.r = r;
         let center = grid.getCenterXY(q, r);

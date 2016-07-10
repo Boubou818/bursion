@@ -1,16 +1,19 @@
 /**
- * A shape is a set of 3/4/5 hexagons.
+ * A base extension is a set of 3/4/5 hexagons, used to expand the player base.
+ * Minion can only walk on base extension, and buildings can only be built on base extension.
+ * Resource can only be harvested on base extension.
+ * When a base extension is setup, all hexagon of the map below are disposed.
  * Hexagon coordinates are relative to the shape.
  * The center of the shape is the first hexagon at (0,0).
  */
-class Building extends BABYLON.Mesh {
+class BaseExtension extends BABYLON.Mesh {
     
     // The set of hexagons. These hexagons does not contains any resources
     public hexagons : Array<Hexagon> = []; 
     
     // The shape mesh    
     protected _child : BABYLON.AbstractMesh;
-
+    
     // Q and R coordinates of a starter platform
     public static STARTER_TEMPLATE : Array<number> = [
         0, 0,
@@ -24,6 +27,7 @@ class Building extends BABYLON.Mesh {
         
     constructor(scene: BABYLON.Scene, template?:Array<number>) {
         super('_shape_', scene);
+        
         this._initShape(template);
     }
 
@@ -41,7 +45,7 @@ class Building extends BABYLON.Mesh {
         let shuffle = (a) => {
             let j, x, i;
             for (i = a.length; i; i -= 1) {
-                j = Math.floor(Math.random() * i);
+                j = Math.floor(Math.random() * i); 
                 x = a[i - 1];
                 a[i - 1] = a[j];
                 a[j] = x;
@@ -95,7 +99,7 @@ class Building extends BABYLON.Mesh {
         let hexes = [];        
         this.hexagons.forEach((hex) => {
             let center = hex.getWorldCenter();
-            let myhex = BABYLON.Mesh.CreateCylinder('', 1, 2, 2, 6, 1, this.getScene());
+            let myhex = BABYLON.Mesh.CreateCylinder('', 0.5, 2, 2, 6, 1, this.getScene());
             myhex.rotation.y = Math.PI/2;
             myhex.position.copyFrom(center);
             hexes.push(myhex);
@@ -116,10 +120,10 @@ class Building extends BABYLON.Mesh {
     }
     
     /**
-     * Returns true if two buildings are overlapping. 
+     * Returns true if two extensions are overlapping. 
      * There is an overlap if at least one hexagon is overlapping wioth another one
      */
-    public overlaps (other:Building) : boolean {
+    public overlaps (other:BaseExtension) : boolean {
         for (let hex of this.hexagons) {
             for (let otherHex of other.hexagons) { 
                 if (hex.overlaps(otherHex)) {
@@ -133,18 +137,5 @@ class Building extends BABYLON.Mesh {
     set material(value:BABYLON.Material) {
         this._child.material = value;
     }
-
-    /**
-     * Setup this building on the map, and retrieve the list of hexagon present on the map.
-     */
-    public getResourcesOnMap(map:HexagonGrid) : Array<Hexagon> {
-        let resourcesHex = [];
-
-        // For each hexagon, get the corresponding resource 
-        for (let hex of this.hexagons) {
-            resourcesHex.push(map.getResourceHex(hex));
-        }
-
-        return resourcesHex;
-    }
+   
 }

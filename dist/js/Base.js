@@ -6,15 +6,29 @@
  */
 var Base = (function () {
     // The base is always composed of a starting platform, composed of a set of 4*4 hex
-    function Base(scene, map) {
+    function Base(game, map) {
         // The list of buildings of the base. Minions can walk on each one of these buildings
-        this._buildings = [];
+        this._extensions = [];
         // All resources hexagones unfolded in a single array. Updated each time a new building is built
         this._hexUnfolded = [];
         this._map = map;
-        var starter = new Building(scene, Building.STARTER_TEMPLATE);
-        this.addBuilding(starter);
+        this._game = game;
+        var starter = new BaseExtension(game.scene, BaseExtension.STARTER_TEMPLATE);
+        this.addExtension(starter);
     }
+    /**
+     * Returns the base material (earth texture)
+     */
+    Base.prototype.getBaseMaterial = function () {
+        var mat = this._game.scene.getMaterialByName('_baseMaterial_');
+        if (!mat) {
+            var mymat = new BABYLON.StandardMaterial('_baseMaterial_', this._game.scene);
+            mymat.diffuseTexture = new BABYLON.Texture('img/textures/earth.jpg', this._game.scene);
+            mymat.specularColor = BABYLON.Color3.Black();
+            mat = mymat;
+        }
+        return mat;
+    };
     /**
      * Returns the first hexagon of the base
      */
@@ -24,21 +38,35 @@ var Base = (function () {
     /**
      * Add a building to the player base. The graph is updated.
      */
-    Base.prototype.addBuilding = function (building) {
-        this._buildings.push(building);
+    Base.prototype.addExtension = function (building) {
+        building.material = this.getBaseMaterial();
+        this._extensions.push(building);
         // Unfold all hexagons of the map
-        for (var _i = 0, _a = building.getResourcesOnMap(this._map); _i < _a.length; _i++) {
-            var hex = _a[_i];
+        var resourcesHex = this._getResourcesOnMap(building);
+        for (var _i = 0, resourcesHex_1 = resourcesHex; _i < resourcesHex_1.length; _i++) {
+            var hex = resourcesHex_1[_i];
             this._hexUnfolded.push(hex);
+            this._map.removeMapHex(hex);
         }
-        this._createMap();
+        // Update walking graph
+        this._createWalkingGraph();
     };
     /**
-     * Create the base map :
-     * - link between neighbors
-     * - Locate resources
+     * Setup this building on the map, and retrieve the list of hexagon present on the map.
      */
-    Base.prototype._createMap = function () {
+    Base.prototype._getResourcesOnMap = function (ext) {
+        var resourcesHex = [];
+        // For each hexagon, get the corresponding resource 
+        for (var _i = 0, _a = ext.hexagons; _i < _a.length; _i++) {
+            var hex = _a[_i];
+            resourcesHex.push(this._map.getResourceHex(hex));
+        }
+        return resourcesHex;
+    };
+    /**
+     * Create the base map by adding a link between all neighbors
+     */
+    Base.prototype._createWalkingGraph = function () {
         this.graph = new Graph();
         for (var _i = 0, _a = this._hexUnfolded; _i < _a.length; _i++) {
             var hex1 = _a[_i];
@@ -74,7 +102,7 @@ var Base = (function () {
      * connected with at least one shape.
      */
     Base.prototype.canBuildHere = function (shape) {
-        for (var _i = 0, _a = this._buildings; _i < _a.length; _i++) {
+        for (var _i = 0, _a = this._extensions; _i < _a.length; _i++) {
             var s = _a[_i];
             if (shape.overlaps(s)) {
                 return false;

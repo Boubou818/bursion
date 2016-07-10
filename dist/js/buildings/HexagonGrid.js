@@ -6,6 +6,8 @@ var HexagonGrid = (function () {
     function HexagonGrid(size) {
         // The Hexagon grid
         this._grid = [];
+        // The list of all hexagons meshes on the map, indexed by hexagon name
+        this._meshes = {};
         var grid = Hexagon.getDefaultGrid();
         var coordinates = grid.hexagon(0, 0, size, true);
         for (var _i = 0, coordinates_1 = coordinates; _i < coordinates_1.length; _i++) {
@@ -57,12 +59,27 @@ var HexagonGrid = (function () {
         return null;
     };
     /**
-     * Draw the hexagon grid in the given scene
+     * Remove the given hex from the map
+     */
+    HexagonGrid.prototype.removeMapHex = function (hexagon) {
+        var mapHex = this._meshes[hexagon.name];
+        if (mapHex) {
+            mapHex.dispose();
+            this._meshes[hexagon.name] = null;
+        }
+    };
+    /**
+     * Draw the hexagon grid in the given scene.
+     * Hexagons and resources are two different models.
      */
     HexagonGrid.prototype.draw = function (scene) {
         var ref = BABYLON.Mesh.CreateCylinder('', 0.1, 1.9, 1.9, 6, 1, scene);
         ref.rotation.y = Math.PI / 2;
         ref.isVisible = false;
+        var grassMaterial = new BABYLON.StandardMaterial('grass', scene);
+        grassMaterial.diffuseTexture = new BABYLON.Texture('img/textures/grass.jpg', scene);
+        grassMaterial.specularColor = BABYLON.Color3.Black();
+        ref.material = grassMaterial;
         // Wood
         var woodRef = BABYLON.Mesh.CreateCylinder('_wood_', 2, 0.3, 0.3, 6, 1, scene);
         woodRef.isVisible = false;
@@ -80,6 +97,8 @@ var HexagonGrid = (function () {
             var hex = ref.createInstance('' + h.q + ' ' + h.r);
             hex.isVisible = true;
             hex.position.copyFrom(h.getWorldCenter());
+            // Add the mesh instance to the meshes list
+            this._meshes[h.name] = hex;
             // Resource
             if (h.resourceSlot.resource === Resources.Wood) {
                 var wood = woodRef.createInstance('wood');

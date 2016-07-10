@@ -1,4 +1,7 @@
 {
+    "compilerOptions": {
+        "target": "es5"
+    },
     "files": [
         "babylon.d.ts",
         "Base.ts", 
@@ -6,12 +9,12 @@
         "Game.ts",
         "GUIManager.ts",
 
-        "buildings/Building.ts",
+        "buildings/BaseExtension.ts",
         "buildings/Hexagon.ts",
         "buildings/HexagonGrid.ts",
-        "buildings/ResourceSlot.ts",
         
         "resources/Resource.ts",
+        "resources/ResourceSlot.ts",
 
         "minions/Minion.ts",
         "minions/MinionController.ts",

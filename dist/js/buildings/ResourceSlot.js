@@ -5,7 +5,7 @@ var ResourceSlot = (function () {
         // True if a minion is being generating resources.
         this.isOccupied = false;
         // The number of material this resource can generate.
-        this.amount = 100;
+        this.amount = 50;
         // The amount of material this resource will generate every 10 seconds
         this.gain = 0;
     }
@@ -15,6 +15,12 @@ var ResourceSlot = (function () {
      */
     ResourceSlot.prototype.isAvailable = function () {
         return !this.isOccupied && this.amount > 0;
+    };
+    /**
+     * Extract the given amount of material of this resource
+     */
+    ResourceSlot.prototype.extract = function (value) {
+        this.amount -= value;
     };
     return ResourceSlot;
 }());

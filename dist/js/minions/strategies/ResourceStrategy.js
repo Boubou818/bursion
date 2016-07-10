@@ -21,6 +21,10 @@ var ResourceStrategy = (function (_super) {
         // The resource slot this minion is working on
         this._slot = null;
         this._resource = res;
+        // The generating timer is an infinite loop
+        this._generatingTimer = new Timer(ResourceStrategy.TIME_TO_GENERATE, minion.getScene(), { repeat: -1 });
+        // At each tick, add resource
+        this._generatingTimer.callback = this._generate.bind(this);
     }
     /**
      * A resource strategy is composed of 3 states :
@@ -52,8 +56,12 @@ var ResourceStrategy = (function (_super) {
                 break;
             case this._states.GENERATING:
                 // Update the generating timer
-                this._slot.amount = 0; // TODO delete this debug
+                if (!this._generatingTimer.started) {
+                    this._generatingTimer.start();
+                }
                 if (this._slot.amount == 0) {
+                    // reset timer                  
+                    this._generatingTimer.reset();
                     // find another resource
                     this._currentState = this._states.IDLE;
                 }
@@ -90,9 +98,12 @@ var ResourceStrategy = (function (_super) {
         }
     };
     /**
-     * Generate resource each XX ms using the generatingtimer
+     * Generate resource at each tick using the generatingtimer
      */
     ResourceStrategy.prototype._generate = function () {
+        var amount = 10; // TODO replace with minion.strength
+        this._slot.extract(amount);
+        this._minion.addResourceToGame(amount, this._resource);
     };
     /**
      * Reset the occupied slot
@@ -102,8 +113,11 @@ var ResourceStrategy = (function (_super) {
         if (this._slot) {
             this._slot.isOccupied = false;
         }
-        // TODO delete timer
+        // Delete timer
+        this._generatingTimer.stop(true);
     };
+    // The time to generate a resource
+    ResourceStrategy.TIME_TO_GENERATE = 2000;
     return ResourceStrategy;
 }(WorkingStrategy));
 //# sourceMappingURL=ResourceStrategy.js.map

@@ -17,6 +17,9 @@ class ResourceStrategy extends WorkingStrategy {
     // The timer used to generate resource each
     private _generatingTimer : Timer;
     
+    // The time to generate a resource
+    private static TIME_TO_GENERATE : number = 2000;
+    
     /**
      * Give me the resource to gather
      */
@@ -24,6 +27,11 @@ class ResourceStrategy extends WorkingStrategy {
         super(minion);
         
         this._resource = res;
+        
+        // The generating timer is an infinite loop
+        this._generatingTimer = new Timer(ResourceStrategy.TIME_TO_GENERATE, minion.getScene(), {repeat:-1});
+        // At each tick, add resource
+        this._generatingTimer.callback = this._generate.bind(this);
     }
     
     /**
@@ -60,9 +68,13 @@ class ResourceStrategy extends WorkingStrategy {
                 
             case this._states.GENERATING:
                 // Update the generating timer
-                this._slot.amount  = 0; // TODO delete this debug
+                if (!this._generatingTimer.started){
+                    this._generatingTimer.start();
+                } 
                 
-                if (this._slot.amount == 0) {
+                if (this._slot.amount == 0) {  
+                    // reset timer                  
+                    this._generatingTimer.reset();
                     // find another resource
                     this._currentState = this._states.IDLE;                    
                 }
@@ -102,10 +114,12 @@ class ResourceStrategy extends WorkingStrategy {
     }
     
     /**
-     * Generate resource each XX ms using the generatingtimer
+     * Generate resource at each tick using the generatingtimer
      */
     private _generate() {
-        
+        let amount = 10; // TODO replace with minion.strength
+        this._slot.extract(amount);
+        this._minion.addResourceToGame(amount, this._resource);
     }
     
     /**
@@ -116,6 +130,7 @@ class ResourceStrategy extends WorkingStrategy {
         if (this._slot) {
             this._slot.isOccupied = false;
         }
-        // TODO delete timer
+        // Delete timer
+        this._generatingTimer.stop(true);
     }
 }

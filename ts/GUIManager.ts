@@ -5,18 +5,55 @@ class GUIManager {
     
     private _scene : BABYLON.Scene;
     
-    private _game : Viewer;
+    private _game : Game;
     
     // The gui canvas where all data will be displayed
     private _canvas2D : BABYLON.ScreenSpaceCanvas2D;
     
+    // All text displaying resources
+    private _resourcesText : ResourceMap<BABYLON.Text2D> = [];
     
-    constructor(game:Viewer){
+    
+    constructor(game:Game){
         
         this._game = game;
         this._scene = game.scene;
         
         this._canvas2D = new BABYLON.ScreenSpaceCanvas2D(this._scene, {id: "game_screencanvas"});
+    }
+    
+    /**
+     * Create a group2D for each resources. Each group is composed of a sprite and a text2D
+     */
+    private _initResourcesTexts() {
+        // Wood
+        let textureWood = new BABYLON.Texture("img/gui/resource.png", this._scene, true, true);
+        let spriteWood = new BABYLON.Sprite2D(textureWood,{x:0, y:0, spriteSize: new BABYLON.Size(80,80)}); 
+        let text2DWood = new BABYLON.Text2D(this._game.resources[Resources.Wood].toString(), { x:50, marginAlignment: "h: center, v: center" });        
+        let groupWood = new BABYLON.Group2D({x:60, y:800, parent: this._canvas2D, children: [spriteWood, text2DWood]});
+        
+        // Rock
+        let textureRock = new BABYLON.Texture("img/gui/resource.png", this._scene, true, true);
+        let spriteRock = new BABYLON.Sprite2D(textureRock,{x:0, y:0, spriteSize: new BABYLON.Size(80,80)}); 
+        let text2DRock = new BABYLON.Text2D(this._game.resources[Resources.Rock].toString(), { x:50, marginAlignment: "h: center, v: center" });        
+        let groupRock = new BABYLON.Group2D({x:200, y:800, parent: this._canvas2D, children: [spriteRock, text2DRock]});
+        
+        // Meat
+        let textureMeat = new BABYLON.Texture("img/gui/resource.png", this._scene, true, true);
+        let spriteMeat = new BABYLON.Sprite2D(textureMeat,{x:0, y:0, spriteSize: new BABYLON.Size(80,80)}); 
+        let text2DMeat = new BABYLON.Text2D(this._game.resources[Resources.Meat].toString(), { x:50, marginAlignment: "h: center, v: center" });        
+        let groupMeat = new BABYLON.Group2D({x:340, y:800, parent: this._canvas2D, children: [spriteMeat, text2DMeat]});
+        
+        this._resourcesText[Resources.Wood] = text2DWood;
+        this._resourcesText[Resources.Rock] = text2DRock;
+        this._resourcesText[Resources.Meat] = text2DMeat; 
+    } 
+    
+    /**
+     * Update the resource value displayed in the GUI
+     */
+    public updateResourceText(value:number, res:Resources) {
+        this._resourcesText[res].text = value.toString();
     }
     
     /**
@@ -26,6 +63,9 @@ class GUIManager {
      * ...
      */
     public initHUD() {
+        
+        this._initResourcesTexts();
+        
         let buttonBuild = new BABYLON.Rectangle2D(
 		{ 	parent: this._canvas2D, id: "build", x: 60, y: 100, width: 100, height: 40, 
 			fill: "#40C040FF",
@@ -76,6 +116,7 @@ class GUIManager {
         let groupNode = new BABYLON.Group2D({parent: this._canvas2D, width:1 /* BUG IN CANVAS2D */, trackNode: node,children: [sprite]});
                 
         this._createAndStartCounterAnimation(sprite, 1500, () => {
+            sprite.dispose();
             groupNode.dispose();
         });
     }

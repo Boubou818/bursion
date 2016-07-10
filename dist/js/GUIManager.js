@@ -3,6 +3,8 @@
  */
 var GUIManager = (function () {
     function GUIManager(game) {
+        // All text displaying resources
+        this._resourcesText = [];
         /**
          * Create a simple animation
          * @param p The sprite position in pixels
@@ -45,12 +47,42 @@ var GUIManager = (function () {
         this._canvas2D = new BABYLON.ScreenSpaceCanvas2D(this._scene, { id: "game_screencanvas" });
     }
     /**
+     * Create a group2D for each resources. Each group is composed of a sprite and a text2D
+     */
+    GUIManager.prototype._initResourcesTexts = function () {
+        // Wood
+        var textureWood = new BABYLON.Texture("img/gui/resource.png", this._scene, true, true);
+        var spriteWood = new BABYLON.Sprite2D(textureWood, { x: 0, y: 0, spriteSize: new BABYLON.Size(80, 80) });
+        var text2DWood = new BABYLON.Text2D(this._game.resources[Resources.Wood].toString(), { x: 50, marginAlignment: "h: center, v: center" });
+        var groupWood = new BABYLON.Group2D({ x: 60, y: 800, parent: this._canvas2D, children: [spriteWood, text2DWood] });
+        // Rock
+        var textureRock = new BABYLON.Texture("img/gui/resource.png", this._scene, true, true);
+        var spriteRock = new BABYLON.Sprite2D(textureRock, { x: 0, y: 0, spriteSize: new BABYLON.Size(80, 80) });
+        var text2DRock = new BABYLON.Text2D(this._game.resources[Resources.Rock].toString(), { x: 50, marginAlignment: "h: center, v: center" });
+        var groupRock = new BABYLON.Group2D({ x: 200, y: 800, parent: this._canvas2D, children: [spriteRock, text2DRock] });
+        // Meat
+        var textureMeat = new BABYLON.Texture("img/gui/resource.png", this._scene, true, true);
+        var spriteMeat = new BABYLON.Sprite2D(textureMeat, { x: 0, y: 0, spriteSize: new BABYLON.Size(80, 80) });
+        var text2DMeat = new BABYLON.Text2D(this._game.resources[Resources.Meat].toString(), { x: 50, marginAlignment: "h: center, v: center" });
+        var groupMeat = new BABYLON.Group2D({ x: 340, y: 800, parent: this._canvas2D, children: [spriteMeat, text2DMeat] });
+        this._resourcesText[Resources.Wood] = text2DWood;
+        this._resourcesText[Resources.Rock] = text2DRock;
+        this._resourcesText[Resources.Meat] = text2DMeat;
+    };
+    /**
+     * Update the resource value displayed in the GUI
+     */
+    GUIManager.prototype.updateResourceText = function (value, res) {
+        this._resourcesText[res].text = value.toString();
+    };
+    /**
      * Create the 'static' button :
      * - Build
      * - Gather wood
      * ...
      */
     GUIManager.prototype.initHUD = function () {
+        this._initResourcesTexts();
         var buttonBuild = new BABYLON.Rectangle2D({ parent: this._canvas2D, id: "build", x: 60, y: 100, width: 100, height: 40,
             fill: "#40C040FF",
             children: [
@@ -88,6 +120,7 @@ var GUIManager = (function () {
         });
         var groupNode = new BABYLON.Group2D({ parent: this._canvas2D, width: 1 /* BUG IN CANVAS2D */, trackNode: node, children: [sprite] });
         this._createAndStartCounterAnimation(sprite, 1500, function () {
+            sprite.dispose();
             groupNode.dispose();
         });
     };

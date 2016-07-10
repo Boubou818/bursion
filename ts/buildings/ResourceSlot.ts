@@ -7,7 +7,7 @@ class ResourceSlot {
     public isOccupied : boolean = false;
     
     // The number of material this resource can generate.
-    public amount : number = 100;    
+    public amount : number = 50;    
 
     // The amount of material this resource will generate every 10 seconds
     public gain : number = 0;   
@@ -22,6 +22,13 @@ class ResourceSlot {
      */
     public isAvailable() : boolean {
         return !this.isOccupied && this.amount > 0;
+    }
+    
+    /**
+     * Extract the given amount of material of this resource
+     */
+    public extract(value:number){
+        this.amount -= value;
     }
 
 }

@@ -11,12 +11,13 @@ var __extends = (this && this.__extends) || function (d, b) {
  */
 var Minion = (function (_super) {
     __extends(Minion, _super);
-    function Minion(name, base, scene) {
+    function Minion(name, game) {
         var _this = this;
-        _super.call(this, name, scene);
+        _super.call(this, name, game.scene);
+        this._game = game;
         // Give it a circular shape
-        this._child = BABYLON.Mesh.CreateSphere('', 3, 0.5, scene);
-        var mat = new BABYLON.StandardMaterial('', scene);
+        this._child = BABYLON.Mesh.CreateSphere('', 3, 0.5, this.getScene());
+        var mat = new BABYLON.StandardMaterial('', this.getScene());
         mat.diffuseColor = BABYLON.Color3.FromInts(127, 0, 155);
         mat.specularColor = BABYLON.Color3.Black();
         this._child.material = mat;
@@ -24,8 +25,8 @@ var Minion = (function (_super) {
         this.position.y = 0.75;
         this._controller = new MinionController(this);
         this._controller.speed = 0.05;
-        this.currentHexagon = base.getStarterHex();
-        this.base = base;
+        this.base = this._game.base;
+        this.currentHexagon = this.base.getStarterHex();
         // Update minion position
         this.position.copyFrom(this.currentHexagon.getWorldCenter());
         this.position.y = 0.75;
@@ -36,7 +37,6 @@ var Minion = (function (_super) {
         // Notify the strategy when the final destination has been reached
         this._controller.atFinalDestination = function (data) {
             if (_this.strategy) {
-                console.log(data);
                 _this.strategy.finishedWalkingOn(data);
             }
         };
@@ -80,6 +80,13 @@ var Minion = (function (_super) {
             this.strategy.dispose();
         }
         this.strategy = strat;
+    };
+    /**
+     * Add the given number of material to the game
+     */
+    Minion.prototype.addResourceToGame = function (amount, type) {
+        console.log(amount, type);
+        this._game.addResources(this, amount, type);
     };
     // The strategy is applied each 150ms
     Minion.STRATEGY_CLOCK = 150;

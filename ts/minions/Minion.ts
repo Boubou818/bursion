@@ -13,6 +13,9 @@ class Minion extends BABYLON.Mesh {
     // The hexagon this minion currently is.
     // This attribute should be updated each time the minion walks on an hex.
     public currentHexagon : Hexagon;
+    
+    // The instance of the game
+    private _game : Game;
 
     // The player base graph where the minion can walk on.
     public base : Base;
@@ -26,13 +29,14 @@ class Minion extends BABYLON.Mesh {
     // The working schedule of this minion.
     public strategy : WorkingStrategy;
 
-    constructor(name:string, base:Base, scene:BABYLON.Scene) {
-        super(name, scene);
+    constructor(name:string, game:Game) {
+        super(name, game.scene);
 
+        this._game = game;
 
         // Give it a circular shape
-        this._child = BABYLON.Mesh.CreateSphere('', 3, 0.5, scene);
-        let mat = new BABYLON.StandardMaterial('', scene);
+        this._child = BABYLON.Mesh.CreateSphere('', 3, 0.5, this.getScene());
+        let mat = new BABYLON.StandardMaterial('', this.getScene());
         mat.diffuseColor = BABYLON.Color3.FromInts(127, 0, 155);
         mat.specularColor = BABYLON.Color3.Black();
         this._child.material = mat;
@@ -43,8 +47,8 @@ class Minion extends BABYLON.Mesh {
         this._controller = new MinionController(this);
         this._controller.speed = 0.05;
         
-        this.currentHexagon = base.getStarterHex();
-        this.base = base;
+        this.base = this._game.base;
+        this.currentHexagon = this.base.getStarterHex();
 
         // Update minion position
         this.position.copyFrom(this.currentHexagon.getWorldCenter());
@@ -58,7 +62,6 @@ class Minion extends BABYLON.Mesh {
         // Notify the strategy when the final destination has been reached
         this._controller.atFinalDestination = (data :Hexagon) => {
             if (this.strategy) {
-                console.log(data);
                 this.strategy.finishedWalkingOn(data);
             }
         }
@@ -107,6 +110,14 @@ class Minion extends BABYLON.Mesh {
             this.strategy.dispose();
         }
         this.strategy = strat;
+    }
+    
+    /**
+     * Add the given number of material to the game
+     */
+    public addResourceToGame(amount:number, type:Resources) {
+        console.log(amount, type);
+        this._game.addResources(this, amount, type);
     }
 
 }

@@ -1,27 +1,27 @@
-var Viewer = (function () {
-    function Viewer(canvasId) {
+var Game = (function () {
+    function Game(canvasId) {
         var _this = this;
         this._hoard = [];
+        // The resource map of the player (links resources - amount)
+        this.resources = [];
         var canvas = document.getElementById(canvasId);
         this.engine = new BABYLON.Engine(canvas, true);
         this.assets = [];
         this.scene = null;
-        // On resize le jeu en fonction de la taille de la fenetre
         window.addEventListener("resize", function () {
             _this.engine.resize();
         });
         this.initScene();
         this.run();
     }
-    Viewer.prototype.initScene = function () {
+    Game.prototype.initScene = function () {
         this.scene = new BABYLON.Scene(this.engine);
         var camera = new BABYLON.ArcRotateCamera('', -1.5, 1, 100, new BABYLON.Vector3(0, 0, 0), this.scene);
         camera.attachControl(this.engine.getRenderingCanvas());
         var light = new BABYLON.HemisphericLight('', new BABYLON.Vector3(0, 1, 0), this.scene);
         light.intensity = 1;
-        this._gui = new GUIManager(this);
     };
-    Viewer.prototype.run = function () {
+    Game.prototype.run = function () {
         var _this = this;
         this.scene.executeWhenReady(function () {
             _this.engine.runRenderLoop(function () {
@@ -31,12 +31,12 @@ var Viewer = (function () {
         // Load first level
         this._initGame();
         this._gui.initHUD();
-        this.scene.debugLayer.show();
+        // this.scene.debugLayer.show();
     };
     /**
      * Build a new shape
      */
-    Viewer.prototype.build = function () {
+    Game.prototype.build = function () {
         if (!this._currentShape) {
             this._currentShape = new Building(this.scene);
         }
@@ -44,7 +44,7 @@ var Viewer = (function () {
     /**
      * Order to all minions to gather wood
      */
-    Viewer.prototype.gatherWood = function () {
+    Game.prototype.gatherWood = function () {
         for (var _i = 0, _a = this._hoard; _i < _a.length; _i++) {
             var m = _a[_i];
             m.setStrategy(new ResourceStrategy(m, Resources.Wood));
@@ -53,14 +53,32 @@ var Viewer = (function () {
     /**
      * Order to all minions to gather wood
      */
-    Viewer.prototype.gatherRock = function () {
+    Game.prototype.gatherRock = function () {
         for (var _i = 0, _a = this._hoard; _i < _a.length; _i++) {
             var m = _a[_i];
             m.setStrategy(new ResourceStrategy(m, Resources.Rock));
         }
     };
-    Viewer.prototype._initGame = function () {
+    /**
+     * Add the given amount of material of the given resource.
+     * Generates a gui element
+     */
+    Game.prototype.addResources = function (node, amount, type) {
+        // Increment resources
+        this.resources[type] += amount;
+        // Display sprite
+        this._gui.displayResourceCounter(node);
+        // Update text value
+        this._gui.updateResourceText(this.resources[type], type);
+    };
+    Game.prototype._initGame = function () {
         var _this = this;
+        // Init GUI 
+        this._gui = new GUIManager(this);
+        // Init resource map
+        this.resources[Resources.Wood] = 0;
+        this.resources[Resources.Rock] = 0;
+        this.resources[Resources.Meat] = 0;
         var ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 2, this.scene);
         ground.isVisible = false;
         var green = new BABYLON.StandardMaterial('', this.scene);
@@ -72,13 +90,13 @@ var Viewer = (function () {
         this.scene.pointerMovePredicate = function (mesh) {
             return mesh.name === 'ground';
         };
-        var base = new Base(this.scene, grid);
+        this.base = new Base(this.scene, grid);
         this.scene.onPointerMove = function (evt, pr) {
             if (_this._currentShape) {
                 if (pr.hit) {
                     var overlaps = false;
                     // Update shape color
-                    if (base.canBuildHere(_this._currentShape)) {
+                    if (_this.base.canBuildHere(_this._currentShape)) {
                         _this._currentShape.material = green;
                     }
                     else {
@@ -96,8 +114,8 @@ var Viewer = (function () {
         };
         this.scene.onPointerDown = function (evt, pr) {
             if (_this._currentShape) {
-                if (base.canBuildHere(_this._currentShape)) {
-                    base.addBuilding(_this._currentShape);
+                if (_this.base.canBuildHere(_this._currentShape)) {
+                    _this.base.addBuilding(_this._currentShape);
                     _this._currentShape = null;
                 }
             }
@@ -110,7 +128,7 @@ var Viewer = (function () {
             b.position.y = 0.75;
             for (var n in neighbors) {
                 // get hex by name
-                var hexn = base.getHexByName(n);
+                var hexn = _this.base.getHexByName(n);
                 var pos = hexn.getWorldCenter();
                 pos.y = 0.75;
                 BABYLON.Mesh.CreateLines('', [b.position.clone(), pos], _this.scene);
@@ -119,19 +137,19 @@ var Viewer = (function () {
         var viewGraph = function (graph) {
             for (var vertex in graph.vertices) {
                 // get hex by name
-                var hex = base.getHexByName(vertex);
+                var hex = _this.base.getHexByName(vertex);
                 viewLink(hex, graph.vertices[vertex]);
             }
         };
         window.addEventListener('keydown', function () {
-            viewGraph(base.graph);
+            viewGraph(_this.base.graph);
         });
         // END DEBUG
-        var bobby = new Minion('bobby', base, this.scene);
-        var bobby2 = new Minion('bobby2', base, this.scene);
+        var bobby = new Minion('bobby', this);
         this._hoard.push(bobby);
-        this._hoard.push(bobby2);
+        // let bobby2 = new Minion('bobby2', this);
+        // this._hoard.push(bobby2);      
     };
-    return Viewer;
+    return Game;
 }());
-//# sourceMappingURL=Viewer.js.map
+//# sourceMappingURL=Game.js.map

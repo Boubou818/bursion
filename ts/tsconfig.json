@@ -3,7 +3,8 @@
         "babylon.d.ts",
         "Base.ts", 
         "Timer.ts",
-        "Viewer.ts",
+        "Game.ts",
+        "GUIManager.ts",
 
         "buildings/Building.ts",
         "buildings/Hexagon.ts",

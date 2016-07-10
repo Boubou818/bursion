@@ -14,6 +14,11 @@ enum Resources {
     Meat
 }
 
+/** A resource map links the kind of resource to a specific item (amount, objects...) */
+interface ResourceMap<T> {
+    [type:number] : T;
+}
+
 namespace Resources {
     /**
      * Returns the probabilty of a resource to be in an hexagon

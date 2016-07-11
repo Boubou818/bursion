@@ -72,6 +72,7 @@ var Game = (function () {
         this._gui.updateResourceText(this.resources[type], type);
     };
     Game.prototype._initGame = function () {
+        // Init costs
         var _this = this;
         // Init GUI 
         this._gui = new GUIManager(this);

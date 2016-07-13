@@ -37,7 +37,7 @@ class Base {
         let mat : BABYLON.Material = this._game.scene.getMaterialByName('_baseMaterial_');
         if (!mat) {
             let mymat = new BABYLON.StandardMaterial('_baseMaterial_', this._game.scene);
-            mymat.diffuseTexture = new BABYLON.Texture('img/textures/earth.jpg', this._game.scene);
+            mymat.diffuseColor = BABYLON.Color3.FromInts(194,199,191);
             mymat.specularColor = BABYLON.Color3.Black();
             mat = mymat;
         }

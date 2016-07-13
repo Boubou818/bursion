@@ -119,7 +119,7 @@ class Game {
         let red = new BABYLON.StandardMaterial('', this.scene);
         red.diffuseColor = BABYLON.Color3.Red();
 
-        let grid = new HexagonGrid(15);
+        let grid = new HexagonGrid(9);
         grid.draw(this.scene);
 
         this.scene.pointerMovePredicate = (mesh) => {

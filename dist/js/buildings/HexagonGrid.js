@@ -8,8 +8,9 @@ var HexagonGrid = (function () {
         this._grid = [];
         // The list of all hexagons meshes on the map, indexed by hexagon name
         this._meshes = {};
+        this._size = size;
         var grid = Hexagon.getDefaultGrid();
-        var coordinates = grid.hexagon(0, 0, size, true);
+        var coordinates = grid.hexagon(Math.floor(size / 3), -Math.floor(size / 2), size, true);
         for (var _i = 0, coordinates_1 = coordinates; _i < coordinates_1.length; _i++) {
             var c = coordinates_1[_i];
             var hex = new Hexagon(c.q, c.r, grid);
@@ -62,10 +63,12 @@ var HexagonGrid = (function () {
      * Remove the given hex from the map
      */
     HexagonGrid.prototype.removeMapHex = function (hexagon) {
-        var mapHex = this._meshes[hexagon.name];
-        if (mapHex) {
-            mapHex.dispose();
-            this._meshes[hexagon.name] = null;
+        if (hexagon) {
+            var mapHex = this._meshes[hexagon.name];
+            if (mapHex) {
+                mapHex.dispose();
+                this._meshes[hexagon.name] = null;
+            }
         }
     };
     /**
@@ -73,6 +76,22 @@ var HexagonGrid = (function () {
      * Hexagons and resources are two different models.
      */
     HexagonGrid.prototype.draw = function (scene) {
+        // water1
+        var water1Ref = BABYLON.Mesh.CreateCylinder('', 0.1, 1.9, 1.9, 6, 1, scene);
+        water1Ref.rotation.y = Math.PI / 2;
+        water1Ref.isVisible = false;
+        var water1Material = new BABYLON.StandardMaterial('grass', scene);
+        water1Material.diffuseColor = BABYLON.Color3.FromInts(66, 159, 242);
+        water1Material.specularColor = BABYLON.Color3.Black();
+        water1Ref.material = water1Material;
+        // water2 - deeper  
+        var water2Ref = BABYLON.Mesh.CreateCylinder('', 0.1, 1.9, 1.9, 6, 1, scene);
+        water2Ref.rotation.y = Math.PI / 2;
+        water2Ref.isVisible = false;
+        var water2Material = new BABYLON.StandardMaterial('grass', scene);
+        water2Material.diffuseColor = BABYLON.Color3.FromInts(45, 109, 166);
+        water2Material.specularColor = BABYLON.Color3.Black();
+        water2Ref.material = water2Material;
         var ref = BABYLON.Mesh.CreateCylinder('', 0.1, 1.9, 1.9, 6, 1, scene);
         ref.rotation.y = Math.PI / 2;
         ref.isVisible = false;
@@ -94,7 +113,13 @@ var HexagonGrid = (function () {
         rockRef.material = rockMaterial;
         for (var _i = 0, _a = this._grid; _i < _a.length; _i++) {
             var h = _a[_i];
-            var hex = ref.createInstance('' + h.q + ' ' + h.r);
+            var hex = null;
+            if (Grid.axialDistance(h.q, h.r, 0, 0) > 3) {
+                hex = water1Ref.createInstance('' + h.q + ' ' + h.r);
+            }
+            else {
+                hex = ref.createInstance('' + h.q + ' ' + h.r);
+            }
             hex.isVisible = true;
             hex.position.copyFrom(h.getWorldCenter());
             // Add the mesh instance to the meshes list

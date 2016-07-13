@@ -8,14 +8,19 @@ class HexagonGrid {
     
     // The Hexagon grid
     private  _grid : Array<Hexagon> = [];   
+
+    // The numbre of rings the map has
+    private _size : number;
     
     // The list of all hexagons meshes on the map, indexed by hexagon name
     private _meshes : {[hexName:string] : BABYLON.AbstractMesh} = {};
     
     constructor(size:number) {
+        this._size  = size;
+        
         let grid         = Hexagon.getDefaultGrid();
         
-        let coordinates = grid.hexagon(0, 0 ,size, true);  
+        let coordinates = grid.hexagon(Math.floor(size/3), -Math.floor(size/2) ,size, true);  
         for (let c of coordinates) {
             let hex = new Hexagon(c.q, c.r, grid);
 
@@ -39,6 +44,8 @@ class HexagonGrid {
             this._grid.push(hex); 
         }
     }
+
+
     
     /**
      * Returns the hexagon the nearest of the given position. Used to snap a building on the nearest hex.
@@ -75,10 +82,12 @@ class HexagonGrid {
      * Remove the given hex from the map
      */
     public removeMapHex(hexagon:Hexagon) {
-        let mapHex = this._meshes[hexagon.name];
-        if (mapHex) {
-            mapHex.dispose();
-            this._meshes[hexagon.name] = null;
+        if (hexagon) {
+            let mapHex = this._meshes[hexagon.name];
+            if (mapHex) {
+                mapHex.dispose();
+                this._meshes[hexagon.name] = null;
+            }
         }
     }
     
@@ -87,6 +96,24 @@ class HexagonGrid {
      * Hexagons and resources are two different models.
      */
     public draw(scene) {
+
+        // water1
+        let water1Ref = BABYLON.Mesh.CreateCylinder('', 0.1, 1.9, 1.9, 6, 1, scene);
+        water1Ref.rotation.y = Math.PI/2;
+        water1Ref.isVisible = false;
+        let water1Material = new BABYLON.StandardMaterial('grass', scene);
+        water1Material.diffuseColor = BABYLON.Color3.FromInts(66, 159, 242);
+        water1Material.specularColor = BABYLON.Color3.Black();
+        water1Ref.material = water1Material;
+
+        // water2 - deeper  
+        let water2Ref = BABYLON.Mesh.CreateCylinder('', 0.1, 1.9, 1.9, 6, 1, scene);
+        water2Ref.rotation.y = Math.PI/2;
+        water2Ref.isVisible = false;
+        let water2Material = new BABYLON.StandardMaterial('grass', scene);
+        water2Material.diffuseColor = BABYLON.Color3.FromInts(45, 109, 166);
+        water2Material.specularColor = BABYLON.Color3.Black();
+        water2Ref.material = water2Material;
         
         let ref = BABYLON.Mesh.CreateCylinder('', 0.1, 1.9, 1.9, 6, 1, scene);
         ref.rotation.y = Math.PI/2;
@@ -111,8 +138,14 @@ class HexagonGrid {
         rockRef.material = rockMaterial;
         
         for (let h of this._grid){
+
+            let hex = null;
+            if (Grid.axialDistance(h.q, h.r, 0, 0) >  3) {
+                hex = water1Ref.createInstance(''+h.q+' '+h.r);
+            } else {
+                hex = ref.createInstance(''+h.q+' '+h.r);
+            }
            
-            let hex = ref.createInstance(''+h.q+' '+h.r);
             hex.isVisible = true;
             hex.position.copyFrom(h.getWorldCenter());     
             

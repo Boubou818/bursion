@@ -86,7 +86,7 @@ var Game = (function () {
         green.diffuseColor = BABYLON.Color3.Green();
         var red = new BABYLON.StandardMaterial('', this.scene);
         red.diffuseColor = BABYLON.Color3.Red();
-        var grid = new HexagonGrid(15);
+        var grid = new HexagonGrid(9);
         grid.draw(this.scene);
         this.scene.pointerMovePredicate = function (mesh) {
             return mesh.name === 'ground';

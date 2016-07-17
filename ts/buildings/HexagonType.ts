@@ -6,5 +6,5 @@ enum HexagonType {
     Beach, /* Land hexagon slighlty under water. Does not contains resources */
     Water, 
     DeepWater,
-    DeeperWater,
+    DeeperWater, 
 }

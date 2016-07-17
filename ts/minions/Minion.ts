@@ -51,7 +51,7 @@ class Minion extends BABYLON.Mesh {
         this.currentHexagon = this.base.getStarterHex();
 
         // Update minion position
-        this.position.copyFrom(this.currentHexagon.getWorldCenter());
+        this.position.copyFrom(this.currentHexagon.center);
         this.position.y = 0.75;
 
         // At each destination, the current hexagon where the minion lives is updated.
@@ -82,7 +82,7 @@ class Minion extends BABYLON.Mesh {
      * - Add a destination for each hex of the path
      * - make it moooove \o/
      */
-    public moveTo(hex:Hexagon) : void {
+    public moveTo(hex:MapHexagon) : void {
         
         let path = this.base.getPathFromTo(this.currentHexagon, hex);
         if (path.length != 0) {
@@ -90,7 +90,7 @@ class Minion extends BABYLON.Mesh {
             this._controller.stop();
         }
         for (let hex of path) {
-            let tmp = hex.getWorldCenter();
+            let tmp = hex.center;
             tmp.y = 0.75;
             this._controller.addDestination(tmp, hex);
         }

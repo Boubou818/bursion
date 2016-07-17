@@ -6,7 +6,7 @@ class Game {
     public assets: Array<any>;
     public scene: BABYLON.Scene;
 
-    private _currentShape: BaseExtension;
+    private _currentShape: Building;
     private _hoard: Array<Minion> = [];
 
     private _gui: GUIManager;
@@ -154,7 +154,7 @@ class Game {
                     // get nearest hex
                     let nearest = grid.getNearestHex(p);
                     if (nearest) {
-                        this._currentShape.position.copyFrom(nearest.getWorldCenter());
+                        this._currentShape.position.copyFrom(nearest.center);
                     }
                 }
             }
@@ -163,7 +163,7 @@ class Game {
         this.scene.onPointerDown = (evt, pr) => {
             if (this._currentShape) {
                 if (this.base.canBuildHere(this._currentShape)) {
-                    this.base.addExtension(this._currentShape);
+                    this.base.addBuilding(this._currentShape);
                     this._currentShape = null;
                 }
             }

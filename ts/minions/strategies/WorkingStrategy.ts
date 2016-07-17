@@ -43,7 +43,7 @@ abstract class WorkingStrategy {
     /**
      * Used to notify the strategy the minion finished to reach the final destination
      */
-    public abstract finishedWalkingOn(data?:Hexagon);
+    public abstract finishedWalkingOn(data?:MapHexagon);
     
     /**
      * Dispose the strategy : clean any data left by minions on the map (if any)

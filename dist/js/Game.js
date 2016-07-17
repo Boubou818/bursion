@@ -121,7 +121,7 @@ var Game = (function () {
                     // get nearest hex
                     var nearest = grid.getNearestHex(p);
                     if (nearest) {
-                        _this._currentShape.position.copyFrom(nearest.getWorldCenter());
+                        _this._currentShape.position.copyFrom(nearest.center);
                     }
                 }
             }
@@ -129,7 +129,7 @@ var Game = (function () {
         this.scene.onPointerDown = function (evt, pr) {
             if (_this._currentShape) {
                 if (_this.base.canBuildHere(_this._currentShape)) {
-                    _this.base.addExtension(_this._currentShape);
+                    _this.base.addBuilding(_this._currentShape);
                     _this._currentShape = null;
                 }
             }

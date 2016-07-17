@@ -8,9 +8,6 @@ declare var Graph : any;
  */
 class Base {
     
-    // The list of extensions of the base. Minions can walk on each one of these buildings
-    private _extensions : Array<BaseExtension> = [];
-    
     // The list of building (all status : waiting, finished...) in the base
     private _buildings : Array<Building> = [];
 
@@ -33,17 +30,17 @@ class Base {
     constructor(game:Game, map : HexagonMap) {
         this._map = map;
         this._game = game;
-        let starter = new StarterExtension(game);
+        let starter = new StarterWarehouse(game);
         starter.preBuild();
         
         // Set the base on the starting position of the map
         let starterPosition : MapHexagon = this._map.basePosition;
-        starter.position.copyFrom(starterPosition.getWorldCenter());
+        starter.position.copyFrom(starterPosition.center);
         
         let drakkarPosition : MapHexagon = this._map.drakkarPosition;
         let drakkar = BABYLON.Mesh.CreateBox('', 1, game.scene);
         
-        drakkar.position.copyFrom(drakkarPosition.getWorldCenter());
+        drakkar.position.copyFrom(drakkarPosition.center);
         drakkar.position.y = 1;
         drakkar.scaling.x = 3;
         
@@ -52,7 +49,7 @@ class Base {
         this._fogOfWar.position.y = 1.8/2+0.1; // TODO FIX THIS SHIT
         
         // Add this extension to the player base
-        this.addExtension(starter);
+        this.addBuilding(starter);
         
         // The starter should not be waiting for minions
         starter.finishBuild(this);
@@ -66,14 +63,13 @@ class Base {
     }
     
     /**
-     * Add a building to the player base. The graph is updated.
+     * Add a building to the player base 
      * @param building the extension to add to the base
-     * @param hex The hexagon position of the building.
      */
-    public addExtension(extension : BaseExtension) { 
+    public addBuilding(building : Building) { 
         
         // Unfold all hexagons of the map and add them to the base
-        let resourcesHex = this._getResourcesOnMap(extension)
+        let resourcesHex = this._getResourcesOnMap(building)
         
         // Get the working site hexagon - where minion will build it
         let workingSite = this._getWorksiteHex(resourcesHex);
@@ -83,16 +79,16 @@ class Base {
             this._hexUnfolded.push(hex);  
             this._map.removeMapHex(hex);      
         }        
-        this._extensions.push(extension);  
+        this._buildings.push(building);  
                 
         // Build it
-        extension.prepareToBuildOn(resourcesHex, workingSite); 
+        building.prepareToBuildOn(workingSite); 
         
         // Remove fog where needed
         this._fogOfWar.dissipateFog(this._hexUnfolded); 
         
         // Add working site in the walking graph
-        this._addHexToWalkingGraph(extension.workingSite) 
+        this._addHexToWalkingGraph(building.workingSite) 
     }
     
     /**
@@ -116,7 +112,7 @@ class Base {
         for (let b of buildingPlaces) {
             // ... check which one is the nearest of the base
             for (let h of this._hexUnfolded) {
-                let dist = Hexagon.distanceSquared(b, h);
+                let dist = MapHexagon.distanceSquared(b, h);
                 if (dist < min) {
                     min = dist;
                     res = b;
@@ -129,12 +125,12 @@ class Base {
     /**
      * Setup this building on the map, and retrieve the list of hexagon present on the map.
      */
-    private _getResourcesOnMap(ext : BaseExtension) : Array<MapHexagon> {
+    private _getResourcesOnMap(build : Building) : Array<MapHexagon> {
         let resourcesHex : Array<MapHexagon> = [];
 
         // For each hexagon, get the corresponding resource 
-        for (let hex of ext.hexagons) {
-            resourcesHex.push(this._map.getResourceHex(hex));
+        for (let point of build.points) {
+            resourcesHex.push(this._map.getResourceHex(point));
         }
 
         return resourcesHex;
@@ -147,6 +143,7 @@ class Base {
         
         this.graph = new Graph();
 
+// TODO REFINE HERE
         for (let hex1 of this._hexUnfolded) {
             this._addHexToWalkingGraph(hex1);
         }        
@@ -155,10 +152,10 @@ class Base {
     /**
      * Add a given hexagon to the walking graph
      */
-    private _addHexToWalkingGraph(hex1: Hexagon) : void {
+    private _addHexToWalkingGraph(hex1: MapHexagon) : void {
         let neighbors = {}; 
         for (let hex2 of this._hexUnfolded) { 
-            if (Hexagon.areNeighbors(hex1, hex2)) {
+            if (MapHexagon.areNeighbors(hex1, hex2)) {
                 // Road from hex1 to hex2
                 neighbors[hex2.name] = 1;
                 // Road from hex2 to hex1
@@ -189,36 +186,37 @@ class Base {
     }
         
     /**
-     * Retursn true if the given shape can be built here : 
+     * Retursn true if the given building can be built here : 
      * that means no overlap with another shape, and it must be 
      * connected with at least one shape.
      */
-    public canBuildHere (shape:BaseExtension) : boolean {
-        
-        for (let s of this._extensions) {
-            if (shape.overlaps(s)) {
+    public canBuildHere (building:Building) : boolean {
+                
+        for (let b of this._buildings) {
+            if (building.overlaps(b)) {
                 return false;
             } 
         }
-        // Connected with at least one shape : there is at least one 
-        // hexagon of the new shape with distance < DISTANCE_BETWEEN_NEIGHBORS
-        let areConnected = false;
-        for (let sHex of shape.hexagons) {
-            for (let bHex of this._hexUnfolded) {
-                areConnected = areConnected || Hexagon.areNeighbors(sHex, bHex)
-            }
-        }
+        return true;
+        // // Connected with at least one shape : there is at least one 
+        // // hexagon of the new shape with distance < DISTANCE_BETWEEN_NEIGHBORS
+        // let areConnected = false;
+        // for (let sHex of shape.hexagons) {
+        //     for (let bHex of this._hexUnfolded) {
+        //         areConnected = areConnected || MapHexagon.areNeighbors(sHex, bHex)
+        //     }
+        // }
         
-        // Can build only on land
-        let onLand = this._map.canBuild(shape);
+        // // Can build only on land
+        // let onLand = this._map.canBuild(shape);
         
-        return areConnected && onLand;
+        // return areConnected && onLand;
     }
 
     /**
      * Returns the shortest path from the given hex to the given hex.
      */
-    public getPathFromTo(from: Hexagon, to:Hexagon) : Array<MapHexagon>{
+    public getPathFromTo(from: MapHexagon, to:MapHexagon) : Array<MapHexagon>{
         let pathString : Array<string> = this.graph.shortestPath(from.name, to.name).reverse();
         if (pathString.length === 0) {
             console.warn('No road found to ', to.name);
@@ -236,7 +234,7 @@ class Base {
      * Returns null if no such hexagon is found.
      * @param hexagon The position from where the nearest resource will be returned
      */
-    public getNearestResource(hexagon:Hexagon, resource:Resources) : MapHexagon {
+    public getNearestResource(hexagon:MapHexagon, resource:Resources) : MapHexagon {
         let nearest = null;
         let distance = Number.POSITIVE_INFINITY;
 
@@ -259,7 +257,7 @@ class Base {
     /**
      * Returns the nearest building waiting to be built
      */
-    public getNearestBuildingWaitingForMinion(hexagon:Hexagon) : Building {
+    public getNearestBuildingWaitingForMinion(hexagon:MapHexagon) : Building {
         let nearest = null;
         let distance = Number.POSITIVE_INFINITY;
 
@@ -273,11 +271,11 @@ class Base {
         }        
         
         // Check base extensions...
-        for (let ext of this._extensions) {
-            if (ext.waitingToBeBuilt) {
-                check(ext);
-            }
-        }
+        // for (let ext of this._extensions) {
+        //     if (ext.waitingToBeBuilt) {
+        //         check(ext);
+        //     }
+        // }
         //.. and check buildings  
         for (let build of this._buildings) {
             if (build.waitingToBeBuilt) {

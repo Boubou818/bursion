@@ -8,8 +8,6 @@
 var Base = (function () {
     // The base is always composed of a starting platform, composed of a set of 4*4 hex
     function Base(game, map) {
-        // The list of extensions of the base. Minions can walk on each one of these buildings
-        this._extensions = [];
         // The list of building (all status : waiting, finished...) in the base
         this._buildings = [];
         // All resources hexagones coming from baseextensions unfolded in a single array. Updated each time a new building is built
@@ -18,21 +16,21 @@ var Base = (function () {
         this.graph = new Graph();
         this._map = map;
         this._game = game;
-        var starter = new StarterExtension(game);
+        var starter = new StarterWarehouse(game);
         starter.preBuild();
         // Set the base on the starting position of the map
         var starterPosition = this._map.basePosition;
-        starter.position.copyFrom(starterPosition.getWorldCenter());
+        starter.position.copyFrom(starterPosition.center);
         var drakkarPosition = this._map.drakkarPosition;
         var drakkar = BABYLON.Mesh.CreateBox('', 1, game.scene);
-        drakkar.position.copyFrom(drakkarPosition.getWorldCenter());
+        drakkar.position.copyFrom(drakkarPosition.center);
         drakkar.position.y = 1;
         drakkar.scaling.x = 3;
         // Create fog of war
         this._fogOfWar = new FogOfWar(150, game.scene);
         this._fogOfWar.position.y = 1.8 / 2 + 0.1; // TODO FIX THIS SHIT
         // Add this extension to the player base
-        this.addExtension(starter);
+        this.addBuilding(starter);
         // The starter should not be waiting for minions
         starter.finishBuild(this);
     }
@@ -43,13 +41,12 @@ var Base = (function () {
         return this._hexUnfolded[0];
     };
     /**
-     * Add a building to the player base. The graph is updated.
+     * Add a building to the player base
      * @param building the extension to add to the base
-     * @param hex The hexagon position of the building.
      */
-    Base.prototype.addExtension = function (extension) {
+    Base.prototype.addBuilding = function (building) {
         // Unfold all hexagons of the map and add them to the base
-        var resourcesHex = this._getResourcesOnMap(extension);
+        var resourcesHex = this._getResourcesOnMap(building);
         // Get the working site hexagon - where minion will build it
         var workingSite = this._getWorksiteHex(resourcesHex);
         // Add the building place to the base
@@ -58,13 +55,13 @@ var Base = (function () {
             this._hexUnfolded.push(hex);
             this._map.removeMapHex(hex);
         }
-        this._extensions.push(extension);
+        this._buildings.push(building);
         // Build it
-        extension.prepareToBuildOn(resourcesHex, workingSite);
+        building.prepareToBuildOn(workingSite);
         // Remove fog where needed
         this._fogOfWar.dissipateFog(this._hexUnfolded);
         // Add working site in the walking graph
-        this._addHexToWalkingGraph(extension.workingSite);
+        this._addHexToWalkingGraph(building.workingSite);
     };
     /**
      * Function called when a building is finished.
@@ -86,7 +83,7 @@ var Base = (function () {
             // ... check which one is the nearest of the base
             for (var _a = 0, _b = this._hexUnfolded; _a < _b.length; _a++) {
                 var h = _b[_a];
-                var dist = Hexagon.distanceSquared(b, h);
+                var dist = MapHexagon.distanceSquared(b, h);
                 if (dist < min) {
                     min = dist;
                     res = b;
@@ -98,12 +95,12 @@ var Base = (function () {
     /**
      * Setup this building on the map, and retrieve the list of hexagon present on the map.
      */
-    Base.prototype._getResourcesOnMap = function (ext) {
+    Base.prototype._getResourcesOnMap = function (build) {
         var resourcesHex = [];
         // For each hexagon, get the corresponding resource 
-        for (var _i = 0, _a = ext.hexagons; _i < _a.length; _i++) {
-            var hex = _a[_i];
-            resourcesHex.push(this._map.getResourceHex(hex));
+        for (var _i = 0, _a = build.points; _i < _a.length; _i++) {
+            var point = _a[_i];
+            resourcesHex.push(this._map.getResourceHex(point));
         }
         return resourcesHex;
     };
@@ -112,6 +109,7 @@ var Base = (function () {
      */
     Base.prototype._createWalkingGraph = function () {
         this.graph = new Graph();
+        // TODO REFINE HERE
         for (var _i = 0, _a = this._hexUnfolded; _i < _a.length; _i++) {
             var hex1 = _a[_i];
             this._addHexToWalkingGraph(hex1);
@@ -124,7 +122,7 @@ var Base = (function () {
         var neighbors = {};
         for (var _i = 0, _a = this._hexUnfolded; _i < _a.length; _i++) {
             var hex2 = _a[_i];
-            if (Hexagon.areNeighbors(hex1, hex2)) {
+            if (MapHexagon.areNeighbors(hex1, hex2)) {
                 // Road from hex1 to hex2
                 neighbors[hex2.name] = 1;
                 // Road from hex2 to hex1
@@ -153,30 +151,29 @@ var Base = (function () {
         return this._getHexByName(name);
     };
     /**
-     * Retursn true if the given shape can be built here :
+     * Retursn true if the given building can be built here :
      * that means no overlap with another shape, and it must be
      * connected with at least one shape.
      */
-    Base.prototype.canBuildHere = function (shape) {
-        for (var _i = 0, _a = this._extensions; _i < _a.length; _i++) {
-            var s = _a[_i];
-            if (shape.overlaps(s)) {
+    Base.prototype.canBuildHere = function (building) {
+        for (var _i = 0, _a = this._buildings; _i < _a.length; _i++) {
+            var b = _a[_i];
+            if (building.overlaps(b)) {
                 return false;
             }
         }
-        // Connected with at least one shape : there is at least one 
-        // hexagon of the new shape with distance < DISTANCE_BETWEEN_NEIGHBORS
-        var areConnected = false;
-        for (var _b = 0, _c = shape.hexagons; _b < _c.length; _b++) {
-            var sHex = _c[_b];
-            for (var _d = 0, _e = this._hexUnfolded; _d < _e.length; _d++) {
-                var bHex = _e[_d];
-                areConnected = areConnected || Hexagon.areNeighbors(sHex, bHex);
-            }
-        }
-        // Can build only on land
-        var onLand = this._map.canBuild(shape);
-        return areConnected && onLand;
+        return true;
+        // // Connected with at least one shape : there is at least one 
+        // // hexagon of the new shape with distance < DISTANCE_BETWEEN_NEIGHBORS
+        // let areConnected = false;
+        // for (let sHex of shape.hexagons) {
+        //     for (let bHex of this._hexUnfolded) {
+        //         areConnected = areConnected || MapHexagon.areNeighbors(sHex, bHex)
+        //     }
+        // }
+        // // Can build only on land
+        // let onLand = this._map.canBuild(shape);
+        // return areConnected && onLand;
     };
     /**
      * Returns the shortest path from the given hex to the given hex.
@@ -234,15 +231,14 @@ var Base = (function () {
             }
         };
         // Check base extensions...
-        for (var _i = 0, _a = this._extensions; _i < _a.length; _i++) {
-            var ext = _a[_i];
-            if (ext.waitingToBeBuilt) {
-                check(ext);
-            }
-        }
+        // for (let ext of this._extensions) {
+        //     if (ext.waitingToBeBuilt) {
+        //         check(ext);
+        //     }
+        // }
         //.. and check buildings  
-        for (var _b = 0, _c = this._buildings; _b < _c.length; _b++) {
-            var build = _c[_b];
+        for (var _i = 0, _a = this._buildings; _i < _a.length; _i++) {
+            var build = _a[_i];
             if (build.waitingToBeBuilt) {
                 check(build);
             }

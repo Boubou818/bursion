@@ -1,10 +1,53 @@
+/**
+ * A building point is a node in a building.
+ * It's used to check the distance between two building : 
+ * - overlapping
+ * - neighbors
+ */
+class BuildingPoint {
+    // The position of this point
+    private _center : BABYLON.Vector3;
+    
+    // The building this point belongs to
+    private _building : Building;
+    
+    // The distance between two neighbors
+    private static DISTANCE_BETWEEN_TWO_NEIGHBORS = 1.75;
+    
+    constructor(center : BABYLON.Vector3, building : Building){
+        this._center = center;
+        this._building = building;
+    }
+    
+    /**
+     * Returns the center of this hexagon in world coordinates (relative to the building);
+     */
+    get center() : BABYLON.Vector3 {
+        if (this._building) {
+            return this._center.add(this._building.position);
+        } else {
+            return this._center.clone();
+        }
+    }
+    
+    public equals(other:BuildingPoint) : boolean {
+        return this.center.subtract(other.center).length() < BABYLON.Epsilon;
+    }
+    
+    /**
+     * Returns true if the two points are neighbors : their distance is lower than the distance bewteen two neighbors
+     */
+    static AreNeighbors(bp1: BuildingPoint, bp2:BuildingPoint) {
+        return BABYLON.Vector3.Distance(bp1.center, bp2.center) < BuildingPoint.DISTANCE_BETWEEN_TWO_NEIGHBORS; 
+    }    
+}
 
 /**
- * A building is something that can be built in the player base. 
- * There is several kind of building : 
- * - Meat processing (meat ++)
- * - Hut (minion ++)
- * - base extension, that needs to be built above land
+ * A building is something that can be built on the map (only on land). 
+ * Every building is composed of a set of hexagon + 1 hexagon that will contain the 3D 
+ * model (depending on the building)
+ * Two building cannot overlap.
+ * 
  */
 abstract class Building extends BABYLON.Mesh{
     
@@ -12,18 +55,18 @@ abstract class Building extends BABYLON.Mesh{
     
     // The time to build in milliseconds
     protected _constructionTime : number;
-    
+        
     // The place where minion will come to build this building
     protected _workingSite : MapHexagon;
     
-    // The 3D model of the ship
+    // The mesh : the set of hexagons and the 3D model of the building 
     protected _child : BABYLON.Mesh;
-    
-    // The list of map hexagons this building takes
-    protected _hexagons : Array<MapHexagon> = [];
     
     // The ressources needed to build this building. Each subclass will define this amount in the constructor
     protected _resourcesNeeded : ResourceMap<number> = [];
+    
+    // The list of points composing this building
+    protected _points : Array<BuildingPoint> = [];
     
     // Set to true when a minion is taking care of this building
     public waitingToBeBuilt : boolean = false;
@@ -36,6 +79,70 @@ abstract class Building extends BABYLON.Mesh{
         // Init the cost of this building
         this._initCost();
     }
+    
+    /**
+     * Create the shape of the building: a set of 5 hexagons, setup randomly.
+     */
+    protected _initBuilding () : void {
+        
+        // Get a grid of hexgons composed of 3 rings (enough for 5 hexagons)
+        let grid = MapHexagon.getDefaultGrid();
+        let coordinates = grid.hexagon(0,0,3, true);
+ 
+        let size = 5;//Math.floor(((Math.random() * (6 - 3)) + 3)); // random [3;6[
+        
+        // Shuffle an array
+        let shuffle = (a) => {
+            let j, x, i;
+            for (i = a.length; i; i -= 1) {
+                j = Math.floor(Math.random() * i); 
+                x = a[i - 1];
+                a[i - 1] = a[j];
+                a[j] = x;
+            }
+        };
+        
+        // Returns true if the building point is already in the building
+        let isInBuilding = (bp:BuildingPoint) : boolean => {
+            for (let p of this._points) {
+                if (p.equals(bp)){
+                    return true;
+                }
+            }
+            return false;
+        };
+        
+        // returns a random neighbor of the given hex
+        let getNext = (q, r) : {point:BuildingPoint, q:number, r:number} => {
+            let neighbors = grid.neighbors(q, r);
+            shuffle(neighbors);
+            for (let i=0; i<neighbors.length; i++) {
+                let center = grid.getCenterXY(neighbors[i].q, neighbors[i].r);
+                let bp = new BuildingPoint(new BABYLON.Vector3(center.x, 0, center.y), this);
+                if (!isInBuilding(bp)) { 
+                    return {
+                        point:bp, 
+                        q:neighbors[i].q,
+                        r:neighbors[i].r
+                    };
+                }
+            }                    
+            return null;        
+        };        
+        
+        // Start a random shape with the center of the grid and iterate over neighbors
+        let currentHex = coordinates[0];
+        let center = grid.getCenterXY(currentHex.q, currentHex.r);
+        let first = new BuildingPoint(new BABYLON.Vector3(center.x, 0, center.y), this);
+        this._points.push(first);
+        
+        for (let i=0; i<size; i++) {
+            let next = getNext(currentHex.q, currentHex.r);
+            if (!next) break;                        
+            this._points.push(next.point);
+            currentHex.q = next.q, currentHex.r = next.r;
+        } 
+    }    
     
     /**
      * Propagate the material of this node to the child mesh.
@@ -51,6 +158,9 @@ abstract class Building extends BABYLON.Mesh{
     
     get workingSite() : MapHexagon {
         return this._workingSite;
+    }
+    get points () : Array<BuildingPoint> {
+        return this._points;
     }
     
     /**
@@ -71,16 +181,44 @@ abstract class Building extends BABYLON.Mesh{
     protected abstract _initCost() : void;
     
     /**
-     * Create the shape of the building.
+     * Retuens the 3D model of the building to add on hexagons. 
+     * The 3D model returned should have its position set one buildingpoint
      */
-    protected abstract _createBuildingMesh() : BABYLON.Mesh;
+    protected abstract _getBuildingModel() : BABYLON.Mesh;
     
     /**
-     * Function used to init the building (create a set of hexagon for example for 
-     * BaseExtension...)
-     * @param data Any kind of data the building need to initialize
+     * Create the shape of the building.
      */
-    protected abstract _initBuilding(data?:any) : void;
+    private _createBuildingMesh() : BABYLON.Mesh {
+        // Merge all cylinders
+        let hexes = [];        
+        for (let p of this._points) {
+            let center = p.center;
+            let myhex = BABYLON.Mesh.CreateCylinder('', 0.5, 2, 2, 6, 1, this.getScene());
+            myhex.rotation.y = Math.PI/2;
+            myhex.position.copyFrom(center);
+            myhex.position.y = 0.65;
+            hexes.push(myhex);
+        }
+        // Add the building and merge it with hexagons
+        hexes.push(this._getBuildingModel());
+        return BABYLON.Mesh.MergeMeshes(hexes, true);
+    }
+    
+    /**
+     * Returns true if this building overlap with the one given as a parameter
+     */
+    public overlaps (building: Building) : boolean {
+        
+        for (let p of  this._points) {
+            for (let otherP of building.points) {
+                if (p.equals(otherP)) {
+                    return true;
+                }
+            }
+        }        
+        return false;
+    }
     
     /**
      * Set the 'waiting for minion' material to this building
@@ -112,10 +250,8 @@ abstract class Building extends BABYLON.Mesh{
      * @param hexagons The list of hexagons the building will be built on
      * @param workingSite The hexagon where the minion should come to build this building
      */
-    public prepareToBuildOn(hexagons : Array<MapHexagon>, workingSite: MapHexagon) : void {
-        // Save the list of hexagons taken by this building
-        this._hexagons = hexagons.slice();
-        
+    public prepareToBuildOn(workingSite: MapHexagon) : void {
+                
         // Set the working site
         this._workingSite = workingSite;
         

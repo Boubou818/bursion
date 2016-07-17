@@ -24,7 +24,7 @@ class HexagonMap {
     constructor(size:number) {
         this._size  = size;
         
-        let grid         = Hexagon.getDefaultGrid();
+        let grid         = MapHexagon.getDefaultGrid();
                 
         let mapCoords = grid.hexagon(0,0 ,size+10, true);
         
@@ -110,8 +110,8 @@ class HexagonMap {
     public getNearestHex (p:BABYLON.Vector3) : MapHexagon {
         let min = 99999,
         res = null;
-        this._map.forEach((hex:Hexagon) => {
-            let dist = BABYLON.Vector3.DistanceSquared(hex.getWorldCenter(), p);
+        this._map.forEach((hex:MapHexagon) => {
+            let dist = BABYLON.Vector3.DistanceSquared(hex.center, p);
             if (dist < min) {
                 min = dist;
                 res = hex;
@@ -123,10 +123,10 @@ class HexagonMap {
     /**
      * Returns the hexagon present on the map corresponding to the given position
      */
-    public getResourceHex(hexagon : Hexagon) : MapHexagon {
+    public getResourceHex(p : BuildingPoint) : MapHexagon {
 
         for (let hex of this._map) {
-            let dist = Hexagon.distanceSquared(hexagon, hex);
+            let dist = hex.distanceToPoint(p);
             if (dist < BABYLON.Epsilon) {
                return hex;
             }
@@ -150,7 +150,7 @@ class HexagonMap {
     /**
      * Remove the given hex from the map
      */
-    public removeMapHex(hexagon:Hexagon) {
+    public removeMapHex(hexagon:MapHexagon) {
         if (hexagon) {
             let mapHex = this._meshes[hexagon.name];
             if (mapHex) {
@@ -166,10 +166,11 @@ class HexagonMap {
      */
     public canBuild(ext: BaseExtension) {
         let canBuild = true;
-        for (let h of ext.hexagons) {
-            let mapHex = this.getResourceHex(h);
-            canBuild = canBuild && (mapHex.type === HexagonType.Land);
-        }
+        // TODO FINISH HERE
+        // for (let h of ext.hexagons) {
+        //     let mapHex = this.getResourceHex(h);
+        //     canBuild = canBuild && (mapHex.type === HexagonType.Land);
+        // }
         return canBuild;
     }
     
@@ -253,7 +254,7 @@ class HexagonMap {
             }
            
             hex.isVisible = true;
-            hex.position.copyFrom(h.getWorldCenter()); 
+            hex.position.copyFrom(h.center); 
             
             hex.freezeWorldMatrix();  
             
@@ -264,13 +265,13 @@ class HexagonMap {
             if (h.resourceSlot.resource === Resources.Wood) {
                 let wood = woodRef.createInstance('wood');
                 wood.isVisible = true;
-                wood.position.copyFrom(h.getWorldCenter());
+                wood.position.copyFrom(h.center);
                 wood.freezeWorldMatrix();
             }
             if (h.resourceSlot.resource === Resources.Rock) {
                 let rock = rockRef.createInstance('rock');
                 rock.isVisible = true;
-                rock.position.copyFrom(h.getWorldCenter());
+                rock.position.copyFrom(h.center);
                 rock.freezeWorldMatrix();
             }            
         }

@@ -86,9 +86,9 @@ class FogOfWar extends BABYLON.Mesh {
         // Opacity texture should be updated after this
     }
     
-    private _setFogForHex (hex:Hexagon, options:{radius:number, color1:string, color2?:string, shape?:string}) {
+    private _setFogForHex (hex:MapHexagon, options:{radius:number, color1:string, color2?:string, shape?:string}) {
                        
-        let ray = new BABYLON.Ray(hex.getWorldCenter(), BABYLON.Vector3.Up());
+        let ray = new BABYLON.Ray(hex.center, BABYLON.Vector3.Up());
         let pr = this.getScene().pickWithRay(ray, this._pickPredicate.bind(this));        
         let texcoords = pr.getTextureCoordinates();         
         let textSize = this._opacityTexture.getSize();                 
@@ -116,7 +116,7 @@ class FogOfWar extends BABYLON.Mesh {
     /**
      * Draw a circle in the opacity text for the given hex 
      */
-    public dissipateFog(array: Array<Hexagon>) {    
+    public dissipateFog(array: Array<MapHexagon>) {    
         
         // Clear the whole context
         this._createFog();

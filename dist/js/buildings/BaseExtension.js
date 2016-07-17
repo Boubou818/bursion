@@ -13,16 +13,62 @@ var __extends = (this && this.__extends) || function (d, b) {
  */
 var BaseExtension = (function (_super) {
     __extends(BaseExtension, _super);
-    function BaseExtension(scene, template) {
-        _super.call(this, '_shape_', scene);
+    function BaseExtension(game) {
+        _super.call(this, game);
         // The set of hexagons. These hexagons does not contains any resources
         this.hexagons = [];
-        this._initShape(template);
     }
+    /**
+     * 10 Wood - 20 Rock
+     */
+    BaseExtension.prototype._initCost = function () {
+        // Init cost
+        this._resourcesNeeded[Resources.Wood] = 10;
+        this._resourcesNeeded[Resources.Rock] = 20;
+    };
+    /**
+     * Create and set the base extension material
+     */
+    BaseExtension.prototype._setWaitingForMinionMaterial = function () {
+        var mat = this._game.scene.getMaterialByName('_baseExtensionMaterial_');
+        if (!mat) {
+            var mymat = new BABYLON.StandardMaterial('_baseExtensionMaterial_', this._game.scene);
+            mymat.diffuseColor = BABYLON.Color3.FromInts(255, 152, 0);
+            mymat.specularColor = BABYLON.Color3.Black();
+            mat = mymat;
+        }
+        this.material = mat;
+    };
+    /**
+     * Create and set the prebuild base extension material
+     */
+    BaseExtension.prototype._setPrebuildMaterial = function () {
+        var mat = this._game.scene.getMaterialByName('_baseExtensionWaitingMaterial_');
+        if (!mat) {
+            var mymat = new BABYLON.StandardMaterial('_baseExtensionWaitingMaterial_', this._game.scene);
+            mymat.diffuseColor = BABYLON.Color3.Green();
+            mymat.specularColor = BABYLON.Color3.Black();
+            mat = mymat;
+        }
+        this.material = mat;
+    };
+    /**
+     * Create and set base extension material
+     */
+    BaseExtension.prototype._setFinishedMaterial = function () {
+        var mat = this._game.scene.getMaterialByName('_baseExtensionFinishedMaterial_');
+        if (!mat) {
+            var mymat = new BABYLON.StandardMaterial('_baseExtensionFinishedMaterial_', this._game.scene);
+            mymat.diffuseColor = BABYLON.Color3.FromInts(126, 138, 162);
+            mymat.specularColor = BABYLON.Color3.Black();
+            mat = mymat;
+        }
+        this.material = mat;
+    };
     /**
      * Create the shape, which has a random size between 3 and 5 hexs.
      */
-    BaseExtension.prototype._initShape = function (template) {
+    BaseExtension.prototype._initBuilding = function () {
         var _this = this;
         var grid = Hexagon.getDefaultGrid();
         var coordinates = grid.hexagon(0, 0, 3, true);
@@ -49,34 +95,22 @@ var BaseExtension = (function (_super) {
             }
             return null;
         };
-        // If a template is given in parameter, use template
-        if (template) {
-            for (var i = 0; i < template.length - 1; i += 2) {
-                this.hexagons.push(new Hexagon(template[i], template[i + 1], grid, this));
-            }
+        // Start a random shape with the center of the grid and iterate over neighbors
+        var currentHex = coordinates[0];
+        var first = new Hexagon(currentHex.q, currentHex.r, grid, this);
+        this.hexagons.push(first);
+        for (var i = 0; i < size; i++) {
+            var next = getNext(currentHex.q, currentHex.r);
+            if (!next)
+                break;
+            this.hexagons.push(next);
+            currentHex.q = next.q, currentHex.r = next.r;
         }
-        else {
-            // Else start a random shape
-            // Start with the center of the grid and iterate over neighbors
-            var currentHex = coordinates[0];
-            var first = new Hexagon(currentHex.q, currentHex.r, grid, this);
-            this.hexagons.push(first);
-            for (var i = 0; i < size; i++) {
-                var next = getNext(currentHex.q, currentHex.r);
-                if (!next)
-                    break;
-                this.hexagons.push(next);
-                currentHex.q = next.q, currentHex.r = next.r;
-            }
-        }
-        // Create 3D model        
-        this._child = this._createModel();
-        this._child.parent = this;
     };
     /**
      * Returns a 3D model corresponding to this shape
      */
-    BaseExtension.prototype._createModel = function () {
+    BaseExtension.prototype._createBuildingMesh = function () {
         var _this = this;
         // Merge all cylinders
         var hexes = [];
@@ -85,6 +119,7 @@ var BaseExtension = (function (_super) {
             var myhex = BABYLON.Mesh.CreateCylinder('', 0.5, 2, 2, 6, 1, _this.getScene());
             myhex.rotation.y = Math.PI / 2;
             myhex.position.copyFrom(center);
+            myhex.position.y = 0.65;
             hexes.push(myhex);
         });
         return BABYLON.Mesh.MergeMeshes(hexes, true);
@@ -116,23 +151,39 @@ var BaseExtension = (function (_super) {
         }
         return false;
     };
-    Object.defineProperty(BaseExtension.prototype, "material", {
-        set: function (value) {
-            this._child.material = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
+    return BaseExtension;
+}(Building));
+var StarterExtension = (function (_super) {
+    __extends(StarterExtension, _super);
+    function StarterExtension(game) {
+        _super.call(this, game);
+    }
+    StarterExtension.prototype._initCost = function () {
+        this._resourcesNeeded[Resources.Wood] = 0;
+        this._resourcesNeeded[Resources.Rock] = 0;
+    };
+    /**
+     * The starter extension
+     */
+    StarterExtension.prototype._initBuilding = function (data) {
+        var grid = Hexagon.getDefaultGrid();
+        var coordinates = grid.hexagon(0, 0, 3, true);
+        // Use template
+        for (var i = 0; i < StarterExtension.TEMPLATE.length - 1; i += 2) {
+            this.hexagons.push(new Hexagon(StarterExtension.TEMPLATE[i], StarterExtension.TEMPLATE[i + 1], grid, this));
+        }
+        // No resources slots for template
+    };
     // Q and R coordinates of a starter platform
-    BaseExtension.STARTER_TEMPLATE = [
+    StarterExtension.TEMPLATE = [
+        -1, 1,
         0, 0,
         1, 0,
         2, 0,
-        3, 0,
         0, 1,
         1, 1,
-        2, 1,
-        3, 1];
-    return BaseExtension;
-}(BABYLON.Mesh));
+        2, 1
+    ];
+    return StarterExtension;
+}(BaseExtension));
 //# sourceMappingURL=BaseExtension.js.map

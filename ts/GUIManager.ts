@@ -60,26 +60,27 @@ class GUIManager {
      * Create the 'static' button : 
      * - Build
      * - Gather wood
+     * - 
      * ...
      */
     public initHUD() {
         
         this._initResourcesTexts();
         
-        let buttonBuild = new BABYLON.Rectangle2D(
-		{ 	parent: this._canvas2D, id: "build", x: 60, y: 100, width: 100, height: 40, 
+        let buttonCreateExt = new BABYLON.Rectangle2D(
+		{ 	parent: this._canvas2D, id: "new_ext", x: 60, y: 100, width: 120, height: 40, 
 			fill: "#40C040FF",
 			children: 
 			[
-				new BABYLON.Text2D("Build", { marginAlignment: "h: center, v: center" })
+				new BABYLON.Text2D("New extension", { marginAlignment: "h: center, v: center" })
 			]
 		});
         // Add action to the build button
-        buttonBuild.pointerEventObservable.add(this._game.build.bind(this._game), BABYLON.PrimitivePointerInfo.PointerUp); 
+        buttonCreateExt.pointerEventObservable.add(this._game.createNewExtension.bind(this._game), BABYLON.PrimitivePointerInfo.PointerUp); 
 
         // Gather wood
         let buttonWood = new BABYLON.Rectangle2D(
-		{ 	parent: this._canvas2D, id: "gatherWood", x: 180, y: 100, width: 120, height: 40, 
+		{ 	parent: this._canvas2D, id: "gatherWood", x: 200, y: 100, width: 120, height: 40, 
 			fill: "#40C040FF",
 			children: 
 			[
@@ -91,7 +92,7 @@ class GUIManager {
         
         // Gather wood
         let buttonRock = new BABYLON.Rectangle2D(
-		{ 	parent: this._canvas2D, id: "gatherRock", x: 320, y: 100, width: 120, height: 40, 
+		{ 	parent: this._canvas2D, id: "gatherRock", x: 340, y: 100, width: 120, height: 40, 
 			fill: "#40C040FF",
 			children: 
 			[
@@ -100,6 +101,18 @@ class GUIManager {
 		});
         // Add action to the button
         buttonRock.pointerEventObservable.add(this._game.gatherRock.bind(this._game), BABYLON.PrimitivePointerInfo.PointerUp);
+        
+        // Gather wood
+        let buttonBuild = new BABYLON.Rectangle2D(
+		{ 	parent: this._canvas2D, id: "build", x: 480, y: 100, width: 120, height: 40, 
+			fill: "#40C040FF",
+			children: 
+			[
+				new BABYLON.Text2D("Build", { marginAlignment: "h: center, v: center" })
+			]
+		});
+        // Add action to the button
+        buttonBuild.pointerEventObservable.add(this._game.build.bind(this._game), BABYLON.PrimitivePointerInfo.PointerUp);
     }
     
     /**

@@ -3,8 +3,6 @@
  */
 var Hexagon = (function () {
     function Hexagon(q, r, grid, shape) {
-        // The resource slot this hexagon contains
-        this.resourceSlot = new ResourceSlot();
         this.q = q;
         this.r = r;
         var center = grid.getCenterXY(q, r);

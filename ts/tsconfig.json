@@ -9,20 +9,23 @@
         "Game.ts",
         "GUIManager.ts",
 
+        "buildings/FogOfWar.ts",
+        "buildings/HexagonType.ts",
         "buildings/BaseExtension.ts",
         "buildings/Hexagon.ts",
-        "buildings/HexagonGrid.ts",
+        "buildings/MapHexagon.ts",
+        "buildings/HexagonMap.ts",
         "buildings/Building.ts",
         
         "resources/Resource.ts",
         "resources/ResourceSlot.ts",
+        "resources/Resource.ts",
 
         "minions/Minion.ts",
         "minions/MinionController.ts",
         
         "minions/strategies/WorkingStrategy.ts",
         "minions/strategies/ResourceStrategy.ts",
-
-        "resources/Resource.ts"
+        "minions/strategies/BuildStrategy.ts"
     ]
 }

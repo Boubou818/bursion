@@ -6,35 +6,70 @@
  * Hexagon coordinates are relative to the shape.
  * The center of the shape is the first hexagon at (0,0).
  */
-class BaseExtension extends BABYLON.Mesh {
+class BaseExtension extends Building {
     
     // The set of hexagons. These hexagons does not contains any resources
     public hexagons : Array<Hexagon> = []; 
+      
+    constructor(game:Game) {
+        super(game);
+    }
     
-    // The shape mesh    
-    protected _child : BABYLON.AbstractMesh;
+    /**
+     * 10 Wood - 20 Rock
+     */
+    protected _initCost() { 
+        // Init cost
+        this._resourcesNeeded[Resources.Wood] = 10;
+        this._resourcesNeeded[Resources.Rock] = 20;
+    }
     
-    // Q and R coordinates of a starter platform
-    public static STARTER_TEMPLATE : Array<number> = [
-        0, 0,
-        1, 0, 
-        2, 0, 
-        3, 0, 
-        0, 1, 
-        1, 1,
-        2, 1, 
-        3, 1];
-        
-    constructor(scene: BABYLON.Scene, template?:Array<number>) {
-        super('_shape_', scene);
-        
-        this._initShape(template);
+    
+    /**
+     * Create and set the base extension material
+     */
+    protected _setWaitingForMinionMaterial() : void {
+        let mat : BABYLON.Material = this._game.scene.getMaterialByName('_baseExtensionMaterial_');
+        if (!mat) {
+            let mymat = new BABYLON.StandardMaterial('_baseExtensionMaterial_', this._game.scene);
+            mymat.diffuseColor = BABYLON.Color3.FromInts(255, 152, 0);
+            mymat.specularColor = BABYLON.Color3.Black();
+            mat = mymat;
+        }
+        this.material = mat;
+    }
+    
+    /**
+     * Create and set the prebuild base extension material
+     */
+    protected _setPrebuildMaterial() : void {        
+        let mat : BABYLON.Material = this._game.scene.getMaterialByName('_baseExtensionWaitingMaterial_');
+        if (!mat) {
+            let mymat = new BABYLON.StandardMaterial('_baseExtensionWaitingMaterial_', this._game.scene);
+            mymat.diffuseColor = BABYLON.Color3.Green();
+            mymat.specularColor = BABYLON.Color3.Black();
+            mat = mymat;
+        }
+        this.material = mat;
+    }
+    /**
+     * Create and set base extension material
+     */
+    protected _setFinishedMaterial() : void {        
+        let mat : BABYLON.Material = this._game.scene.getMaterialByName('_baseExtensionFinishedMaterial_');
+        if (!mat) {
+            let mymat = new BABYLON.StandardMaterial('_baseExtensionFinishedMaterial_', this._game.scene);
+            mymat.diffuseColor = BABYLON.Color3.FromInts(126, 138, 162);
+            mymat.specularColor = BABYLON.Color3.Black();
+            mat = mymat;
+        }
+        this.material = mat;
     }
 
     /**
      * Create the shape, which has a random size between 3 and 5 hexs.
      */
-    private _initShape (template?:Array<number>) {
+    protected _initBuilding () {
         
         let grid = Hexagon.getDefaultGrid();
         let coordinates = grid.hexagon(0,0,3, true);
@@ -64,37 +99,23 @@ class BaseExtension extends BABYLON.Mesh {
             }                    
             return null;        
         }
-        // If a template is given in parameter, use template
-        if (template) {
-            for (let i=0; i<template.length-1; i+=2) {
-                this.hexagons.push(new Hexagon(template[i], template[i+1], grid, this));
-            }
-            // No resources slots for template
-        } else {
-            // Else start a random shape
-            // Start with the center of the grid and iterate over neighbors
-            let currentHex = coordinates[0];
-            let first = new Hexagon(currentHex.q, currentHex.r, grid, this);
-            this.hexagons.push(first);
-            
-            for (let i=0; i<size; i++) {
-                let next = getNext(currentHex.q, currentHex.r);
-                if (!next) break;                        
-                this.hexagons.push(next);
-                currentHex.q = next.q, currentHex.r = next.r;
-            }  
-        }
-
-        // Create 3D model        
-        this._child = this._createModel();
-        this._child.parent = this;    
+        // Start a random shape with the center of the grid and iterate over neighbors
+        let currentHex = coordinates[0];
+        let first = new Hexagon(currentHex.q, currentHex.r, grid, this);
+        this.hexagons.push(first);
         
+        for (let i=0; i<size; i++) {
+            let next = getNext(currentHex.q, currentHex.r);
+            if (!next) break;                        
+            this.hexagons.push(next);
+            currentHex.q = next.q, currentHex.r = next.r;
+        } 
     }    
 
     /** 
      * Returns a 3D model corresponding to this shape
      */
-    private _createModel() : BABYLON.Mesh {
+    protected _createBuildingMesh() : BABYLON.Mesh {
         // Merge all cylinders
         let hexes = [];        
         this.hexagons.forEach((hex) => {
@@ -102,6 +123,7 @@ class BaseExtension extends BABYLON.Mesh {
             let myhex = BABYLON.Mesh.CreateCylinder('', 0.5, 2, 2, 6, 1, this.getScene());
             myhex.rotation.y = Math.PI/2;
             myhex.position.copyFrom(center);
+            myhex.position.y = 0.65;
             hexes.push(myhex);
         });
         return BABYLON.Mesh.MergeMeshes(hexes, true);
@@ -110,7 +132,7 @@ class BaseExtension extends BABYLON.Mesh {
     /**
      * Returns -1 if the given hex is not in the shape
      */
-    private _isInShape(hex:Hexagon) {
+    protected _isInShape(hex:Hexagon) {
         for (let i=0; i<this.hexagons.length; i++) {
             if (this.hexagons[i].equals(hex)){
                 return true;
@@ -133,9 +155,43 @@ class BaseExtension extends BABYLON.Mesh {
         } 
         return false;             
     } 
-    
-    set material(value:BABYLON.Material) {
-        this._child.material = value;
-    }
    
+}
+
+class StarterExtension extends BaseExtension {
+       
+    // Q and R coordinates of a starter platform
+    private static TEMPLATE : Array<number> = [
+        -1, 1,
+        0, 0,
+        1, 0, 
+        2, 0, 
+        0, 1, 
+        1, 1,
+        2, 1
+        ];        
+        
+    constructor(game) {
+        super(game);  
+    }
+    
+    protected _initCost() {   
+        this._resourcesNeeded[Resources.Wood] = 0;
+        this._resourcesNeeded[Resources.Rock] = 0;
+    }
+    
+    /**
+     * The starter extension 
+     */
+    protected _initBuilding (data?:any) {
+        
+        let grid = Hexagon.getDefaultGrid();
+        let coordinates = grid.hexagon(0,0,3, true);
+ 
+        // Use template
+        for (let i=0; i<StarterExtension.TEMPLATE.length-1; i+=2) {
+            this.hexagons.push(new Hexagon(StarterExtension.TEMPLATE[i], StarterExtension.TEMPLATE[i+1], grid, this));
+        }
+        // No resources slots for template
+    }
 }

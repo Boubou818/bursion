@@ -4,77 +4,133 @@ declare var Graph : any;
  * - the field where minions can walk on,
  * - all building built by the player
  * 
+ * At the beginning of the game, the base is composed of a starting extension, and a drakkar.
  */
 class Base {
     
-    // The list of buildings of the base. Minions can walk on each one of these buildings
+    // The list of extensions of the base. Minions can walk on each one of these buildings
     private _extensions : Array<BaseExtension> = [];
+    
+    // The list of building (all status : waiting, finished...) in the base
+    private _buildings : Array<Building> = [];
 
-    // All resources hexagones unfolded in a single array. Updated each time a new building is built
-    private _hexUnfolded : Array<Hexagon> = [];
+    // All resources hexagones coming from baseextensions unfolded in a single array. Updated each time a new building is built
+    private _hexUnfolded : Array<MapHexagon> = [];
+    
+    // The fog of war that will be updated each time an extension is built
+    private _fogOfWar : FogOfWar;
     
     // The Djikstra graph
-    public graph : any;
+    public graph : any = new Graph();
     
     // The game instance
     private _game : Game;
 
     // The map where the player base will be built on
-    private _map : HexagonGrid;
+    private _map : HexagonMap;
     
     // The base is always composed of a starting platform, composed of a set of 4*4 hex
-    constructor(game:Game, map : HexagonGrid) {
+    constructor(game:Game, map : HexagonMap) {
         this._map = map;
         this._game = game;
-        let starter = new BaseExtension(game.scene, BaseExtension.STARTER_TEMPLATE);
+        let starter = new StarterExtension(game);
+        starter.preBuild();
+        
+        // Set the base on the starting position of the map
+        let starterPosition : MapHexagon = this._map.basePosition;
+        starter.position.copyFrom(starterPosition.getWorldCenter());
+        
+        let drakkarPosition : MapHexagon = this._map.drakkarPosition;
+        let drakkar = BABYLON.Mesh.CreateBox('', 1, game.scene);
+        
+        drakkar.position.copyFrom(drakkarPosition.getWorldCenter());
+        drakkar.position.y = 1;
+        drakkar.scaling.x = 3;
+        
+        // Create fog of war
+        this._fogOfWar = new FogOfWar(150, game.scene);
+        this._fogOfWar.position.y = 1.8/2+0.1; // TODO FIX THIS SHIT
+        
+        // Add this extension to the player base
         this.addExtension(starter);
-    }
-    
-    /**
-     * Returns the base material (earth texture)
-     */
-    public getBaseMaterial() : BABYLON.Material {
-        let mat : BABYLON.Material = this._game.scene.getMaterialByName('_baseMaterial_');
-        if (!mat) {
-            let mymat = new BABYLON.StandardMaterial('_baseMaterial_', this._game.scene);
-            mymat.diffuseColor = BABYLON.Color3.FromInts(194,199,191);
-            mymat.specularColor = BABYLON.Color3.Black();
-            mat = mymat;
-        }
-        return mat;
+        
+        // The starter should not be waiting for minions
+        starter.finishBuild(this);
     }
 
     /**
      * Returns the first hexagon of the base
      */
-    public getStarterHex() : Hexagon {
+    public getStarterHex() : MapHexagon {
         return this._hexUnfolded[0];
     }
     
     /**
      * Add a building to the player base. The graph is updated.
+     * @param building the extension to add to the base
+     * @param hex The hexagon position of the building.
      */
-    public addExtension(building : BaseExtension) {  
-        building.material = this.getBaseMaterial();
-             
-        this._extensions.push(building);
+    public addExtension(extension : BaseExtension) { 
         
-        // Unfold all hexagons of the map
-        let resourcesHex = this._getResourcesOnMap(building)
+        // Unfold all hexagons of the map and add them to the base
+        let resourcesHex = this._getResourcesOnMap(extension)
+        
+        // Get the working site hexagon - where minion will build it
+        let workingSite = this._getWorksiteHex(resourcesHex);
+        
+        // Add the building place to the base
         for (let hex of resourcesHex) {               
             this._hexUnfolded.push(hex);  
-            this._map.removeMapHex(hex);         
-        }
+            this._map.removeMapHex(hex);      
+        }        
+        this._extensions.push(extension);  
+                
+        // Build it
+        extension.prepareToBuildOn(resourcesHex, workingSite); 
+        
+        // Remove fog where needed
+        this._fogOfWar.dissipateFog(this._hexUnfolded); 
+        
+        // Add working site in the walking graph
+        this._addHexToWalkingGraph(extension.workingSite) 
+    }
+    
+    /**
+     * Function called when a building is finished.
+     * - Update walking graph
+     */
+    public buildingFinished(building : Building) { 
         
         // Update walking graph
-        this._createWalkingGraph();
+        this._createWalkingGraph();        
+    }
+    
+    /**
+     * Returns the hexagon of the building the nearest of the base
+     */
+    private _getWorksiteHex(buildingPlaces : Array<MapHexagon>) : MapHexagon {
+        let res = buildingPlaces[0];
+        let min = Number.POSITIVE_INFINITY;
+        
+        // For each hexagons the building is set on...
+        for (let b of buildingPlaces) {
+            // ... check which one is the nearest of the base
+            for (let h of this._hexUnfolded) {
+                let dist = Hexagon.distanceSquared(b, h);
+                if (dist < min) {
+                    min = dist;
+                    res = b;
+                }    
+            }
+        }
+        return res;
     }
 
     /**
      * Setup this building on the map, and retrieve the list of hexagon present on the map.
      */
-    private _getResourcesOnMap(ext : BaseExtension) : Array<Hexagon> {
-        let resourcesHex = [];
+    private _getResourcesOnMap(ext : BaseExtension) : Array<MapHexagon> {
+        let resourcesHex : Array<MapHexagon> = [];
 
         // For each hexagon, get the corresponding resource 
         for (let hex of ext.hexagons) {
@@ -87,25 +143,38 @@ class Base {
     /**
      * Create the base map by adding a link between all neighbors
      */
-    private _createWalkingGraph() {
+    private _createWalkingGraph() : void {
         
         this.graph = new Graph();
 
         for (let hex1 of this._hexUnfolded) {
-            let neighbors = {}; 
-            for (let hex2 of this._hexUnfolded) { 
-                if (Hexagon.areNeighbors(hex1, hex2)) {
-                    neighbors[hex2.name] = 1;
-                } 
-            }
-            this.graph.addVertex(hex1.name, neighbors);
+            this._addHexToWalkingGraph(hex1);
         }        
+    }
+    
+    /**
+     * Add a given hexagon to the walking graph
+     */
+    private _addHexToWalkingGraph(hex1: Hexagon) : void {
+        let neighbors = {}; 
+        for (let hex2 of this._hexUnfolded) { 
+            if (Hexagon.areNeighbors(hex1, hex2)) {
+                // Road from hex1 to hex2
+                neighbors[hex2.name] = 1;
+                // Road from hex2 to hex1
+                if (!this.graph.vertices[hex2.name]) {
+                    this.graph.vertices[hex2.name] = {};
+                }                
+                this.graph.vertices[hex2.name][hex1.name] = 1;
+            } 
+        }
+        this.graph.addVertex(hex1.name, neighbors);
     }
 
     /**
      * Returns the hexagon corresponding to the given name
      */
-    private _getHexByName(name:string) {
+    private _getHexByName(name:string) : MapHexagon {
         for (let hex1 of this._hexUnfolded) {
             if (hex1.name === name) {
                 return hex1;
@@ -114,9 +183,9 @@ class Base {
         console.warn('No hexagon with name ', name);
         return null;
     }
-
+    
     public getHexByName(name) {
-        return this._getHexByName(name);
+        return this._getHexByName(name); 
     }
         
     /**
@@ -124,13 +193,14 @@ class Base {
      * that means no overlap with another shape, and it must be 
      * connected with at least one shape.
      */
-    public canBuildHere (shape:BaseExtension) {
+    public canBuildHere (shape:BaseExtension) : boolean {
+        
         for (let s of this._extensions) {
             if (shape.overlaps(s)) {
                 return false;
             } 
         }
-        //  TODO Connected with at least one shape : there is at least one 
+        // Connected with at least one shape : there is at least one 
         // hexagon of the new shape with distance < DISTANCE_BETWEEN_NEIGHBORS
         let areConnected = false;
         for (let sHex of shape.hexagons) {
@@ -138,14 +208,21 @@ class Base {
                 areConnected = areConnected || Hexagon.areNeighbors(sHex, bHex)
             }
         }
-        return areConnected;
+        
+        // Can build only on land
+        let onLand = this._map.canBuild(shape);
+        
+        return areConnected && onLand;
     }
 
     /**
      * Returns the shortest path from the given hex to the given hex.
      */
-    public getPathFromTo(from: Hexagon, to:Hexagon) : Array<Hexagon>{
-        let pathString = this.graph.shortestPath(from.name, to.name).reverse();
+    public getPathFromTo(from: Hexagon, to:Hexagon) : Array<MapHexagon>{
+        let pathString : Array<string> = this.graph.shortestPath(from.name, to.name).reverse();
+        if (pathString.length === 0) {
+            console.warn('No road found to ', to.name);
+        }
         let pathHex = [];
         for (let str of pathString) {
             pathHex.push(this._getHexByName(str));
@@ -157,8 +234,9 @@ class Base {
      * Locate the nearest resource slot containing the given resource on the map 
      * (the resource is available) and return it. 
      * Returns null if no such hexagon is found.
+     * @param hexagon The position from where the nearest resource will be returned
      */
-    public getNearestResource(hexagon:Hexagon, resource:Resources) : Hexagon {
+    public getNearestResource(hexagon:Hexagon, resource:Resources) : MapHexagon {
         let nearest = null;
         let distance = Number.POSITIVE_INFINITY;
 
@@ -177,10 +255,35 @@ class Base {
         }
         return nearest;
     }
-
-
-
-       
     
-    
+    /**
+     * Returns the nearest building waiting to be built
+     */
+    public getNearestBuildingWaitingForMinion(hexagon:Hexagon) : Building {
+        let nearest = null;
+        let distance = Number.POSITIVE_INFINITY;
+
+        let check = (b:Building) => {
+            // Check distance
+            let currentDist = this.getPathFromTo(hexagon, b.workingSite).length;
+            if (currentDist < distance) {
+                nearest = b;
+                distance = currentDist;
+            }
+        }        
+        
+        // Check base extensions...
+        for (let ext of this._extensions) {
+            if (ext.waitingToBeBuilt) {
+                check(ext);
+            }
+        }
+        //.. and check buildings  
+        for (let build of this._buildings) {
+            if (build.waitingToBeBuilt) {
+                check(build);
+            }
+        }
+        return nearest;
+    }
 }

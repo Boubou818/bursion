@@ -8,13 +8,10 @@ class Hexagon {
     public r:number;
     private center: BABYLON.Vector3;
     // The unique name of this hex
-    public name : string;
+    public name : string; 
     
     // The shape this hex belongs to
     private _shape : BaseExtension;
-    
-    // The resource slot this hexagon contains
-    public resourceSlot : ResourceSlot = new ResourceSlot();
     
     // The distance between two neighbors
     private static DISTANCE_BETWEEN_TWO_NEIGHBORS = 1.75;

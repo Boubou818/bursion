@@ -62,9 +62,16 @@ class Game {
     /**
      * Build a new shape
      */
-    public build() {
+    public createNewExtension() {
         if (!this._currentShape) {
-            this._currentShape = new BaseExtension(this.scene);
+            this._currentShape = new BaseExtension(this);
+            if (this._currentShape.canBuild()) {
+                this._currentShape.preBuild();
+            } else {
+                console.warn('Cannot build a new base extension !');
+                this._currentShape.dispose();
+                this._currentShape = null;
+            }
         }
     }
 
@@ -84,6 +91,15 @@ class Game {
             m.setStrategy(new ResourceStrategy(m, Resources.Rock));
         }
     }
+    
+    /**
+     * Order to all minions to build the nearest building
+     */
+    public build() {
+        for (let m of this._hoard) {
+            m.setStrategy(new BuildStrategy(m));
+        }
+    }
 
     /**
      * Add the given amount of material of the given resource.
@@ -100,26 +116,19 @@ class Game {
 
 
     private _initGame() {
-        // Init costs
-        
         
         // Init GUI 
         this._gui = new GUIManager(this);
         
         // Init resource map
-        this.resources[Resources.Wood] = 0;
-        this.resources[Resources.Rock] = 0;
-        this.resources[Resources.Meat] = 0;
+        this.resources[Resources.Wood] = 100;
+        this.resources[Resources.Rock] = 100;
+        this.resources[Resources.Meat] = 100;
         
         let ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 2, this.scene);
         ground.isVisible = false;
 
-        let green = new BABYLON.StandardMaterial('', this.scene);
-        green.diffuseColor = BABYLON.Color3.Green();
-        let red = new BABYLON.StandardMaterial('', this.scene);
-        red.diffuseColor = BABYLON.Color3.Red();
-
-        let grid = new HexagonGrid(9);
+        let grid = new HexagonMap(15);
         grid.draw(this.scene);
 
         this.scene.pointerMovePredicate = (mesh) => {
@@ -133,10 +142,11 @@ class Game {
                 if (pr.hit) {
                     let overlaps = false;
                     // Update shape color
+                    let mat = <BABYLON.StandardMaterial>this._currentShape.material;
                     if (this.base.canBuildHere(this._currentShape)) {
-                        this._currentShape.material = green;
+                        mat.diffuseColor = BABYLON.Color3.Green();
                     } else {
-                        this._currentShape.material = red;
+                        mat.diffuseColor = BABYLON.Color3.Red();
                     }
 
                     let p = pr.pickedPoint;
@@ -164,13 +174,13 @@ class Game {
         //     // center of the hexagon
         //     let b = BABYLON.Mesh.CreateBox('', 0.2, this.scene);
         //     b.position.copyFrom(hex.getWorldCenter());
-        //     b.position.y = 0.75;
+        //     b.position.y = 1.5;
 
         //     for (let n in neighbors) {
         //         // get hex by name
         //         let hexn = this.base.getHexByName(n);
         //         let pos = hexn.getWorldCenter();
-        //         pos.y = 0.75;
+        //         pos.y = 1.5;
         //         BABYLON.Mesh.CreateLines('', [b.position.clone(), pos], this.scene);
         //     }
         // }

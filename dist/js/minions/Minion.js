@@ -74,6 +74,12 @@ var Minion = (function (_super) {
     Minion.prototype.getNearestResource = function (res) {
         return this.base.getNearestResource(this.currentHexagon, res);
     };
+    /**
+     * Returns the nearest building waiting to be built
+     */
+    Minion.prototype.getNearestBuilding = function () {
+        return this.base.getNearestBuildingWaitingForMinion(this.currentHexagon);
+    };
     Minion.prototype.setStrategy = function (strat) {
         // If the minion already had a strategy, delete it
         if (this.strategy) {
@@ -85,7 +91,6 @@ var Minion = (function (_super) {
      * Add the given number of material to the game
      */
     Minion.prototype.addResourceToGame = function (amount, type) {
-        console.log(amount, type);
         this._game.addResources(this, amount, type);
     };
     // The strategy is applied each 150ms

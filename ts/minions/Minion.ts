@@ -12,7 +12,7 @@ class Minion extends BABYLON.Mesh {
 
     // The hexagon this minion currently is.
     // This attribute should be updated each time the minion walks on an hex.
-    public currentHexagon : Hexagon;
+    public currentHexagon : MapHexagon;
     
     // The instance of the game
     private _game : Game;
@@ -55,12 +55,12 @@ class Minion extends BABYLON.Mesh {
         this.position.y = 0.75;
 
         // At each destination, the current hexagon where the minion lives is updated.
-        this._controller.atEachDestination = (hx:Hexagon) => {
+        this._controller.atEachDestination = (hx:MapHexagon) => {
             this.currentHexagon = hx;
         };        
         
         // Notify the strategy when the final destination has been reached
-        this._controller.atFinalDestination = (data :Hexagon) => {
+        this._controller.atFinalDestination = (data : MapHexagon) => {
             if (this.strategy) {
                 this.strategy.finishedWalkingOn(data);
             }
@@ -100,8 +100,14 @@ class Minion extends BABYLON.Mesh {
     /** 
      * Returns the nearest heaxgon containing the given resource.
      */
-    public getNearestResource(res : Resources) {
+    public getNearestResource(res : Resources) : MapHexagon {
         return this.base.getNearestResource(this.currentHexagon, res);
+    }
+    /** 
+     * Returns the nearest building waiting to be built
+     */
+    public getNearestBuilding() : Building {
+        return this.base.getNearestBuildingWaitingForMinion(this.currentHexagon);
     }
     
     public setStrategy(strat:WorkingStrategy) {
@@ -116,7 +122,6 @@ class Minion extends BABYLON.Mesh {
      * Add the given number of material to the game
      */
     public addResourceToGame(amount:number, type:Resources) {
-        console.log(amount, type);
         this._game.addResources(this, amount, type);
     }
 

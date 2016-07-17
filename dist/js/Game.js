@@ -36,9 +36,17 @@ var Game = (function () {
     /**
      * Build a new shape
      */
-    Game.prototype.build = function () {
+    Game.prototype.createNewExtension = function () {
         if (!this._currentShape) {
-            this._currentShape = new BaseExtension(this.scene);
+            this._currentShape = new BaseExtension(this);
+            if (this._currentShape.canBuild()) {
+                this._currentShape.preBuild();
+            }
+            else {
+                console.warn('Cannot build a new base extension !');
+                this._currentShape.dispose();
+                this._currentShape = null;
+            }
         }
     };
     /**
@@ -60,6 +68,15 @@ var Game = (function () {
         }
     };
     /**
+     * Order to all minions to build the nearest building
+     */
+    Game.prototype.build = function () {
+        for (var _i = 0, _a = this._hoard; _i < _a.length; _i++) {
+            var m = _a[_i];
+            m.setStrategy(new BuildStrategy(m));
+        }
+    };
+    /**
      * Add the given amount of material of the given resource.
      * Generates a gui element
      */
@@ -72,21 +89,16 @@ var Game = (function () {
         this._gui.updateResourceText(this.resources[type], type);
     };
     Game.prototype._initGame = function () {
-        // Init costs
         var _this = this;
         // Init GUI 
         this._gui = new GUIManager(this);
         // Init resource map
-        this.resources[Resources.Wood] = 0;
-        this.resources[Resources.Rock] = 0;
-        this.resources[Resources.Meat] = 0;
+        this.resources[Resources.Wood] = 100;
+        this.resources[Resources.Rock] = 100;
+        this.resources[Resources.Meat] = 100;
         var ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 2, this.scene);
         ground.isVisible = false;
-        var green = new BABYLON.StandardMaterial('', this.scene);
-        green.diffuseColor = BABYLON.Color3.Green();
-        var red = new BABYLON.StandardMaterial('', this.scene);
-        red.diffuseColor = BABYLON.Color3.Red();
-        var grid = new HexagonGrid(9);
+        var grid = new HexagonMap(15);
         grid.draw(this.scene);
         this.scene.pointerMovePredicate = function (mesh) {
             return mesh.name === 'ground';
@@ -97,11 +109,12 @@ var Game = (function () {
                 if (pr.hit) {
                     var overlaps = false;
                     // Update shape color
+                    var mat = _this._currentShape.material;
                     if (_this.base.canBuildHere(_this._currentShape)) {
-                        _this._currentShape.material = green;
+                        mat.diffuseColor = BABYLON.Color3.Green();
                     }
                     else {
-                        _this._currentShape.material = red;
+                        mat.diffuseColor = BABYLON.Color3.Red();
                     }
                     var p = pr.pickedPoint;
                     p.y = 0;
@@ -126,12 +139,12 @@ var Game = (function () {
         //     // center of the hexagon
         //     let b = BABYLON.Mesh.CreateBox('', 0.2, this.scene);
         //     b.position.copyFrom(hex.getWorldCenter());
-        //     b.position.y = 0.75;
+        //     b.position.y = 1.5;
         //     for (let n in neighbors) {
         //         // get hex by name
         //         let hexn = this.base.getHexByName(n);
         //         let pos = hexn.getWorldCenter();
-        //         pos.y = 0.75;
+        //         pos.y = 1.5;
         //         BABYLON.Mesh.CreateLines('', [b.position.clone(), pos], this.scene);
         //     }
         // }

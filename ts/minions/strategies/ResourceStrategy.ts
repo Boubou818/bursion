@@ -88,7 +88,7 @@ class ResourceStrategy extends WorkingStrategy {
     /**
      * The minion arrived at the given resouceslot.
      */
-    public finishedWalkingOn(data?:Hexagon) {
+    public finishedWalkingOn(data?:MapHexagon) {
         // If the minion was traveling...
         if (this._currentState == this._states.TRAVELING) {
             // Make it generate !

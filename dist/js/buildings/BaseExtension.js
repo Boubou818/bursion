@@ -13,8 +13,8 @@ var __extends = (this && this.__extends) || function (d, b) {
  */
 var BaseExtension = (function (_super) {
     __extends(BaseExtension, _super);
-    function BaseExtension(game) {
-        _super.call(this, game);
+    function BaseExtension(game, base) {
+        _super.call(this, game, base);
         // The set of hexagons. These hexagons does not contains any resources
         this.hexagons = [];
     }
@@ -25,6 +25,7 @@ var BaseExtension = (function (_super) {
         // Init cost
         this._resourcesNeeded[Resources.Wood] = 10;
         this._resourcesNeeded[Resources.Rock] = 20;
+        this._constructionNumber = 100;
     };
     /**
      * Create and set the base extension material
@@ -69,8 +70,9 @@ var BaseExtension = (function (_super) {
      * Returns a 3D model corresponding to this shape
      */
     BaseExtension.prototype._getBuildingModel = function () {
-        var b = BABYLON.Mesh.CreateBox('_baseExtension_', 0.5, this._game.scene);
+        var b = BABYLON.Mesh.CreateBox('_baseExtension_', 0.7, this._game.scene);
         b.position.copyFrom(this._points[0].center);
+        b.position.y = 1;
         return b;
     };
     return BaseExtension;

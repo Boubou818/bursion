@@ -16,7 +16,7 @@ var Base = (function () {
         this.graph = new Graph();
         this._map = map;
         this._game = game;
-        var starter = new StarterWarehouse(game);
+        var starter = new StarterWarehouse(game, this);
         starter.preBuild();
         // Set the base on the starting position of the map
         var starterPosition = this._map.basePosition;
@@ -32,7 +32,7 @@ var Base = (function () {
         // Add this extension to the player base
         this.addBuilding(starter);
         // The starter should not be waiting for minions
-        starter.finishBuild(this);
+        starter.finishBuild();
     }
     /**
      * Returns the first hexagon of the base
@@ -109,7 +109,6 @@ var Base = (function () {
      */
     Base.prototype._createWalkingGraph = function () {
         this.graph = new Graph();
-        // TODO REFINE HERE
         for (var _i = 0, _a = this._hexUnfolded; _i < _a.length; _i++) {
             var hex1 = _a[_i];
             this._addHexToWalkingGraph(hex1);
@@ -216,7 +215,8 @@ var Base = (function () {
         return nearest;
     };
     /**
-     * Returns the nearest building waiting to be built
+     * Returns the nearest building waiting to be built.
+     * It also checks if a road exists between the position and the building
      */
     Base.prototype.getNearestBuildingWaitingForMinion = function (hexagon) {
         var _this = this;
@@ -225,7 +225,7 @@ var Base = (function () {
         var check = function (b) {
             // Check distance
             var currentDist = _this.getPathFromTo(hexagon, b.workingSite).length;
-            if (currentDist < distance) {
+            if (currentDist > 0 && currentDist < distance) {
                 nearest = b;
                 distance = currentDist;
             }

@@ -1,8 +1,8 @@
 
 class Warehouse extends Building {
 
-    constructor(game) {
-        super(game);  
+    constructor(game : Game, base : Base) {
+        super(game, base);  
     }
      
     protected _initCost() {   

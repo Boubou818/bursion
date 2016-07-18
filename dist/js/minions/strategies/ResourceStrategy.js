@@ -116,7 +116,7 @@ var ResourceStrategy = (function (_super) {
         // Delete timer
         this._generatingTimer.stop(true);
     };
-    // The time to generate a resource
+    // The time to generate a given amount of resource
     ResourceStrategy.TIME_TO_GENERATE = 2000;
     return ResourceStrategy;
 }(WorkingStrategy));

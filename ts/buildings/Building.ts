@@ -53,14 +53,21 @@ abstract class Building extends BABYLON.Mesh{
     
     protected _game:Game;
     
-    // The time to build in milliseconds
-    protected _constructionTime : number;
+    // The base this building belongs to
+    protected _base : Base;
+    
+    // The progress of the building . Is updated by minion and buildstrategy.
+    // The building is finished when progress is <= 0;
+    protected _constructionNumber : number = 0;
         
     // The place where minion will come to build this building
     protected _workingSite : MapHexagon;
     
-    // The mesh : the set of hexagons and the 3D model of the building 
-    protected _child : BABYLON.Mesh;
+    // The mesh : the set of hexagons composing the shape
+    protected _shape : BABYLON.Mesh;
+    
+    // The 3D model of the building. Its parent is this building
+    protected _buildingModel : BABYLON.Mesh;
     
     // The ressources needed to build this building. Each subclass will define this amount in the constructor
     protected _resourcesNeeded : ResourceMap<number> = [];
@@ -71,10 +78,12 @@ abstract class Building extends BABYLON.Mesh{
     // Set to true when a minion is taking care of this building
     public waitingToBeBuilt : boolean = false;
             
-    constructor(game:Game) {
+    constructor(game:Game, base : Base) {
         super('_building_', game.scene); 
         
         this._game = game;
+        
+        this._base = base;
         
         // Init the cost of this building
         this._initCost();
@@ -145,15 +154,15 @@ abstract class Building extends BABYLON.Mesh{
     }    
     
     /**
-     * Propagate the material of this node to the child mesh.
+     * Propagate the material of this node to the shape mesh only.
      */
     set material(value:BABYLON.Material) {
-        if (this._child) {
-            this._child.material = value;
+        if (this._shape) {
+            this._shape.material = value;
         }
     }
     get material() : BABYLON.Material {  
-        return this._child.material
+        return this._shape.material
     }
     
     get workingSite() : MapHexagon {
@@ -200,8 +209,6 @@ abstract class Building extends BABYLON.Mesh{
             myhex.position.y = 0.65;
             hexes.push(myhex);
         }
-        // Add the building and merge it with hexagons
-        hexes.push(this._getBuildingModel());
         return BABYLON.Mesh.MergeMeshes(hexes, true);
     }
     
@@ -237,8 +244,13 @@ abstract class Building extends BABYLON.Mesh{
         this._initBuilding();
         
         // Create it      
-        this._child = this._createBuildingMesh();
-        this._child.parent = this;
+        this._shape = this._createBuildingMesh();
+        this._shape.parent = this;
+        
+        // Create the 3D model of the building        
+        // Add the building and merge it with hexagons
+        this._buildingModel = this._getBuildingModel();
+        this._buildingModel.parent = this;
         
         // Set prebuild material
         this._setPrebuildMaterial();
@@ -265,7 +277,7 @@ abstract class Building extends BABYLON.Mesh{
     /**
      * Method called when the building is finished to built on the player base
      */
-    public finishBuild(base : Base) : void {
+    public finishBuild() : void {
         
         // No more waiting
         this.waitingToBeBuilt = false;
@@ -274,6 +286,21 @@ abstract class Building extends BABYLON.Mesh{
         this._setFinishedMaterial();     
         
         // Notify the base this building is finished
-        base.buildingFinished(this);   
+        this._base.buildingFinished(this);   
+    }
+    
+    /**
+     * A minion is currently building this building.
+     */
+    public buildTick (amount : number) {
+        this._constructionNumber -= amount;
+        console.log(this._constructionNumber);
+    }
+    
+    /**
+     * Returns true if the building is finished
+     */
+    public isFinished() : boolean {
+        return this._constructionNumber <= 0;
     }
 }

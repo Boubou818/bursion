@@ -30,7 +30,7 @@ class Base {
     constructor(game:Game, map : HexagonMap) {
         this._map = map;
         this._game = game;
-        let starter = new StarterWarehouse(game);
+        let starter = new StarterWarehouse(game, this);
         starter.preBuild();
         
         // Set the base on the starting position of the map
@@ -52,7 +52,7 @@ class Base {
         this.addBuilding(starter);
         
         // The starter should not be waiting for minions
-        starter.finishBuild(this);
+        starter.finishBuild();
     }
 
     /**
@@ -143,7 +143,6 @@ class Base {
         
         this.graph = new Graph();
 
-// TODO REFINE HERE
         for (let hex1 of this._hexUnfolded) {
             this._addHexToWalkingGraph(hex1);
         }        
@@ -255,7 +254,8 @@ class Base {
     }
     
     /**
-     * Returns the nearest building waiting to be built
+     * Returns the nearest building waiting to be built.
+     * It also checks if a road exists between the position and the building
      */
     public getNearestBuildingWaitingForMinion(hexagon:MapHexagon) : Building {
         let nearest = null;
@@ -264,7 +264,7 @@ class Base {
         let check = (b:Building) => {
             // Check distance
             let currentDist = this.getPathFromTo(hexagon, b.workingSite).length;
-            if (currentDist < distance) {
+            if (currentDist > 0 && currentDist < distance) {
                 nearest = b;
                 distance = currentDist;
             }

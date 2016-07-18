@@ -11,8 +11,8 @@ class BaseExtension extends Building {
     // The set of hexagons. These hexagons does not contains any resources
     public hexagons : Array<MapHexagon> = []; 
       
-    constructor(game:Game) {
-        super(game);
+    constructor(game:Game, base : Base) {
+        super(game, base);
     }
     
     /**
@@ -22,6 +22,8 @@ class BaseExtension extends Building {
         // Init cost
         this._resourcesNeeded[Resources.Wood] = 10;
         this._resourcesNeeded[Resources.Rock] = 20;
+        
+        this._constructionNumber = 100;
     }
     
     
@@ -70,8 +72,9 @@ class BaseExtension extends Building {
      * Returns a 3D model corresponding to this shape
      */
     protected _getBuildingModel() : BABYLON.Mesh {
-        let b = BABYLON.Mesh.CreateBox('_baseExtension_', 0.5, this._game.scene);
+        let b = BABYLON.Mesh.CreateBox('_baseExtension_', 0.7, this._game.scene);
         b.position.copyFrom(this._points[0].center);
+        b.position.y = 1; 
         return b;
     }
 }

@@ -38,7 +38,7 @@ var Game = (function () {
      */
     Game.prototype.createNewExtension = function () {
         if (!this._currentShape) {
-            this._currentShape = new BaseExtension(this);
+            this._currentShape = new BaseExtension(this, this.base);
             if (this._currentShape.canBuild()) {
                 this._currentShape.preBuild();
             }
@@ -135,29 +135,29 @@ var Game = (function () {
             }
         };
         // DEBUG : VIEW GRAPH BETWEEN HEXAGONS
-        // let viewLink = (hex: Hexagon, neighbors) => {
-        //     // center of the hexagon
-        //     let b = BABYLON.Mesh.CreateBox('', 0.2, this.scene);
-        //     b.position.copyFrom(hex.getWorldCenter());
-        //     b.position.y = 1.5;
-        //     for (let n in neighbors) {
-        //         // get hex by name
-        //         let hexn = this.base.getHexByName(n);
-        //         let pos = hexn.getWorldCenter();
-        //         pos.y = 1.5;
-        //         BABYLON.Mesh.CreateLines('', [b.position.clone(), pos], this.scene);
-        //     }
-        // }
-        // let viewGraph = (graph) => {
-        //     for (let vertex in graph.vertices) {
-        //         // get hex by name
-        //         let hex = this.base.getHexByName(vertex);
-        //         viewLink(hex, graph.vertices[vertex]);
-        //     }
-        // }
-        // window.addEventListener('keydown', () => {
-        //     viewGraph(this.base.graph);
-        // });
+        var viewLink = function (hex, neighbors) {
+            // center of the hexagon
+            var b = BABYLON.Mesh.CreateBox('', 0.2, _this.scene);
+            b.position.copyFrom(hex.center);
+            b.position.y = 1.5;
+            for (var n in neighbors) {
+                // get hex by name
+                var hexn = _this.base.getHexByName(n);
+                var pos = hexn.center;
+                pos.y = 1.5;
+                BABYLON.Mesh.CreateLines('', [b.position.clone(), pos], _this.scene);
+            }
+        };
+        var viewGraph = function (graph) {
+            for (var vertex in graph.vertices) {
+                // get hex by name
+                var hex = _this.base.getHexByName(vertex);
+                viewLink(hex, graph.vertices[vertex]);
+            }
+        };
+        window.addEventListener('keydown', function () {
+            viewGraph(_this.base.graph);
+        });
         // END DEBUG
         var bobby = new Minion('bobby', this);
         this._hoard.push(bobby);

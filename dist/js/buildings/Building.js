@@ -51,8 +51,11 @@ var BuildingPoint = (function () {
  */
 var Building = (function (_super) {
     __extends(Building, _super);
-    function Building(game) {
+    function Building(game, base) {
         _super.call(this, '_building_', game.scene);
+        // The progress of the building . Is updated by minion and buildstrategy.
+        // The building is finished when progress is <= 0;
+        this._constructionNumber = 0;
         // The ressources needed to build this building. Each subclass will define this amount in the constructor
         this._resourcesNeeded = [];
         // The list of points composing this building
@@ -60,6 +63,7 @@ var Building = (function (_super) {
         // Set to true when a minion is taking care of this building
         this.waitingToBeBuilt = false;
         this._game = game;
+        this._base = base;
         // Init the cost of this building
         this._initCost();
     }
@@ -124,14 +128,14 @@ var Building = (function (_super) {
     };
     Object.defineProperty(Building.prototype, "material", {
         get: function () {
-            return this._child.material;
+            return this._shape.material;
         },
         /**
-         * Propagate the material of this node to the child mesh.
+         * Propagate the material of this node to the shape mesh only.
          */
         set: function (value) {
-            if (this._child) {
-                this._child.material = value;
+            if (this._shape) {
+                this._shape.material = value;
             }
         },
         enumerable: true,
@@ -177,8 +181,6 @@ var Building = (function (_super) {
             myhex.position.y = 0.65;
             hexes.push(myhex);
         }
-        // Add the building and merge it with hexagons
-        hexes.push(this._getBuildingModel());
         return BABYLON.Mesh.MergeMeshes(hexes, true);
     };
     /**
@@ -189,8 +191,7 @@ var Building = (function (_super) {
             var p = _a[_i];
             for (var _b = 0, _c = building.points; _b < _c.length; _b++) {
                 var otherP = _c[_b];
-                if (p.overlaps(otherP)) {
-                    console.log("overlap");
+                if (p.equals(otherP)) {
                     return true;
                 }
             }
@@ -206,8 +207,12 @@ var Building = (function (_super) {
         // Init building
         this._initBuilding();
         // Create it      
-        this._child = this._createBuildingMesh();
-        this._child.parent = this;
+        this._shape = this._createBuildingMesh();
+        this._shape.parent = this;
+        // Create the 3D model of the building        
+        // Add the building and merge it with hexagons
+        this._buildingModel = this._getBuildingModel();
+        this._buildingModel.parent = this;
         // Set prebuild material
         this._setPrebuildMaterial();
     };
@@ -228,13 +233,26 @@ var Building = (function (_super) {
     /**
      * Method called when the building is finished to built on the player base
      */
-    Building.prototype.finishBuild = function (base) {
+    Building.prototype.finishBuild = function () {
         // No more waiting
         this.waitingToBeBuilt = false;
         // Set 'waiting for build' material
         this._setFinishedMaterial();
         // Notify the base this building is finished
-        base.buildingFinished(this);
+        this._base.buildingFinished(this);
+    };
+    /**
+     * A minion is currently building this building.
+     */
+    Building.prototype.buildTick = function (amount) {
+        this._constructionNumber -= amount;
+        console.log(this._constructionNumber);
+    };
+    /**
+     * Returns true if the building is finished
+     */
+    Building.prototype.isFinished = function () {
+        return this._constructionNumber <= 0;
     };
     return Building;
 }(BABYLON.Mesh));

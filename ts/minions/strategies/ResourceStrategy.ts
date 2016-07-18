@@ -17,7 +17,7 @@ class ResourceStrategy extends WorkingStrategy {
     // The timer used to generate resource each
     private _generatingTimer : Timer;
     
-    // The time to generate a resource
+    // The time to generate a given amount of resource
     private static TIME_TO_GENERATE : number = 2000;
     
     /**

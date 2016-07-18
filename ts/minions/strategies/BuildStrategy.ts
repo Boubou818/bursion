@@ -8,8 +8,32 @@ class BuildStrategy extends WorkingStrategy {
     // The building the minion is currently working on
     private _workingOn : Building = null;
     
+    // The timer used to build the building
+    private _buildingTimer : Timer;    
+    
+    // The building will be updated every 1s
+    private static TIME_TO_BUILD : number = 500;
+    
     constructor(minion:Minion) {
         super(minion);
+        
+        // The generating timer is an infinite loop
+        this._buildingTimer = new Timer(
+            BuildStrategy.TIME_TO_BUILD, 
+            minion.getScene(), 
+            {repeat:-1} // repeat infinitely
+        );
+        // At each tick, add resource
+        this._buildingTimer.callback = this._build.bind(this);
+        
+    }
+    
+    /**
+     * Build the building at each tick using the buildingTimer
+     */
+    private _build() : void{
+        let amount = 10; // TODO replace with minion.strength
+        this._workingOn.buildTick(amount);
     }
     
     /**
@@ -49,16 +73,19 @@ class BuildStrategy extends WorkingStrategy {
                 
             case this._states.BUILDING:
                 // Update the generating timer
-                // if (!this._generatingTimer.started){
-                //     this._generatingTimer.start();
-                // } 
+                if (!this._buildingTimer.started){
+                    this._buildingTimer.start();
+                } 
                 
-                // if (this._slot.amount == 0) {  
-                //     // reset timer                  
-                //     this._generatingTimer.reset();
-                //     // find another resource
-                //     this._currentState = this._states.IDLE;                    
-                // }
+                if (this._workingOn.isFinished()) {  
+                    // reset timer                  
+                    this._buildingTimer.reset();
+                    // Finish building
+                    this._workingOn.finishBuild();
+                    
+                    // find another building if any
+                    this._currentState = this._states.IDLE;                    
+                }
                 break;
         
             default:
@@ -75,6 +102,7 @@ class BuildStrategy extends WorkingStrategy {
         if (building) {
             this._workingOn = building;
             this._workingOn.waitingToBeBuilt = false;
+            // Move minion
             this._minion.moveTo(building.workingSite);
         } else {
             console.warn('no building found in base');
@@ -85,8 +113,12 @@ class BuildStrategy extends WorkingStrategy {
      * Reset the building this minion was working on
      */
     public dispose() {
-        this._workingOn.waitingToBeBuilt = true;
-        this._workingOn = null;
+        if (this._workingOn) {
+            this._workingOn.waitingToBeBuilt = true;
+            this._workingOn = null;
+        } // else the minion was idle
+        // Delete timer
+        this._buildingTimer.stop(true);
     }
     
     /**
@@ -97,7 +129,7 @@ class BuildStrategy extends WorkingStrategy {
         // If the minion was traveling...
         if (this._currentState == this._states.TRAVELING) {
             // Make it generate !
-            this._currentState = this._states.GENERATING;
+            this._currentState = this._states.BUILDING;
         } else {
             // Nothing to do
         }

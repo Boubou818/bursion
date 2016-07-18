@@ -5,8 +5,8 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var Warehouse = (function (_super) {
     __extends(Warehouse, _super);
-    function Warehouse(game) {
-        _super.call(this, game);
+    function Warehouse(game, base) {
+        _super.call(this, game, base);
     }
     Warehouse.prototype._initCost = function () {
         this._resourcesNeeded[Resources.Wood] = 20;

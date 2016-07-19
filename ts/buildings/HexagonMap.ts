@@ -159,7 +159,7 @@ class HexagonMap {
             }
         }
     }
-    
+
     /**
      * Returns true if the extension can be build. 
      * The extension can only be built on land.

@@ -62,9 +62,10 @@ class BuildStrategy extends WorkingStrategy {
             
             case this._states.IDLE:
                 // Look for the nearest resource point
-                this._findAndGoToNearestBuilding();
-                // Exit this state
-                this._currentState = this._states.TRAVELING;
+                if (this._findAndGoToNearestBuilding()) {
+                    // Exit this state
+                    this._currentState = this._states.TRAVELING;
+                }
                 break;  
             case this._states.TRAVELING:
                 // Nothing to do, let the minion go the to resource point.
@@ -83,6 +84,9 @@ class BuildStrategy extends WorkingStrategy {
                     // Finish building
                     this._workingOn.finishBuild();
                     
+                    // Reset building worked on
+                    this._workingOn = null;
+                    
                     // find another building if any
                     this._currentState = this._states.IDLE;                    
                 }
@@ -96,16 +100,19 @@ class BuildStrategy extends WorkingStrategy {
     /**
      * Find the nearest building waiting to be built, and move the 
      * minion to it.
+     * Returns true if a building have been found, false otherwise
      */
-    private _findAndGoToNearestBuilding() {
+    private _findAndGoToNearestBuilding() : boolean {
         let building : Building = this._minion.getNearestBuilding();
         if (building) {
             this._workingOn = building;
             this._workingOn.waitingToBeBuilt = false;
             // Move minion
             this._minion.moveTo(building.workingSite);
+            return true;
         } else {
             console.warn('no building found in base');
+            return false;
         }
     }
     

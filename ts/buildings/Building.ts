@@ -71,6 +71,9 @@ abstract class Building extends BABYLON.Mesh{
     
     // The ressources needed to build this building. Each subclass will define this amount in the constructor
     protected _resourcesNeeded : ResourceMap<number> = [];
+
+    // All ressources that are taken by the building. This array is filled when the building is placed on the map
+    private _usableResources : Array<MapHexagon>;
     
     // The list of points composing this building
     protected _points : Array<BuildingPoint> = [];
@@ -171,6 +174,9 @@ abstract class Building extends BABYLON.Mesh{
     get points () : Array<BuildingPoint> {
         return this._points;
     }
+    get usableResources() : Array<MapHexagon> {
+        return this._usableResources;
+    }
     
     /**
      * Returns true if the building can be built (ressources are sufficient)
@@ -262,8 +268,10 @@ abstract class Building extends BABYLON.Mesh{
      * @param hexagons The list of hexagons the building will be built on
      * @param workingSite The hexagon where the minion should come to build this building
      */
-    public prepareToBuildOn(workingSite: MapHexagon) : void {
-                
+    public prepareToBuildOn(workingSite: MapHexagon, resources : Array<MapHexagon>) : void {
+        // set usable resource
+        this._usableResources = resources;
+
         // Set the working site
         this._workingSite = workingSite;
         
@@ -272,6 +280,9 @@ abstract class Building extends BABYLON.Mesh{
         
         // Waiting for a minion to build this building
         this.waitingToBeBuilt = true;
+
+        // Wake up minions
+        this._game.wakeUpBuilders();
     }
     
     /**

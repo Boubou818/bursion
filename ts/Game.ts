@@ -114,6 +114,17 @@ class Game {
         this._gui.updateResourceText(this.resources[type], type);
     }
 
+    /**
+     * Wake up all builders. Called when a new building is created
+     */
+    public wakeUpBuilders() {
+        for (let m of this._hoard) {
+            if (m.strategy && m.strategy instanceof BuildStrategy && m.strategy.isIdle()) {
+                m.setStrategy(new BuildStrategy(m));
+            }
+        }
+    }
+
 
     private _initGame() {
         
@@ -129,7 +140,6 @@ class Game {
         ground.isVisible = false;
 
         let grid = new HexagonMap(15);
-        grid.draw(this.scene);
 
         this.scene.pointerMovePredicate = (mesh) => {
             return mesh.name === 'ground';
@@ -198,8 +208,11 @@ class Game {
 
         let bobby = new Minion('bobby', this);
         this._hoard.push(bobby);
-        // let bobby2 = new Minion('bobby2', this);
-        // this._hoard.push(bobby2);      
+        
+        let bobby2 = new Minion('bobby2', this);
+        this._hoard.push(bobby2);  
+
+        grid.draw(this.scene);    
 
     }
 }

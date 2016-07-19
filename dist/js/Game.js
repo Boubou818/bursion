@@ -88,6 +88,17 @@ var Game = (function () {
         // Update text value
         this._gui.updateResourceText(this.resources[type], type);
     };
+    /**
+     * Wake up all builders. Called when a new building is created
+     */
+    Game.prototype.wakeUpBuilders = function () {
+        for (var _i = 0, _a = this._hoard; _i < _a.length; _i++) {
+            var m = _a[_i];
+            if (m.strategy && m.strategy instanceof BuildStrategy && m.strategy.isIdle()) {
+                m.setStrategy(new BuildStrategy(m));
+            }
+        }
+    };
     Game.prototype._initGame = function () {
         var _this = this;
         // Init GUI 
@@ -99,7 +110,6 @@ var Game = (function () {
         var ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 2, this.scene);
         ground.isVisible = false;
         var grid = new HexagonMap(15);
-        grid.draw(this.scene);
         this.scene.pointerMovePredicate = function (mesh) {
             return mesh.name === 'ground';
         };
@@ -161,8 +171,9 @@ var Game = (function () {
         // END DEBUG
         var bobby = new Minion('bobby', this);
         this._hoard.push(bobby);
-        // let bobby2 = new Minion('bobby2', this);
-        // this._hoard.push(bobby2);      
+        var bobby2 = new Minion('bobby2', this);
+        this._hoard.push(bobby2);
+        grid.draw(this.scene);
     };
     return Game;
 }());

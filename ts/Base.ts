@@ -11,8 +11,11 @@ class Base {
     // The list of building (all status : waiting, finished...) in the base
     private _buildings : Array<Building> = [];
 
-    // All resources hexagones coming from baseextensions unfolded in a single array. Updated each time a new building is built
-    private _hexUnfolded : Array<MapHexagon> = [];
+    // All resources hexagones coming from building unfolded in a single array. Updated each time a new building is built
+    private _usableResources : Array<MapHexagon> = [];
+
+    //  Used to disspiate the fog when a new building is placed in the base
+    private _hexToDissipateFog : Array<MapHexagon> = [];
     
     // The fog of war that will be updated each time an extension is built
     private _fogOfWar : FogOfWar;
@@ -53,13 +56,17 @@ class Base {
         
         // The starter should not be waiting for minions
         starter.finishBuild();
+        // Delete all resources on the starter         
+        for (let hex of starter.usableResources) {
+            hex.resourceSlot.resource = Resources.Empty;
+        }
     }
 
     /**
      * Returns the first hexagon of the base
      */
     public getStarterHex() : MapHexagon {
-        return this._hexUnfolded[0];
+        return this._usableResources[0];
     }
     
     /**
@@ -74,20 +81,21 @@ class Base {
         // Get the working site hexagon - where minion will build it
         let workingSite = this._getWorksiteHex(resourcesHex);
         
-        // Add the building place to the base
+        // Remove mesh from the map and add it to dissipate the fog
         for (let hex of resourcesHex) {               
-            this._hexUnfolded.push(hex);  
+            this._hexToDissipateFog.push(hex);  
             this._map.removeMapHex(hex);      
         }        
         this._buildings.push(building);  
                 
         // Build it
-        building.prepareToBuildOn(workingSite); 
+        building.prepareToBuildOn(workingSite, resourcesHex); 
         
         // Remove fog where needed
-        this._fogOfWar.dissipateFog(this._hexUnfolded); 
+        this._fogOfWar.dissipateFog(this._hexToDissipateFog); 
         
         // Add working site in the walking graph
+        this._usableResources.push(building.workingSite);
         this._addHexToWalkingGraph(building.workingSite) 
     }
     
@@ -97,6 +105,11 @@ class Base {
      */
     public buildingFinished(building : Building) { 
         
+        // Add building usable resources in the base usable resource
+        for (let mh of building.usableResources) {
+            this._usableResources.push(mh);
+        }
+
         // Update walking graph
         this._createWalkingGraph();        
     }
@@ -111,7 +124,7 @@ class Base {
         // For each hexagons the building is set on...
         for (let b of buildingPlaces) {
             // ... check which one is the nearest of the base
-            for (let h of this._hexUnfolded) {
+            for (let h of this._usableResources) {
                 let dist = MapHexagon.distanceSquared(b, h);
                 if (dist < min) {
                     min = dist;
@@ -143,7 +156,7 @@ class Base {
         
         this.graph = new Graph();
 
-        for (let hex1 of this._hexUnfolded) {
+        for (let hex1 of this._usableResources) {
             this._addHexToWalkingGraph(hex1);
         }        
     }
@@ -153,7 +166,7 @@ class Base {
      */
     private _addHexToWalkingGraph(hex1: MapHexagon) : void {
         let neighbors = {}; 
-        for (let hex2 of this._hexUnfolded) { 
+        for (let hex2 of this._usableResources) { 
             if (MapHexagon.areNeighbors(hex1, hex2)) {
                 // Road from hex1 to hex2
                 neighbors[hex2.name] = 1;
@@ -171,7 +184,7 @@ class Base {
      * Returns the hexagon corresponding to the given name
      */
     private _getHexByName(name:string) : MapHexagon {
-        for (let hex1 of this._hexUnfolded) {
+        for (let hex1 of this._usableResources) {
             if (hex1.name === name) {
                 return hex1;
             }
@@ -237,7 +250,7 @@ class Base {
         let nearest = null;
         let distance = Number.POSITIVE_INFINITY;
 
-        for (let hex of this._hexUnfolded) {
+        for (let hex of this._usableResources) {
             if (hex.resourceSlot.resource === resource) {
                 // Check availability of the resource
                 if (hex.resourceSlot.isAvailable()) {

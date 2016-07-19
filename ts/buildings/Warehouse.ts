@@ -83,7 +83,7 @@ class StarterWarehouse extends Warehouse {
     /**
      * The starter extension 
      */
-    protected _initBuilding (data?:any) {
+    protected _initBuilding () {
         
         let grid = MapHexagon.getDefaultGrid();
         let coordinates = grid.hexagon(0,0,3, true);

@@ -49,4 +49,15 @@ abstract class WorkingStrategy {
      * Dispose the strategy : clean any data left by minions on the map (if any)
      */
     public abstract dispose();
+
+    /**
+     * Returns true if the current state of the minion is idle.
+     * If 'idle' doesn't exist, return false
+     */
+    public isIdle () {
+        if (this._states.IDLE !== undefined) {
+            return this._currentState === this._states.IDLE;
+        }
+        return false;
+    }
 }

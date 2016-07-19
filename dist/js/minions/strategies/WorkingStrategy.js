@@ -19,6 +19,16 @@ var WorkingStrategy = (function () {
         this._minion = minion;
         this._buildStates();
     }
+    /**
+     * Returns true if the current state of the minion is idle.
+     * If 'idle' doesn't exist, return false
+     */
+    WorkingStrategy.prototype.isIdle = function () {
+        if (this._states.IDLE !== undefined) {
+            return this._currentState === this._states.IDLE;
+        }
+        return false;
+    };
     return WorkingStrategy;
 }());
 //# sourceMappingURL=WorkingStrategy.js.map

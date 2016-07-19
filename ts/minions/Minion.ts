@@ -42,8 +42,6 @@ class Minion extends BABYLON.Mesh {
         this._child.material = mat;
 
         this._child.parent = this;
-
-        this.position.y = 0.75;
         this._controller = new MinionController(this);
         this._controller.speed = 0.05;
         
@@ -52,7 +50,7 @@ class Minion extends BABYLON.Mesh {
 
         // Update minion position
         this.position.copyFrom(this.currentHexagon.center);
-        this.position.y = 0.75;
+        this.position.y = 1.25;
 
         // At each destination, the current hexagon where the minion lives is updated.
         this._controller.atEachDestination = (hx:MapHexagon) => {
@@ -91,7 +89,7 @@ class Minion extends BABYLON.Mesh {
         }
         for (let hex of path) {
             let tmp = hex.center;
-            tmp.y = 0.75;
+            tmp.y = 1.25;
             this._controller.addDestination(tmp, hex);
         }
         this._controller.start();

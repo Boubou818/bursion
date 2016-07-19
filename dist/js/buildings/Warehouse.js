@@ -73,7 +73,7 @@ var StarterWarehouse = (function (_super) {
     /**
      * The starter extension
      */
-    StarterWarehouse.prototype._initBuilding = function (data) {
+    StarterWarehouse.prototype._initBuilding = function () {
         var grid = MapHexagon.getDefaultGrid();
         var coordinates = grid.hexagon(0, 0, 3, true);
         // Use template

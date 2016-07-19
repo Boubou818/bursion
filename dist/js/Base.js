@@ -10,8 +10,10 @@ var Base = (function () {
     function Base(game, map) {
         // The list of building (all status : waiting, finished...) in the base
         this._buildings = [];
-        // All resources hexagones coming from baseextensions unfolded in a single array. Updated each time a new building is built
-        this._hexUnfolded = [];
+        // All resources hexagones coming from building unfolded in a single array. Updated each time a new building is built
+        this._usableResources = [];
+        //  Used to disspiate the fog when a new building is placed in the base
+        this._hexToDissipateFog = [];
         // The Djikstra graph
         this.graph = new Graph();
         this._map = map;
@@ -33,12 +35,17 @@ var Base = (function () {
         this.addBuilding(starter);
         // The starter should not be waiting for minions
         starter.finishBuild();
+        // Delete all resources on the starter         
+        for (var _i = 0, _a = starter.usableResources; _i < _a.length; _i++) {
+            var hex = _a[_i];
+            hex.resourceSlot.resource = Resources.Empty;
+        }
     }
     /**
      * Returns the first hexagon of the base
      */
     Base.prototype.getStarterHex = function () {
-        return this._hexUnfolded[0];
+        return this._usableResources[0];
     };
     /**
      * Add a building to the player base
@@ -49,18 +56,19 @@ var Base = (function () {
         var resourcesHex = this._getResourcesOnMap(building);
         // Get the working site hexagon - where minion will build it
         var workingSite = this._getWorksiteHex(resourcesHex);
-        // Add the building place to the base
+        // Remove mesh from the map and add it to dissipate the fog
         for (var _i = 0, resourcesHex_1 = resourcesHex; _i < resourcesHex_1.length; _i++) {
             var hex = resourcesHex_1[_i];
-            this._hexUnfolded.push(hex);
+            this._hexToDissipateFog.push(hex);
             this._map.removeMapHex(hex);
         }
         this._buildings.push(building);
         // Build it
-        building.prepareToBuildOn(workingSite);
+        building.prepareToBuildOn(workingSite, resourcesHex);
         // Remove fog where needed
-        this._fogOfWar.dissipateFog(this._hexUnfolded);
+        this._fogOfWar.dissipateFog(this._hexToDissipateFog);
         // Add working site in the walking graph
+        this._usableResources.push(building.workingSite);
         this._addHexToWalkingGraph(building.workingSite);
     };
     /**
@@ -68,6 +76,11 @@ var Base = (function () {
      * - Update walking graph
      */
     Base.prototype.buildingFinished = function (building) {
+        // Add building usable resources in the base usable resource
+        for (var _i = 0, _a = building.usableResources; _i < _a.length; _i++) {
+            var mh = _a[_i];
+            this._usableResources.push(mh);
+        }
         // Update walking graph
         this._createWalkingGraph();
     };
@@ -81,7 +94,7 @@ var Base = (function () {
         for (var _i = 0, buildingPlaces_1 = buildingPlaces; _i < buildingPlaces_1.length; _i++) {
             var b = buildingPlaces_1[_i];
             // ... check which one is the nearest of the base
-            for (var _a = 0, _b = this._hexUnfolded; _a < _b.length; _a++) {
+            for (var _a = 0, _b = this._usableResources; _a < _b.length; _a++) {
                 var h = _b[_a];
                 var dist = MapHexagon.distanceSquared(b, h);
                 if (dist < min) {
@@ -109,7 +122,7 @@ var Base = (function () {
      */
     Base.prototype._createWalkingGraph = function () {
         this.graph = new Graph();
-        for (var _i = 0, _a = this._hexUnfolded; _i < _a.length; _i++) {
+        for (var _i = 0, _a = this._usableResources; _i < _a.length; _i++) {
             var hex1 = _a[_i];
             this._addHexToWalkingGraph(hex1);
         }
@@ -119,7 +132,7 @@ var Base = (function () {
      */
     Base.prototype._addHexToWalkingGraph = function (hex1) {
         var neighbors = {};
-        for (var _i = 0, _a = this._hexUnfolded; _i < _a.length; _i++) {
+        for (var _i = 0, _a = this._usableResources; _i < _a.length; _i++) {
             var hex2 = _a[_i];
             if (MapHexagon.areNeighbors(hex1, hex2)) {
                 // Road from hex1 to hex2
@@ -137,7 +150,7 @@ var Base = (function () {
      * Returns the hexagon corresponding to the given name
      */
     Base.prototype._getHexByName = function (name) {
-        for (var _i = 0, _a = this._hexUnfolded; _i < _a.length; _i++) {
+        for (var _i = 0, _a = this._usableResources; _i < _a.length; _i++) {
             var hex1 = _a[_i];
             if (hex1.name === name) {
                 return hex1;
@@ -198,7 +211,7 @@ var Base = (function () {
     Base.prototype.getNearestResource = function (hexagon, resource) {
         var nearest = null;
         var distance = Number.POSITIVE_INFINITY;
-        for (var _i = 0, _a = this._hexUnfolded; _i < _a.length; _i++) {
+        for (var _i = 0, _a = this._usableResources; _i < _a.length; _i++) {
             var hex = _a[_i];
             if (hex.resourceSlot.resource === resource) {
                 // Check availability of the resource

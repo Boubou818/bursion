@@ -155,6 +155,13 @@ var Building = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Building.prototype, "usableResources", {
+        get: function () {
+            return this._usableResources;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * Returns true if the building can be built (ressources are sufficient)
      */
@@ -222,13 +229,17 @@ var Building = (function (_super) {
      * @param hexagons The list of hexagons the building will be built on
      * @param workingSite The hexagon where the minion should come to build this building
      */
-    Building.prototype.prepareToBuildOn = function (workingSite) {
+    Building.prototype.prepareToBuildOn = function (workingSite, resources) {
+        // set usable resource
+        this._usableResources = resources;
         // Set the working site
         this._workingSite = workingSite;
         // Set 'waiting for build' material
         this._setWaitingForMinionMaterial();
         // Waiting for a minion to build this building
         this.waitingToBeBuilt = true;
+        // Wake up minions
+        this._game.wakeUpBuilders();
     };
     /**
      * Method called when the building is finished to built on the player base

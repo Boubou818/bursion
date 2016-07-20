@@ -45,8 +45,10 @@ class ResourceStrategy extends WorkingStrategy {
     protected _buildStates() {
         this._states = {
             IDLE:0,
-            TRAVELING:1,
-            GENERATING:2
+            TRAVELING_TO_RESOURCE:1,
+            AT_RESOURCE : 2,
+            TRAVELING_TO_WAREHOUSE:3,
+            AT_WAREHOUSE : 4
         }
         this._currentState = this._states.IDLE;
     }
@@ -59,25 +61,27 @@ class ResourceStrategy extends WorkingStrategy {
                 // Look for the nearest resource point
                 this._findAndGoToNearestResource();
                 // Exit this state
-                this._currentState = this._states.TRAVELING;
+                this._currentState = this._states.TRAVELING_TO_RESOURCE;
                 break;  
-            case this._states.TRAVELING:
+            case this._states.TRAVELING_TO_RESOURCE:
                 // Nothing to do, let the minion go the to resource point.
                 // He will notify when he'll arrive.
                 break;
+            case this._states.AT_RESOURCE : 
+                // Create 3D model of resource on minion and go to next state
+
+                // Find nearest warehouse
+
+                // Go to next state
+                break;
                 
-            case this._states.GENERATING:
-                // Update the generating timer
-                if (!this._generatingTimer.started){
-                    this._generatingTimer.start();
-                } 
-                
-                if (this._slot.amount == 0) {  
-                    // reset timer                  
-                    this._generatingTimer.reset();
-                    // find another resource
-                    this._currentState = this._states.IDLE;                    
-                }
+            case this._states.TRAVELING_TO_WAREHOUSE:
+                // Look for the nearest warehouse point
+                // TODO
+                // this._findAndGoToNearestWarehouse();
+
+                // Exit this state
+                this._currentState = this._states.TRAVELING_TO_WAREHOUSE;
                 break;
         
             default:

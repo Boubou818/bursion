@@ -1,6 +1,9 @@
 
 class Warehouse extends Building {
 
+    // The stock of this warehouse
+    private _stock : ResourceMap<number> = [];
+
     constructor(game : Game, base : Base) {
         super(game, base);  
     }
@@ -57,6 +60,21 @@ class Warehouse extends Building {
             mat = mymat;
         }
         this.material = mat;
+    }
+
+    /**
+     * Add the given stock to the warehouse
+     * TODO
+     */
+    public add (amount:number, res : Resources) {
+        this._stock[res] += amount;
+    }
+
+    /**
+     * Take from stock the given amount of resources
+     * TODO
+     */
+    public take (amount:number, res : Resources) {
     }
     
     

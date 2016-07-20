@@ -174,18 +174,22 @@ var Base = (function () {
                 return false;
             }
         }
-        return true;
-        // // Connected with at least one shape : there is at least one 
-        // // hexagon of the new shape with distance < DISTANCE_BETWEEN_NEIGHBORS
-        // let areConnected = false;
-        // for (let sHex of shape.hexagons) {
-        //     for (let bHex of this._hexUnfolded) {
-        //         areConnected = areConnected || MapHexagon.areNeighbors(sHex, bHex)
-        //     }
-        // }
-        // // Can build only on land
-        // let onLand = this._map.canBuild(shape);
-        // return areConnected && onLand;
+        // Connected with at least one building : there is at least one 
+        // point of the new shape with distance < DISTANCE_BETWEEN_NEIGHBORS
+        var areConnected = false;
+        for (var _b = 0, _c = building.points; _b < _c.length; _b++) {
+            var point = _c[_b];
+            for (var _d = 0, _e = this._buildings; _d < _e.length; _d++) {
+                var otherBuilding = _e[_d];
+                for (var _f = 0, _g = otherBuilding.points; _f < _g.length; _f++) {
+                    var otherPoint = _g[_f];
+                    areConnected = areConnected || BuildingPoint.AreNeighbors(point, otherPoint);
+                }
+            }
+        }
+        // Can build only on land
+        var onLand = this._map.canBuild(building);
+        return areConnected && onLand;
     };
     /**
      * Returns the shortest path from the given hex to the given hex.

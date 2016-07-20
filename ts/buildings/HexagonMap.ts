@@ -164,13 +164,12 @@ class HexagonMap {
      * Returns true if the extension can be build. 
      * The extension can only be built on land.
      */
-    public canBuild(ext: BaseExtension) {
+    public canBuild(building: Building) {
         let canBuild = true;
-        // TODO FINISH HERE
-        // for (let h of ext.hexagons) {
-        //     let mapHex = this.getResourceHex(h);
-        //     canBuild = canBuild && (mapHex.type === HexagonType.Land);
-        // }
+        for (let h of building.points) {
+            let mapHex = this.getResourceHex(h);
+            canBuild = canBuild && (mapHex.type === HexagonType.Land);
+        }
         return canBuild;
     }
     

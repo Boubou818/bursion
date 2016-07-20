@@ -155,13 +155,13 @@ var HexagonMap = (function () {
      * Returns true if the extension can be build.
      * The extension can only be built on land.
      */
-    HexagonMap.prototype.canBuild = function (ext) {
+    HexagonMap.prototype.canBuild = function (building) {
         var canBuild = true;
-        // TODO FINISH HERE
-        // for (let h of ext.hexagons) {
-        //     let mapHex = this.getResourceHex(h);
-        //     canBuild = canBuild && (mapHex.type === HexagonType.Land);
-        // }
+        for (var _i = 0, _a = building.points; _i < _a.length; _i++) {
+            var h = _a[_i];
+            var mapHex = this.getResourceHex(h);
+            canBuild = canBuild && (mapHex.type === HexagonType.Land);
+        }
         return canBuild;
     };
     /**

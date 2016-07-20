@@ -209,20 +209,21 @@ class Base {
                 return false;
             } 
         }
-        return true;
-        // // Connected with at least one shape : there is at least one 
-        // // hexagon of the new shape with distance < DISTANCE_BETWEEN_NEIGHBORS
-        // let areConnected = false;
-        // for (let sHex of shape.hexagons) {
-        //     for (let bHex of this._hexUnfolded) {
-        //         areConnected = areConnected || MapHexagon.areNeighbors(sHex, bHex)
-        //     }
-        // }
+        // Connected with at least one building : there is at least one 
+        // point of the new shape with distance < DISTANCE_BETWEEN_NEIGHBORS
+        let areConnected = false;
+        for (let point of building.points) {
+            for (let otherBuilding of this._buildings) {
+                for (let otherPoint of otherBuilding.points) {
+                    areConnected = areConnected || BuildingPoint.AreNeighbors(point, otherPoint);
+                }
+            }
+        }
         
-        // // Can build only on land
-        // let onLand = this._map.canBuild(shape);
+        // Can build only on land
+        let onLand = this._map.canBuild(building);
         
-        // return areConnected && onLand;
+        return areConnected && onLand;
     }
 
     /**

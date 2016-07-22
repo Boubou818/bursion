@@ -76,8 +76,14 @@ var Minion = (function (_super) {
     /**
      * Returns the nearest building waiting to be built
      */
-    Minion.prototype.getNearestBuilding = function () {
+    Minion.prototype.getNearestBuildingWaitingForMinion = function () {
         return this.base.getNearestBuildingWaitingForMinion(this.currentHexagon);
+    };
+    /**
+     * Returns the nearest warehouse
+     */
+    Minion.prototype.getNearestWarehouse = function () {
+        return this.base.getNearestWarehouse(this.currentHexagon);
     };
     Minion.prototype.setStrategy = function (strat) {
         // If the minion already had a strategy, delete it

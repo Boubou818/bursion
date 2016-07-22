@@ -38,8 +38,11 @@ var BuildStrategy = (function (_super) {
     BuildStrategy.prototype._buildStates = function () {
         this._states = {
             IDLE: 0,
-            TRAVELING: 1,
-            BUILDING: 2
+            TRAVELING_TO_WAREHOUSE: 1,
+            AT_WAREHOUSE: 2,
+            TOOK_RESOURCE: 3,
+            TRAVELING_TO_BUILDING: 4,
+            AT_BUILDING: 5,
         };
         this._currentState = this._states.IDLE;
     };
@@ -50,11 +53,15 @@ var BuildStrategy = (function (_super) {
     BuildStrategy.prototype.applyStrategy = function () {
         switch (this._currentState) {
             case this._states.IDLE:
-                // Look for the nearest resource point
-                if (this._findAndGoToNearestBuilding()) {
-                    // Exit this state
-                    this._currentState = this._states.TRAVELING;
-                }
+                // Check if a building is waiting to be built
+                var building = this._minion.getNearestBuildingWaitingForMinion();
+                if (building) {
+                    // Go to warehouse
+                    if (this._findAndGoToNearestWarehouse()) {
+                        // Exit this state
+                        this._currentState = this._states.TRAVELING_TO_WAREHOUSE;
+                    }
+                } // Nothing to do, stay idle
                 break;
             case this._states.TRAVELING:
                 // Nothing to do, let the minion go the to resource point.
@@ -86,7 +93,7 @@ var BuildStrategy = (function (_super) {
      * Returns true if a building have been found, false otherwise
      */
     BuildStrategy.prototype._findAndGoToNearestBuilding = function () {
-        var building = this._minion.getNearestBuilding();
+        var building = this._minion.getNearestBuildingWaitingForMinion();
         if (building) {
             this._workingOn = building;
             this._workingOn.waitingToBeBuilt = false;
@@ -121,6 +128,20 @@ var BuildStrategy = (function (_super) {
             this._currentState = this._states.BUILDING;
         }
         else {
+        }
+    };
+    /**
+     * Find the nearest warehouse
+     */
+    BuildStrategy.prototype._findAndGoToNearestWarehouse = function () {
+        var warehouse = this._minion.getNearestWarehouse();
+        if (warehouse) {
+            this._minion.moveTo(warehouse.workingSite);
+            return true;
+        }
+        else {
+            console.warn('no warehouse found in base');
+            return false;
         }
     };
     // The building will be updated every 1s

@@ -10,7 +10,7 @@
 */
 var Timer = (function () {
     function Timer(time, scene, options) {
-        var _this = this;
+        if (options === void 0) { options = {}; }
         this.scene = scene;
         this.maxTime = this.currentTime = time;
         // True if the timer is finished, false otherwise
@@ -25,23 +25,28 @@ var Timer = (function () {
         this.onFinish = null;
         //If set, the callback action will be repeated the specified number of times
         this.repeat = options.repeat || 1;
+        this.repeatInit = this.repeat;
         // Should the timer start directly after its creation ?
         this.autostart = options.autostart || false;
         // Should the timer destroy itself after completion ?
         this.autodestroy = options.autodestroy || false;
         // Should the timer call 'callback function' immediately after starting ?
         this.immediate = options.immediate || false;
-        this.registeredFunction = function () {
-            if (_this.started && !_this.isOver && !_this.paused) {
-                _this.update();
-            }
-        };
+        this.registeredFunction = this._checkIfUpdate.bind(this);
         scene.registerBeforeRender(this.registeredFunction);
         // Start the timer is set to autostart
         if (this.autostart) {
             this.start();
         }
     }
+    /**
+     * Check if this timer can be updated
+     */
+    Timer.prototype._checkIfUpdate = function () {
+        if (this.started && !this.isOver && !this.paused) {
+            this._update();
+        }
+    };
     /**
      * Reset the timer. Do not reset its options!
      */
@@ -50,6 +55,13 @@ var Timer = (function () {
         this.isOver = false;
         this.started = false;
         this.paused = false;
+    };
+    /**
+     * Reset the timer and its repeat number
+     */
+    Timer.prototype.hardReset = function () {
+        this.reset();
+        this.repeat = this.repeatInit;
     };
     /**
      * Start the timer
@@ -92,7 +104,7 @@ var Timer = (function () {
      * The update function
      * @private
      */
-    Timer.prototype.update = function () {
+    Timer.prototype._update = function () {
         this.currentTime -= this.scene.getEngine().getDeltaTime();
         if (this.currentTime <= 0 || this.immediate) {
             // reset immediate

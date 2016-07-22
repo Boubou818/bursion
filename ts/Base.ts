@@ -257,7 +257,7 @@ class Base {
                 if (hex.resourceSlot.isAvailable()) {
                     // Check distance
                     let currentDist = this.getPathFromTo(hexagon, hex).length;
-                    if (currentDist < distance) {
+                    if (currentDist > 0 && currentDist < distance) {
                         nearest = hex;
                         distance = currentDist;
                     }
@@ -284,15 +284,34 @@ class Base {
             }
         }        
         
-        // Check base extensions...
-        // for (let ext of this._extensions) {
-        //     if (ext.waitingToBeBuilt) {
-        //         check(ext);
-        //     }
-        // }
-        //.. and check buildings  
+        // Check buildings  
         for (let build of this._buildings) {
             if (build.waitingToBeBuilt) {
+                check(build);
+            }
+        }
+        return nearest;
+    }
+    
+    /**
+     * Returns the nearest warehouse
+     */
+    public getNearestWarehouse(hexagon:MapHexagon) : Warehouse {
+        let nearest = null;
+        let distance = Number.POSITIVE_INFINITY;
+
+        let check = (b:Warehouse) => {
+            // Check distance
+            let currentDist = this.getPathFromTo(hexagon, b.workingSite).length;
+            if (currentDist > 0 && currentDist < distance) {
+                nearest = b;
+                distance = currentDist;
+            }
+        }        
+        
+        // Check buildings  
+        for (let build of this._buildings) {
+            if (build instanceof Warehouse) {
                 check(build);
             }
         }

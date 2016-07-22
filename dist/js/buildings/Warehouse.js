@@ -7,6 +7,8 @@ var Warehouse = (function (_super) {
     __extends(Warehouse, _super);
     function Warehouse(game, base) {
         _super.call(this, game, base);
+        // The stock of this warehouse
+        this._stock = [];
     }
     Warehouse.prototype._initCost = function () {
         this._resourcesNeeded[Resources.Wood] = 20;
@@ -58,6 +60,19 @@ var Warehouse = (function (_super) {
             mat = mymat;
         }
         this.material = mat;
+    };
+    /**
+     * Add the given stock to the warehouse
+     * TODO
+     */
+    Warehouse.prototype.add = function (amount, res) {
+        this._stock[res] += amount;
+    };
+    /**
+     * Take from stock the given amount of resources
+     * TODO
+     */
+    Warehouse.prototype.take = function (amount, res) {
     };
     return Warehouse;
 }(Building));

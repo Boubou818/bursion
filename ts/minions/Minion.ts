@@ -104,8 +104,14 @@ class Minion extends BABYLON.Mesh {
     /** 
      * Returns the nearest building waiting to be built
      */
-    public getNearestBuilding() : Building {
+    public getNearestBuildingWaitingForMinion() : Building {
         return this.base.getNearestBuildingWaitingForMinion(this.currentHexagon);
+    }
+    /**
+     * Returns the nearest warehouse
+     */
+    public getNearestWarehouse() : Warehouse {
+        return this.base.getNearestWarehouse(this.currentHexagon);
     }
     
     public setStrategy(strat:WorkingStrategy) {

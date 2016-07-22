@@ -11,10 +11,14 @@ class ResourceStrategy extends WorkingStrategy {
     // The resource to gather
     private _resource : Resources;
     
-    // The resource slot this minion is working on
-    private _slot : ResourceSlot = null;
+    // The 3D model displayed above the head of the minion
+    private _resourceModel : BABYLON.Mesh;
     
-    // The timer used to generate resource each
+    // The package the minion is carrying around.
+    // Is reset when the minion is looking for resources
+    private _package : {slot? : ResourceSlot, amount? : number};
+    
+    // The timer used to generate resource
     private _generatingTimer : Timer;
     
     // The time to generate a given amount of resource
@@ -28,10 +32,27 @@ class ResourceStrategy extends WorkingStrategy {
         
         this._resource = res;
         
-        // The generating timer is an infinite loop
-        this._generatingTimer = new Timer(ResourceStrategy.TIME_TO_GENERATE, minion.getScene(), {repeat:-1});
-        // At each tick, add resource
-        this._generatingTimer.callback = this._generate.bind(this);
+        // The generating timer is an finite loop
+        this._generatingTimer = new Timer(ResourceStrategy.TIME_TO_GENERATE, minion.getScene());
+        // At the end of the timer, update state
+        this._generatingTimer.onFinish = this._comeBackToWarehouse.bind(this);
+    }
+    
+    /**
+     * When the minion finished generate resources, go back to the warehouse
+     * by updating its state.
+     * Also reset the timer.
+     */
+    private _comeBackToWarehouse() : void {        
+        // Reset timer
+        this._generatingTimer.hardReset(); 
+        
+        // Remove resources from the slot
+        let amount = 10; // TODO replace with minion.strength
+        this._package.slot.extract(amount);
+        this._package.amount = amount;
+        
+        this._currentState = this._states.END_GENERATING; 
     }
     
     /**
@@ -47,8 +68,9 @@ class ResourceStrategy extends WorkingStrategy {
             IDLE:0,
             TRAVELING_TO_RESOURCE:1,
             AT_RESOURCE : 2,
-            TRAVELING_TO_WAREHOUSE:3,
-            AT_WAREHOUSE : 4
+            END_GENERATING : 3,
+            TRAVELING_TO_WAREHOUSE:4,
+            AT_WAREHOUSE : 5
         }
         this._currentState = this._states.IDLE;
     }
@@ -59,29 +81,46 @@ class ResourceStrategy extends WorkingStrategy {
             
             case this._states.IDLE:
                 // Look for the nearest resource point
-                this._findAndGoToNearestResource();
-                // Exit this state
-                this._currentState = this._states.TRAVELING_TO_RESOURCE;
+                if (this._findAndGoToNearestResource()) {
+                    // Exit this state
+                    this._currentState = this._states.TRAVELING_TO_RESOURCE;
+                } // else nothing to do, stay idle
                 break;  
+                
             case this._states.TRAVELING_TO_RESOURCE:
-                // Nothing to do, let the minion go the to resource point.
+            case this._states.TRAVELING_TO_WAREHOUSE:
+                // Nothing to do, let the minion go the to given point.
                 // He will notify when he'll arrive.
                 break;
+                
             case this._states.AT_RESOURCE : 
+                // Start the resource generation
+                this._generatingTimer.start();                
+                break;
+                
+            case this._states.END_GENERATING :          
                 // Create 3D model of resource on minion and go to next state
-
+                this._resourceModel = BABYLON.Mesh.CreateSphere('resource', 3, 0.5, this._minion.getScene());
+                this._resourceModel.position.y = 1;
+                this._resourceModel.parent = this._minion;
+                
                 // Find nearest warehouse
-
+                if (this._findAndGoToNearestWarehouse()) {
+                    this._currentState = this._states.TRAVELING_TO_WAREHOUSE;
+                }
                 // Go to next state
                 break;
                 
-            case this._states.TRAVELING_TO_WAREHOUSE:
-                // Look for the nearest warehouse point
-                // TODO
-                // this._findAndGoToNearestWarehouse();
-
-                // Exit this state
-                this._currentState = this._states.TRAVELING_TO_WAREHOUSE;
+            case this._states.AT_WAREHOUSE:   
+                // Remove 3D model of the resource carried on by the minion
+                this._resourceModel.dispose();
+                
+                // Add stock to the warehouse   
+                this._minion.addResourceToGame(this._package.amount, this._resource);
+                this._package = null;   
+                          
+                // Go to idle state
+                this._currentState = this._states.IDLE;
                 break;
         
             default:
@@ -94,47 +133,57 @@ class ResourceStrategy extends WorkingStrategy {
      */
     public finishedWalkingOn(data?:MapHexagon) {
         // If the minion was traveling...
-        if (this._currentState == this._states.TRAVELING) {
-            // Make it generate !
-            this._currentState = this._states.GENERATING;
-            this._slot = data.resourceSlot;
+        if (this._currentState == this._states.TRAVELING_TO_RESOURCE) {
+            // Set new state to AT_RESOURCE
+            this._currentState = this._states.AT_RESOURCE;
+        } else if (this._currentState == this._states.TRAVELING_TO_WAREHOUSE) {
+            // Set new state to AT_WAREHOUSE
+            this._currentState = this._states.AT_WAREHOUSE;
+        }
+    }
+    
+    /**
+     * Find the nearest warehouse 
+     */
+    private _findAndGoToNearestWarehouse() : boolean {
+        let warehouse : Warehouse = this._minion.getNearestWarehouse();
+        if (warehouse) {
+            this._minion.moveTo(warehouse.workingSite);
+            return true;
         } else {
-            // Nothing to do
+            console.warn('no warehouse found in base');
+            return false;
         }
     }
     
     /**
      * Find the nearest hexagon containing the resource to find, and move the 
-     * minion to it.
+     * minion to it. Returns false if no available resource.
      */
-    private _findAndGoToNearestResource() {
+    private _findAndGoToNearestResource() : boolean {
         let nearestHexagon = this._minion.getNearestResource(this._resource);
         if (nearestHexagon) {
-            nearestHexagon.resourceSlot.isOccupied = true;
+            // Initalize minion's package
+            this._package = {};
+            this._package.slot = nearestHexagon.resourceSlot;
             this._minion.moveTo(nearestHexagon);
+            return true;
         } else {
             console.warn('no such resource found in base : ', this._resource);
+            return false;
         }
-    }
-    
-    /**
-     * Generate resource at each tick using the generatingtimer
-     */
-    private _generate() {
-        let amount = 10; // TODO replace with minion.strength
-        this._slot.extract(amount);
-        this._minion.addResourceToGame(amount, this._resource);
     }
     
     /**
      * Reset the occupied slot
      */
     public dispose() {
-        // The resource slot is no more occupied
-        if (this._slot) {
-            this._slot.isOccupied = false;
-        }
         // Delete timer
         this._generatingTimer.stop(true);
+        
+        // Delete 3D model if any
+        if (this._resourceModel) {
+            this._resourceModel.dispose();
+        }
     }
 }

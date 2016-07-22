@@ -8,6 +8,7 @@ class BuildStrategy extends WorkingStrategy {
     // The building the minion is currently working on
     private _workingOn : Building = null;
     
+    
     // The timer used to build the building
     private _buildingTimer : Timer;    
     
@@ -47,8 +48,12 @@ class BuildStrategy extends WorkingStrategy {
     protected _buildStates() {
         this._states = {
             IDLE:0,
-            TRAVELING:1,
-            BUILDING:2
+            TRAVELING_TO_WAREHOUSE:1,
+            AT_WAREHOUSE:2,
+            TOOK_RESOURCE:3,
+            TRAVELING_TO_BUILDING:4,
+            AT_BUILDING:5,
+            
         }
         this._currentState = this._states.IDLE;
     }
@@ -61,11 +66,16 @@ class BuildStrategy extends WorkingStrategy {
         switch (this._currentState) {
             
             case this._states.IDLE:
-                // Look for the nearest resource point
-                if (this._findAndGoToNearestBuilding()) {
-                    // Exit this state
-                    this._currentState = this._states.TRAVELING;
-                }
+                // Check if a building is waiting to be built
+                let building : Building = this._minion.getNearestBuildingWaitingForMinion();
+                
+                if (building) {
+                    // Go to warehouse
+                    if (this._findAndGoToNearestWarehouse()) {
+                        // Exit this state
+                        this._currentState = this._states.TRAVELING_TO_WAREHOUSE;
+                    }
+                } // Nothing to do, stay idle
                 break;  
             case this._states.TRAVELING:
                 // Nothing to do, let the minion go the to resource point.
@@ -103,7 +113,7 @@ class BuildStrategy extends WorkingStrategy {
      * Returns true if a building have been found, false otherwise
      */
     private _findAndGoToNearestBuilding() : boolean {
-        let building : Building = this._minion.getNearestBuilding();
+        let building : Building = this._minion.getNearestBuildingWaitingForMinion();
         if (building) {
             this._workingOn = building;
             this._workingOn.waitingToBeBuilt = false;
@@ -139,6 +149,20 @@ class BuildStrategy extends WorkingStrategy {
             this._currentState = this._states.BUILDING;
         } else {
             // Nothing to do
+        }
+    }
+    
+    /**
+     * Find the nearest warehouse 
+     */
+    private _findAndGoToNearestWarehouse() : boolean {
+        let warehouse : Warehouse = this._minion.getNearestWarehouse();
+        if (warehouse) {
+            this._minion.moveTo(warehouse.workingSite);
+            return true;
+        } else {
+            console.warn('no warehouse found in base');
+            return false;
         }
     }
 }

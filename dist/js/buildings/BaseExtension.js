@@ -25,7 +25,7 @@ var BaseExtension = (function (_super) {
         // Init cost
         this._resourcesNeeded[Resources.Wood] = 10;
         this._resourcesNeeded[Resources.Rock] = 20;
-        this._constructionNumber = 100;
+        this._constructionNumber = 50;
     };
     /**
      * Create and set the base extension material

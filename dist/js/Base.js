@@ -222,7 +222,7 @@ var Base = (function () {
                 if (hex.resourceSlot.isAvailable()) {
                     // Check distance
                     var currentDist = this.getPathFromTo(hexagon, hex).length;
-                    if (currentDist < distance) {
+                    if (currentDist > 0 && currentDist < distance) {
                         nearest = hex;
                         distance = currentDist;
                     }
@@ -247,16 +247,34 @@ var Base = (function () {
                 distance = currentDist;
             }
         };
-        // Check base extensions...
-        // for (let ext of this._extensions) {
-        //     if (ext.waitingToBeBuilt) {
-        //         check(ext);
-        //     }
-        // }
-        //.. and check buildings  
+        // Check buildings  
         for (var _i = 0, _a = this._buildings; _i < _a.length; _i++) {
             var build = _a[_i];
             if (build.waitingToBeBuilt) {
+                check(build);
+            }
+        }
+        return nearest;
+    };
+    /**
+     * Returns the nearest warehouse
+     */
+    Base.prototype.getNearestWarehouse = function (hexagon) {
+        var _this = this;
+        var nearest = null;
+        var distance = Number.POSITIVE_INFINITY;
+        var check = function (b) {
+            // Check distance
+            var currentDist = _this.getPathFromTo(hexagon, b.workingSite).length;
+            if (currentDist > 0 && currentDist < distance) {
+                nearest = b;
+                distance = currentDist;
+            }
+        };
+        // Check buildings  
+        for (var _i = 0, _a = this._buildings; _i < _a.length; _i++) {
+            var build = _a[_i];
+            if (build instanceof Warehouse) {
                 check(build);
             }
         }

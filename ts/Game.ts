@@ -209,8 +209,8 @@ class Game {
         let bobby = new Minion('bobby', this);
         this._hoard.push(bobby);
         
-        let bobby2 = new Minion('bobby2', this);
-        this._hoard.push(bobby2);  
+        // let bobby2 = new Minion('bobby2', this);
+        // this._hoard.push(bobby2);  
 
         grid.draw(this.scene);    
 

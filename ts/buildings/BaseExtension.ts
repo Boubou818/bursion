@@ -23,7 +23,7 @@ class BaseExtension extends Building {
         this._resourcesNeeded[Resources.Wood] = 10;
         this._resourcesNeeded[Resources.Rock] = 20;
         
-        this._constructionNumber = 100;
+        this._constructionNumber = 50;
     }
     
     

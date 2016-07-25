@@ -2,15 +2,26 @@
 class Warehouse extends Building {
 
     // The stock of this warehouse
-    private _stock : ResourceMap<number> = [];
-
+    protected _stock : ResourceMap<number> = [];
+    
     constructor(game : Game, base : Base) {
         super(game, base);  
     }
      
     protected _initCost() {   
-        this._resourcesNeeded[Resources.Wood] = 20;
-        this._resourcesNeeded[Resources.Rock] = 20;
+        this._cost[Resources.Wood] = 20;
+        this._cost[Resources.Rock] = 20;
+    }
+    
+    /**
+     * Returns the amount of material for the given resource
+     */
+    public getStockOf(res : Resources) {
+        if (this._stock[res]) {
+            return this._stock[res];
+        } else {
+            return 0;
+        }
     }
     
     /** 
@@ -67,7 +78,11 @@ class Warehouse extends Building {
      * TODO
      */
     public add (amount:number, res : Resources) {
-        this._stock[res] += amount;
+        if (! this._stock[res]) {
+            this._stock[res] = amount;      
+        } else {
+            this._stock[res] += amount;            
+        }
     }
 
     /**
@@ -75,6 +90,7 @@ class Warehouse extends Building {
      * TODO
      */
     public take (amount:number, res : Resources) {
+        this._stock[res] -= amount;    
     }
     
     
@@ -94,8 +110,8 @@ class StarterWarehouse extends Warehouse {
         ];        
         
     protected _initCost() {   
-        this._resourcesNeeded[Resources.Wood] = 0;
-        this._resourcesNeeded[Resources.Rock] = 0;
+        this._cost[Resources.Wood] = 0;
+        this._cost[Resources.Rock] = 0;
     }
     
     /**
@@ -110,6 +126,16 @@ class StarterWarehouse extends Warehouse {
         for (let i=0; i<StarterWarehouse.TEMPLATE.length-1; i+=2) {
             let center = grid.getCenterXY(StarterWarehouse.TEMPLATE[i],StarterWarehouse.TEMPLATE[i+1]);
             this._points.push(new BuildingPoint(new BABYLON.Vector3(center.x, 0, center.y), this));
-        }
+        }  
+        
+        // Init stock
+        this._stock[Resources.Wood] = 100;
+        this._stock[Resources.Rock] = 100;
+        this._stock[Resources.Meat] = 100;
+    }
+    
+    // This building is finished
+    public isNearlyFinished() : boolean {        
+        return true;
     }
 }

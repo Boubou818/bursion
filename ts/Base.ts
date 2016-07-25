@@ -9,7 +9,7 @@ declare var Graph : any;
 class Base {
     
     // The list of building (all status : waiting, finished...) in the base
-    private _buildings : Array<Building> = [];
+    public buildings : Array<Building> = [];
 
     // All resources hexagones coming from building unfolded in a single array. Updated each time a new building is built
     private _usableResources : Array<MapHexagon> = [];
@@ -86,7 +86,7 @@ class Base {
             this._hexToDissipateFog.push(hex);  
             this._map.removeMapHex(hex);      
         }        
-        this._buildings.push(building);  
+        this.buildings.push(building);  
                 
         // Build it
         building.prepareToBuildOn(workingSite, resourcesHex); 
@@ -204,7 +204,7 @@ class Base {
      */
     public canBuildHere (building:Building) : boolean {
                 
-        for (let b of this._buildings) {
+        for (let b of this.buildings) {
             if (building.overlaps(b)) {
                 return false;
             } 
@@ -213,7 +213,7 @@ class Base {
         // point of the new shape with distance < DISTANCE_BETWEEN_NEIGHBORS
         let areConnected = false;
         for (let point of building.points) {
-            for (let otherBuilding of this._buildings) {
+            for (let otherBuilding of this.buildings) {
                 for (let otherPoint of otherBuilding.points) {
                     areConnected = areConnected || BuildingPoint.AreNeighbors(point, otherPoint);
                 }
@@ -228,11 +228,13 @@ class Base {
 
     /**
      * Returns the shortest path from the given hex to the given hex.
+     * Returns null if no path exist.
      */
     public getPathFromTo(from: MapHexagon, to:MapHexagon) : Array<MapHexagon>{
         let pathString : Array<string> = this.graph.shortestPath(from.name, to.name).reverse();
-        if (pathString.length === 0) {
-            console.warn('No road found to ', to.name);
+        if (pathString.length === 0 && from.name !== to.name) {
+            console.warn('No road found from ', from.name, ' to ', to.name);
+            return null;
         }
         let pathHex = [];
         for (let str of pathString) {
@@ -247,7 +249,7 @@ class Base {
      * Returns null if no such hexagon is found.
      * @param hexagon The position from where the nearest resource will be returned
      */
-    public getNearestResource(hexagon:MapHexagon, resource:Resources) : MapHexagon {
+    public getNearestResource(hexagon:MapHexagon, resource:number) : MapHexagon {
         let nearest = null;
         let distance = Number.POSITIVE_INFINITY;
 
@@ -256,10 +258,11 @@ class Base {
                 // Check availability of the resource
                 if (hex.resourceSlot.isAvailable()) {
                     // Check distance
-                    let currentDist = this.getPathFromTo(hexagon, hex).length;
-                    if (currentDist > 0 && currentDist < distance) {
+                    let currentDist = this.getPathFromTo(hexagon, hex);
+                    if (currentDist && currentDist.length < distance) {
+                        // Path exist
                         nearest = hex;
-                        distance = currentDist;
+                        distance = currentDist.length;
                     }
                 }
             }
@@ -277,16 +280,16 @@ class Base {
 
         let check = (b:Building) => {
             // Check distance
-            let currentDist = this.getPathFromTo(hexagon, b.workingSite).length;
-            if (currentDist > 0 && currentDist < distance) {
+            let currentDist = this.getPathFromTo(hexagon, b.workingSite);
+            if (currentDist && currentDist.length < distance) {
                 nearest = b;
-                distance = currentDist;
+                distance = currentDist.length;
             }
         }        
         
-        // Check buildings  
-        for (let build of this._buildings) {
-            if (build.waitingToBeBuilt) {
+        // Check buildings not finished
+        for (let build of this.buildings) {
+            if (! build.isNearlyFinished()) {
                 check(build);
             }
         }
@@ -302,15 +305,15 @@ class Base {
 
         let check = (b:Warehouse) => {
             // Check distance
-            let currentDist = this.getPathFromTo(hexagon, b.workingSite).length;
-            if (currentDist > 0 && currentDist < distance) {
+            let currentDist = this.getPathFromTo(hexagon, b.workingSite);
+            if (currentDist && currentDist.length < distance) {
                 nearest = b;
-                distance = currentDist;
+                distance = currentDist.length;
             }
         }        
         
         // Check buildings  
-        for (let build of this._buildings) {
+        for (let build of this.buildings) {
             if (build instanceof Warehouse) {
                 check(build);
             }

@@ -55,10 +55,6 @@ abstract class Building extends BABYLON.Mesh{
     
     // The base this building belongs to
     protected _base : Base;
-    
-    // The progress of the building . Is updated by minion and buildstrategy.
-    // The building is finished when progress is <= 0;
-    protected _constructionNumber : number = 0;
         
     // The place where minion will come to build this building
     protected _workingSite : MapHexagon;
@@ -69,17 +65,20 @@ abstract class Building extends BABYLON.Mesh{
     // The 3D model of the building. Its parent is this building
     protected _buildingModel : BABYLON.Mesh;
     
+    // All resources incoming from builders. This building is nearly finished when resourcesIncoming == cost
+    private _materialIncoming : ResourceMap<number> = [];
+    
+    // All materials brought by minions. The building is finished when materials == cost
+    private _materials : ResourceMap<number> = [];
+    
     // The ressources needed to build this building. Each subclass will define this amount in the constructor
-    protected _resourcesNeeded : ResourceMap<number> = [];
+    protected _cost : ResourceMap<number> = [];
 
     // All ressources that are taken by the building. This array is filled when the building is placed on the map
     private _usableResources : Array<MapHexagon>;
     
     // The list of points composing this building
     protected _points : Array<BuildingPoint> = [];
-    
-    // Set to true when a minion is taking care of this building
-    public waitingToBeBuilt : boolean = false;
             
     constructor(game:Game, base : Base) {
         super('_building_', game.scene); 
@@ -184,8 +183,8 @@ abstract class Building extends BABYLON.Mesh{
     public canBuild() : boolean {
         // Browser resources needed and check if the game has enough
         let canBuild = true;
-        for (let r in this._resourcesNeeded) {
-            canBuild = canBuild && this._game.resources[r] >= this._resourcesNeeded[r]; 
+        for (let r in this._cost) {
+            canBuild = canBuild && this._game.resources[r] >= this._cost[r]; 
         }
         return canBuild;
     }
@@ -278,9 +277,6 @@ abstract class Building extends BABYLON.Mesh{
         // Set 'waiting for build' material
         this._setWaitingForMinionMaterial();
         
-        // Waiting for a minion to build this building
-        this.waitingToBeBuilt = true;
-
         // Wake up minions
         this._game.wakeUpBuilders();
     }
@@ -289,10 +285,7 @@ abstract class Building extends BABYLON.Mesh{
      * Method called when the building is finished to built on the player base
      */
     public finishBuild() : void {
-        
-        // No more waiting
-        this.waitingToBeBuilt = false;
-        
+                
         // Set 'waiting for build' material
         this._setFinishedMaterial();     
         
@@ -300,18 +293,75 @@ abstract class Building extends BABYLON.Mesh{
         this._base.buildingFinished(this);   
     }
     
+    //----------------------
+    // MATERIAL MANAGEMENT
+    //----------------------
+    
     /**
-     * A minion is currently building this building.
+     * Returns true if the building is finished or being finished.
+     * Returns true if resourcesIncoming == cost
      */
-    public buildTick (amount : number) {
-        this._constructionNumber -= amount;
-        console.log(this._constructionNumber);
+    public isNearlyFinished() : boolean {
+        for (let res in this._cost) {
+            if (this._materialIncoming[res] !== this._cost[res]) {
+                return false;
+            }
+        }
+        return true;
     }
     
     /**
-     * Returns true if the building is finished
+     * Returns true when this building is finished : materials == cost
      */
     public isFinished() : boolean {
-        return this._constructionNumber <= 0;
+        for (let res in this._cost) {
+            if (this._materials[res] !== this._cost[res]) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * Returns all resources needed by the building in order to construct it.
+     * Returns cost - resourcesIncoming
+     */
+    public getNeededResources() : ResourceMap<number> {
+        let result = [];
+        
+        for (let res in this._cost) {
+            if (this._materialIncoming[res]) {
+                let diff = this._cost[res] - this._materialIncoming[res];
+                if (diff > 0) {                    
+                    result[res] = diff;
+                } // Else don't add this resource as needed
+            } else {
+                result[res] = this._cost[res];
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Add the given resource into the incomingResources of this building.
+     */
+    public addIncomingMaterial(amount:number, res:Resources) {
+        if (! this._materialIncoming[res]) {
+            this._materialIncoming[res] = amount;      
+        } else {
+            this._materialIncoming[res] += amount;            
+        }
+    }
+    
+    /**
+     * Add the given material into the materials array of this building.
+     */
+    public addMaterial(amount:number, res:Resources) {
+        if (! this._materials[res]) {
+            this._materials[res] = amount;      
+        } else {
+            this._materials[res] += amount;            
+        }
     }
 }

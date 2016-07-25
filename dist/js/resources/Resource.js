@@ -8,13 +8,10 @@
  */
 var Resources;
 (function (Resources) {
-    Resources[Resources["Empty"] = 0] = "Empty";
-    Resources[Resources["Wood"] = 1] = "Wood";
-    Resources[Resources["Rock"] = 2] = "Rock";
-    Resources[Resources["Meat"] = 3] = "Meat";
-})(Resources || (Resources = {}));
-var Resources;
-(function (Resources) {
+    Resources.Empty = 0;
+    Resources.Wood = 1;
+    Resources.Rock = 2;
+    Resources.Meat = 3;
     /**
      * Returns the probabilty of a resource to be in an hexagon
      */
@@ -28,5 +25,18 @@ var Resources;
         }
     }
     Resources.getProbability = getProbability;
+    /**
+     * Returns the 3D model corresponding to the given resource
+     */
+    function getModelForResource(game, res) {
+        switch (res) {
+            case Resources.Wood:
+                return game.assets['wood'];
+            case Resources.Rock:
+            default:
+                return 0;
+        }
+    }
+    Resources.getModelForResource = getModelForResource;
 })(Resources || (Resources = {}));
 //# sourceMappingURL=Resource.js.map

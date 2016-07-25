@@ -9,7 +9,7 @@ var Base = (function () {
     // The base is always composed of a starting platform, composed of a set of 4*4 hex
     function Base(game, map) {
         // The list of building (all status : waiting, finished...) in the base
-        this._buildings = [];
+        this.buildings = [];
         // All resources hexagones coming from building unfolded in a single array. Updated each time a new building is built
         this._usableResources = [];
         //  Used to disspiate the fog when a new building is placed in the base
@@ -62,7 +62,7 @@ var Base = (function () {
             this._hexToDissipateFog.push(hex);
             this._map.removeMapHex(hex);
         }
-        this._buildings.push(building);
+        this.buildings.push(building);
         // Build it
         building.prepareToBuildOn(workingSite, resourcesHex);
         // Remove fog where needed
@@ -168,7 +168,7 @@ var Base = (function () {
      * connected with at least one shape.
      */
     Base.prototype.canBuildHere = function (building) {
-        for (var _i = 0, _a = this._buildings; _i < _a.length; _i++) {
+        for (var _i = 0, _a = this.buildings; _i < _a.length; _i++) {
             var b = _a[_i];
             if (building.overlaps(b)) {
                 return false;
@@ -179,7 +179,7 @@ var Base = (function () {
         var areConnected = false;
         for (var _b = 0, _c = building.points; _b < _c.length; _b++) {
             var point = _c[_b];
-            for (var _d = 0, _e = this._buildings; _d < _e.length; _d++) {
+            for (var _d = 0, _e = this.buildings; _d < _e.length; _d++) {
                 var otherBuilding = _e[_d];
                 for (var _f = 0, _g = otherBuilding.points; _f < _g.length; _f++) {
                     var otherPoint = _g[_f];
@@ -193,11 +193,13 @@ var Base = (function () {
     };
     /**
      * Returns the shortest path from the given hex to the given hex.
+     * Returns null if no path exist.
      */
     Base.prototype.getPathFromTo = function (from, to) {
         var pathString = this.graph.shortestPath(from.name, to.name).reverse();
-        if (pathString.length === 0) {
-            console.warn('No road found to ', to.name);
+        if (pathString.length === 0 && from.name !== to.name) {
+            console.warn('No road found from ', from.name, ' to ', to.name);
+            return null;
         }
         var pathHex = [];
         for (var _i = 0, pathString_1 = pathString; _i < pathString_1.length; _i++) {
@@ -221,10 +223,11 @@ var Base = (function () {
                 // Check availability of the resource
                 if (hex.resourceSlot.isAvailable()) {
                     // Check distance
-                    var currentDist = this.getPathFromTo(hexagon, hex).length;
-                    if (currentDist > 0 && currentDist < distance) {
+                    var currentDist = this.getPathFromTo(hexagon, hex);
+                    if (currentDist && currentDist.length < distance) {
+                        // Path exist
                         nearest = hex;
-                        distance = currentDist;
+                        distance = currentDist.length;
                     }
                 }
             }
@@ -241,16 +244,16 @@ var Base = (function () {
         var distance = Number.POSITIVE_INFINITY;
         var check = function (b) {
             // Check distance
-            var currentDist = _this.getPathFromTo(hexagon, b.workingSite).length;
-            if (currentDist > 0 && currentDist < distance) {
+            var currentDist = _this.getPathFromTo(hexagon, b.workingSite);
+            if (currentDist && currentDist.length < distance) {
                 nearest = b;
-                distance = currentDist;
+                distance = currentDist.length;
             }
         };
-        // Check buildings  
-        for (var _i = 0, _a = this._buildings; _i < _a.length; _i++) {
+        // Check buildings not finished
+        for (var _i = 0, _a = this.buildings; _i < _a.length; _i++) {
             var build = _a[_i];
-            if (build.waitingToBeBuilt) {
+            if (!build.isNearlyFinished()) {
                 check(build);
             }
         }
@@ -265,14 +268,14 @@ var Base = (function () {
         var distance = Number.POSITIVE_INFINITY;
         var check = function (b) {
             // Check distance
-            var currentDist = _this.getPathFromTo(hexagon, b.workingSite).length;
-            if (currentDist > 0 && currentDist < distance) {
+            var currentDist = _this.getPathFromTo(hexagon, b.workingSite);
+            if (currentDist && currentDist.length < distance) {
                 nearest = b;
-                distance = currentDist;
+                distance = currentDist.length;
             }
         };
         // Check buildings  
-        for (var _i = 0, _a = this._buildings; _i < _a.length; _i++) {
+        for (var _i = 0, _a = this.buildings; _i < _a.length; _i++) {
             var build = _a[_i];
             if (build instanceof Warehouse) {
                 check(build);

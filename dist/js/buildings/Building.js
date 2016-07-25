@@ -53,15 +53,14 @@ var Building = (function (_super) {
     __extends(Building, _super);
     function Building(game, base) {
         _super.call(this, '_building_', game.scene);
-        // The progress of the building . Is updated by minion and buildstrategy.
-        // The building is finished when progress is <= 0;
-        this._constructionNumber = 0;
+        // All resources incoming from builders. This building is nearly finished when resourcesIncoming == cost
+        this._materialIncoming = [];
+        // All materials brought by minions. The building is finished when materials == cost
+        this._materials = [];
         // The ressources needed to build this building. Each subclass will define this amount in the constructor
-        this._resourcesNeeded = [];
+        this._cost = [];
         // The list of points composing this building
         this._points = [];
-        // Set to true when a minion is taking care of this building
-        this.waitingToBeBuilt = false;
         this._game = game;
         this._base = base;
         // Init the cost of this building
@@ -168,8 +167,8 @@ var Building = (function (_super) {
     Building.prototype.canBuild = function () {
         // Browser resources needed and check if the game has enough
         var canBuild = true;
-        for (var r in this._resourcesNeeded) {
-            canBuild = canBuild && this._game.resources[r] >= this._resourcesNeeded[r];
+        for (var r in this._cost) {
+            canBuild = canBuild && this._game.resources[r] >= this._cost[r];
         }
         return canBuild;
     };
@@ -236,8 +235,6 @@ var Building = (function (_super) {
         this._workingSite = workingSite;
         // Set 'waiting for build' material
         this._setWaitingForMinionMaterial();
-        // Waiting for a minion to build this building
-        this.waitingToBeBuilt = true;
         // Wake up minions
         this._game.wakeUpBuilders();
     };
@@ -245,25 +242,77 @@ var Building = (function (_super) {
      * Method called when the building is finished to built on the player base
      */
     Building.prototype.finishBuild = function () {
-        // No more waiting
-        this.waitingToBeBuilt = false;
         // Set 'waiting for build' material
         this._setFinishedMaterial();
         // Notify the base this building is finished
         this._base.buildingFinished(this);
     };
+    //----------------------
+    // MATERIAL MANAGEMENT
+    //----------------------
     /**
-     * A minion is currently building this building.
+     * Returns true if the building is finished or being finished.
+     * Returns true if resourcesIncoming == cost
      */
-    Building.prototype.buildTick = function (amount) {
-        this._constructionNumber -= amount;
-        console.log(this._constructionNumber);
+    Building.prototype.isNearlyFinished = function () {
+        for (var res in this._cost) {
+            if (this._materialIncoming[res] !== this._cost[res]) {
+                return false;
+            }
+        }
+        return true;
     };
     /**
-     * Returns true if the building is finished
+     * Returns true when this building is finished : materials == cost
      */
     Building.prototype.isFinished = function () {
-        return this._constructionNumber <= 0;
+        for (var res in this._cost) {
+            if (this._materials[res] !== this._cost[res]) {
+                return false;
+            }
+        }
+        return true;
+    };
+    /**
+     * Returns all resources needed by the building in order to construct it.
+     * Returns cost - resourcesIncoming
+     */
+    Building.prototype.getNeededResources = function () {
+        var result = [];
+        for (var res in this._cost) {
+            if (this._materialIncoming[res]) {
+                var diff = this._cost[res] - this._materialIncoming[res];
+                if (diff > 0) {
+                    result[res] = diff;
+                } // Else don't add this resource as needed
+            }
+            else {
+                result[res] = this._cost[res];
+            }
+        }
+        return result;
+    };
+    /**
+     * Add the given resource into the incomingResources of this building.
+     */
+    Building.prototype.addIncomingMaterial = function (amount, res) {
+        if (!this._materialIncoming[res]) {
+            this._materialIncoming[res] = amount;
+        }
+        else {
+            this._materialIncoming[res] += amount;
+        }
+    };
+    /**
+     * Add the given material into the materials array of this building.
+     */
+    Building.prototype.addMaterial = function (amount, res) {
+        if (!this._materials[res]) {
+            this._materials[res] = amount;
+        }
+        else {
+            this._materials[res] += amount;
+        }
     };
     return Building;
 }(BABYLON.Mesh));

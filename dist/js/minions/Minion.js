@@ -47,25 +47,37 @@ var Minion = (function (_super) {
             }
         };
     }
+    Object.defineProperty(Minion.prototype, "game", {
+        get: function () {
+            return this._game;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * Make the minion walk to the given hexagon:
      * - Find shortest path to this hex
      * - Add a destination for each hex of the path
      * - make it moooove \o/
+     * Returns the number of hexagon this minion has to browse
      */
     Minion.prototype.moveTo = function (hex) {
         var path = this.base.getPathFromTo(this.currentHexagon, hex);
-        if (path.length != 0) {
+        if (!path || path.length === 0) {
             // If a path is found, reset destinations
             this._controller.stop();
+            return 0;
         }
-        for (var _i = 0, path_1 = path; _i < path_1.length; _i++) {
-            var hex_1 = path_1[_i];
-            var tmp = hex_1.center;
-            tmp.y = 1.25;
-            this._controller.addDestination(tmp, hex_1);
+        else {
+            for (var _i = 0, path_1 = path; _i < path_1.length; _i++) {
+                var hex_1 = path_1[_i];
+                var tmp = hex_1.center;
+                tmp.y = 1.25;
+                this._controller.addDestination(tmp, hex_1);
+            }
+            this._controller.start();
+            return path.length;
         }
-        this._controller.start();
     };
     /**
      * Returns the nearest heaxgon containing the given resource.

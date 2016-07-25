@@ -35,10 +35,11 @@ class Preloader {
         let parent = new BABYLON.Mesh('', this._scene);
         
         for (let m of t.loadedMeshes) {
-            m.setEnabled(false);
+            // m.setEnabled(false);
             m.getScene().stopAnimation(m);
             m.parent = parent;
         }
+        // parent.setEnabled(false);
                 
         this._game.assets[t.name] = parent;
     }

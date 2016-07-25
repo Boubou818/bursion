@@ -84,7 +84,8 @@ class BuildStrategy extends WorkingStrategy {
             case this._states.AT_WAREHOUSE:  
                 
                 // Create 3D model of resource on minion and go to next state
-                this._resourceModel = game
+                let resource : number = Number(Object.keys(this._package)[0]); 
+                this._resourceModel = Resources.getModelForResource(this._minion.game, resource);
                 this._resourceModel.position.y = 1;
                 this._resourceModel.parent = this._minion;
                 

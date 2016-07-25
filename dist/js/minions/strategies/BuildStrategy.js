@@ -72,8 +72,11 @@ var BuildStrategy = (function (_super) {
                 // He will notify when he'll arrive.
                 break;
             case this._states.AT_WAREHOUSE:
-                // Add 3D model above the mlinion head
-                // TODO
+                // Create 3D model of resource on minion and go to next state
+                var resource = Number(Object.keys(this._package)[0]);
+                this._resourceModel = Resources.getModelForResource(this._minion.game, resource);
+                this._resourceModel.position.y = 1;
+                this._resourceModel.parent = this._minion;
                 // Take resource
                 this._takeNeededResource();
                 // Go to building

@@ -34,7 +34,7 @@ var Resources;
                 return game.assets['wood'];
             case Resources.Rock:
             default:
-                return 0;
+                return game.assets['wood'];
         }
     }
     Resources.getModelForResource = getModelForResource;

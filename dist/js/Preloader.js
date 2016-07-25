@@ -21,10 +21,11 @@ var Preloader = (function () {
         var parent = new BABYLON.Mesh('', this._scene);
         for (var _i = 0, _a = t.loadedMeshes; _i < _a.length; _i++) {
             var m = _a[_i];
-            m.setEnabled(false);
+            // m.setEnabled(false);
             m.getScene().stopAnimation(m);
             m.parent = parent;
         }
+        // parent.setEnabled(false);
         this._game.assets[t.name] = parent;
     };
     return Preloader;

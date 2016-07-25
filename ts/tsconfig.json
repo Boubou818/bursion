@@ -8,6 +8,7 @@
         "Timer.ts",
         "Game.ts",
         "GUIManager.ts",
+        "Preloader.ts",
 
         "buildings/FogOfWar.ts",
         "buildings/HexagonType.ts",

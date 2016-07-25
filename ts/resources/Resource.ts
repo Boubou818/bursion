@@ -38,13 +38,13 @@ namespace Resources {
     /**
      * Returns the 3D model corresponding to the given resource
      */
-    export function getModelForResource(game:Game, res : Resources) {
+    export function getModelForResource(game:Game, res : Resources) : BABYLON.Mesh {
         switch (res) {
             case Resources.Wood:
                 return game.assets['wood'];
             case Resources.Rock:
             default:
-                return 0;
+                return game.assets['wood'];
         }
     }
 }

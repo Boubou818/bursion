@@ -177,7 +177,9 @@ class HexagonMap {
      * Draw the hexagon grid in the given scene.
      * Hexagons and resources are two different models.
      */
-    public draw(scene) {
+    public draw(game:Game) {
+
+        let scene : BABYLON.Scene = game.scene;
                 
         // land
         let land = BABYLON.Mesh.CreateCylinder('', 1.5, 1.9,1.9, 6, 1, scene);
@@ -219,13 +221,6 @@ class HexagonMap {
         water2Material.specularColor = BABYLON.Color3.Black();
         water2Ref.material = water2Material;   
 
-        // Wood
-        let woodRef = BABYLON.Mesh.CreateCylinder('_wood_', 2, 0.3, 0.3, 6, 1, scene);
-        woodRef.isVisible = false;
-        let woodMaterial = new BABYLON.StandardMaterial('', scene);
-        woodMaterial.diffuseColor = BABYLON.Color3.FromInts(120, 216, 17);
-        woodRef.material = woodMaterial;
-
         // Rock
         let rockRef = BABYLON.Mesh.CreateCylinder('_rock_', 2, 0.3, 0.3, 6, 1, scene);
         rockRef.isVisible = false;
@@ -259,20 +254,28 @@ class HexagonMap {
             
             // Add the mesh instance to the meshes list
             this._meshes[h.name] = hex;
-            
-            // Resource
-            if (h.resourceSlot.resource === Resources.Wood) {
-                let wood = woodRef.createInstance('wood');
-                wood.isVisible = true;
+
+            if (h.resourceSlot.resource !== Resources.Empty) {
+                let basemesh = Resources.getModelForResource(game, h.resourceSlot.resource);
+                let wood = basemesh.clone('_resource_');                
+                wood.setEnabled(true);
                 wood.position.copyFrom(h.center);
-                wood.freezeWorldMatrix();
+                wood.position.y = 1.25;
+                wood.rotation.y = Math.random()-0.5;
+                wood.scaling.scaleInPlace(0.5);
             }
-            if (h.resourceSlot.resource === Resources.Rock) {
-                let rock = rockRef.createInstance('rock');
-                rock.isVisible = true;
-                rock.position.copyFrom(h.center);
-                rock.freezeWorldMatrix();
-            }            
+
+
+            //     wood.isVisible = true;
+            //     wood.position.copyFrom(h.center);
+            //     wood.freezeWorldMatrix();
+            // }
+            // if (h.resourceSlot.resource === Resources.Rock) {
+            //     let rock = rockRef.createInstance('rock');
+            //     rock.isVisible = true;
+            //     rock.position.copyFrom(h.center);
+            //     rock.freezeWorldMatrix();
+            // }            
         }
     }
 }

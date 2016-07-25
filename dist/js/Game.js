@@ -174,7 +174,7 @@ var Game = (function () {
         this._hoard.push(bobby);
         var bobby2 = new Minion('bobby2', this);
         this._hoard.push(bobby2);
-        grid.draw(this.scene);
+        grid.draw(this);
         // Compute stock
         this._computeTotalStock();
         // Init GUI 

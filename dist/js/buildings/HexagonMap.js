@@ -168,7 +168,8 @@ var HexagonMap = (function () {
      * Draw the hexagon grid in the given scene.
      * Hexagons and resources are two different models.
      */
-    HexagonMap.prototype.draw = function (scene) {
+    HexagonMap.prototype.draw = function (game) {
+        var scene = game.scene;
         // land
         var land = BABYLON.Mesh.CreateCylinder('', 1.5, 1.9, 1.9, 6, 1, scene);
         land.rotation.y = Math.PI / 2;
@@ -205,12 +206,6 @@ var HexagonMap = (function () {
         water2Material.diffuseColor = BABYLON.Color3.FromInts(38, 62, 66);
         water2Material.specularColor = BABYLON.Color3.Black();
         water2Ref.material = water2Material;
-        // Wood
-        var woodRef = BABYLON.Mesh.CreateCylinder('_wood_', 2, 0.3, 0.3, 6, 1, scene);
-        woodRef.isVisible = false;
-        var woodMaterial = new BABYLON.StandardMaterial('', scene);
-        woodMaterial.diffuseColor = BABYLON.Color3.FromInts(120, 216, 17);
-        woodRef.material = woodMaterial;
         // Rock
         var rockRef = BABYLON.Mesh.CreateCylinder('_rock_', 2, 0.3, 0.3, 6, 1, scene);
         rockRef.isVisible = false;
@@ -240,18 +235,14 @@ var HexagonMap = (function () {
             hex.freezeWorldMatrix();
             // Add the mesh instance to the meshes list
             this._meshes[h.name] = hex;
-            // Resource
-            if (h.resourceSlot.resource === Resources.Wood) {
-                var wood = woodRef.createInstance('wood');
-                wood.isVisible = true;
+            if (h.resourceSlot.resource !== Resources.Empty) {
+                var basemesh = Resources.getModelForResource(game, h.resourceSlot.resource);
+                var wood = basemesh.clone('_resource_');
+                wood.setEnabled(true);
                 wood.position.copyFrom(h.center);
-                wood.freezeWorldMatrix();
-            }
-            if (h.resourceSlot.resource === Resources.Rock) {
-                var rock = rockRef.createInstance('rock');
-                rock.isVisible = true;
-                rock.position.copyFrom(h.center);
-                rock.freezeWorldMatrix();
+                wood.position.y = 1.25;
+                wood.rotation.y = Math.random() - 0.5;
+                wood.scaling.scaleInPlace(0.5);
             }
         }
     };

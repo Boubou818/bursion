@@ -30,8 +30,6 @@ class Game {
         });
 
         this.initScene();
-
-        this.run();
     }
 
     private initScene() {
@@ -41,6 +39,12 @@ class Game {
         camera.attachControl(this.engine.getRenderingCanvas());
         let light = new BABYLON.HemisphericLight('', new BABYLON.Vector3(0, 1, 0), this.scene);
         light.intensity = 1;
+        
+        // Load assets
+        let loader = new Preloader(this);
+        loader.callback = this.run.bind(this);
+        
+        loader.loadAssets();
     }
 
     private run() {
@@ -120,22 +124,18 @@ class Game {
     public wakeUpBuilders() {
         for (let m of this._hoard) {
             if (m.strategy && m.strategy instanceof BuildStrategy && m.strategy.isIdle()) {
-                m.setStrategy(new BuildStrategy(m));
+                m.setStrategy(new BuildStrategy(m)); // TODO find better than that
             }
         }
     }
 
 
     private _initGame() {
-        
-        // Init GUI 
-        this._gui = new GUIManager(this);
-        
-        // Init resource map
-        this.resources[Resources.Wood] = 100;
-        this.resources[Resources.Rock] = 100;
-        this.resources[Resources.Meat] = 100;
-        
+        // Init resources
+        this.resources[Resources.Wood] = 0;
+        this.resources[Resources.Rock] = 0;
+        this.resources[Resources.Meat] = 0;
+                
         let ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 2, this.scene);
         ground.isVisible = false;
 
@@ -212,7 +212,26 @@ class Game {
         let bobby2 = new Minion('bobby2', this);
         this._hoard.push(bobby2);  
 
-        grid.draw(this.scene);    
-
+        grid.draw(this.scene);   
+        
+        // Compute stock
+        this._computeTotalStock();
+        
+        // Init GUI 
+        this._gui = new GUIManager(this);
+    }
+    
+    /**
+     * Sum all resources from all warehouse
+     */
+    private _computeTotalStock() : void {
+        for (let b of this.base.buildings) {
+            if (b instanceof Warehouse) {
+                let warehouse = <Warehouse> b;
+                this.resources[Resources.Wood] += warehouse.getStockOf(Resources.Wood);
+                this.resources[Resources.Rock] += warehouse.getStockOf(Resources.Rock);
+                this.resources[Resources.Meat] += warehouse.getStockOf(Resources.Meat);
+            }
+        }
     }
 }

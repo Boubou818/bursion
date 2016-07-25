@@ -4,8 +4,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 /**
- * A minion with a build strategy will go the the nearest building waiting for a minion
- * and spend some time on it, in order to build it. Once the building finished, the minion will
+ * A minion with a build strategy will go the the nearest warehouse with needed resources,
+ *  and go back and forth to the nearest building waiting for a minion.
+ * Once the building finished, the minion will
  * try to find another one. If not found, the minion stays idle.
  */
 var BuildStrategy = (function (_super) {
@@ -14,19 +15,10 @@ var BuildStrategy = (function (_super) {
         _super.call(this, minion);
         // The building the minion is currently working on
         this._workingOn = null;
-        // The generating timer is an infinite loop
-        this._buildingTimer = new Timer(BuildStrategy.TIME_TO_BUILD, minion.getScene(), { repeat: -1 } // repeat infinitely
-        );
-        // At each tick, add resource
-        this._buildingTimer.callback = this._build.bind(this);
+        // The resource this minion will bring
+        this._package = [];
+        this._warehouse = null;
     }
-    /**
-     * Build the building at each tick using the buildingTimer
-     */
-    BuildStrategy.prototype._build = function () {
-        var amount = 10; // TODO replace with minion.strength
-        this._workingOn.buildTick(amount);
-    };
     /**
      * A build strategy is composed of 3 states, like the resource strategy :
      * - the minion is idle, looking for next building to build
@@ -38,8 +30,11 @@ var BuildStrategy = (function (_super) {
     BuildStrategy.prototype._buildStates = function () {
         this._states = {
             IDLE: 0,
-            TRAVELING: 1,
-            BUILDING: 2
+            TRAVELING_TO_WAREHOUSE: 1,
+            AT_WAREHOUSE: 2,
+            TOOK_RESOURCE: 3,
+            TRAVELING_TO_BUILDING: 4,
+            AT_BUILDING: 5,
         };
         this._currentState = this._states.IDLE;
     };
@@ -50,65 +45,99 @@ var BuildStrategy = (function (_super) {
     BuildStrategy.prototype.applyStrategy = function () {
         switch (this._currentState) {
             case this._states.IDLE:
-                // Look for the nearest resource point
-                if (this._findAndGoToNearestBuilding()) {
-                    // Exit this state
-                    this._currentState = this._states.TRAVELING;
-                }
+                // Check if a building is waiting to be built
+                var building = this._minion.getNearestBuildingWaitingForMinion();
+                if (building) {
+                    // This building needs help !
+                    this._workingOn = building;
+                    // Go to warehouse to take resources
+                    var nbOfHexToTravel = this._findAndGoToNearestWarehouse();
+                    if (nbOfHexToTravel != -1) {
+                        // Choose resource to carry on
+                        this._createPackage();
+                        // Exit this state
+                        if (nbOfHexToTravel === 0) {
+                            // If the minion is already on the warehouse
+                            this._currentState = this._states.AT_WAREHOUSE;
+                        }
+                        else {
+                            this._currentState = this._states.TRAVELING_TO_WAREHOUSE;
+                        }
+                    }
+                } // Nothing to do, stay idle
                 break;
-            case this._states.TRAVELING:
+            case this._states.TRAVELING_TO_WAREHOUSE:
+            case this._states.TRAVELING_TO_BUILDING:
                 // Nothing to do, let the minion go the to resource point.
                 // He will notify when he'll arrive.
                 break;
-            case this._states.BUILDING:
-                // Update the generating timer
-                if (!this._buildingTimer.started) {
-                    this._buildingTimer.start();
-                }
-                if (this._workingOn.isFinished()) {
-                    // reset timer                  
-                    this._buildingTimer.reset();
-                    // Finish building
-                    this._workingOn.finishBuild();
-                    // Reset building worked on
-                    this._workingOn = null;
-                    // find another building if any
-                    this._currentState = this._states.IDLE;
-                }
+            case this._states.AT_WAREHOUSE:
+                // Add 3D model above the mlinion head
+                // TODO
+                // Take resource
+                this._takeNeededResource();
+                // Go to building
+                this._minion.moveTo(this._workingOn.workingSite);
+                // Exit state
+                this._currentState = this._states.TRAVELING_TO_BUILDING;
                 break;
+            case this._states.AT_BUILDING:
+                // Remove 3D model above the mlinion head
+                // TODO
+                // Add package to material for this building
+                this._addPackageToBuilding();
+                // Check if the building is finished
+                if (this._workingOn.isFinished()) {
+                    this._workingOn.finishBuild();
+                }
+                // go back as idle
+                this._currentState = this._states.IDLE;
             default:
                 break;
         }
     };
     /**
-     * Find the nearest building waiting to be built, and move the
-     * minion to it.
-     * Returns true if a building have been found, false otherwise
+     * Get the resource from the warehouse
      */
-    BuildStrategy.prototype._findAndGoToNearestBuilding = function () {
-        var building = this._minion.getNearestBuilding();
-        if (building) {
-            this._workingOn = building;
-            this._workingOn.waitingToBeBuilt = false;
-            // Move minion
-            this._minion.moveTo(building.workingSite);
-            return true;
-        }
-        else {
-            console.warn('no building found in base');
-            return false;
-        }
+    BuildStrategy.prototype._takeNeededResource = function () {
+        var resource = Number(Object.keys(this._package)[0]);
+        var toBring = this._package[resource];
+        this._warehouse.take(toBring, resource);
+    };
+    /**
+     * Choose a resource to bring to the building.
+     * Register this resource and the amoung into the incomingResource of the building.
+     */
+    BuildStrategy.prototype._createPackage = function () {
+        this._package = [];
+        var resourcesNeeded = this._workingOn.getNeededResources();
+        var canCarryMax = 10;
+        var resource = Number(Object.keys(resourcesNeeded)[0]);
+        var toBring = resourcesNeeded[resource];
+        toBring = (toBring > canCarryMax) ? canCarryMax : toBring;
+        this._package[resource] = toBring;
+        // Register as 'incomingResource' into the building
+        this._workingOn.addIncomingMaterial(toBring, resource);
+    };
+    /**
+     * Add the package to the building
+     */
+    BuildStrategy.prototype._addPackageToBuilding = function () {
+        var resource = Number(Object.keys(this._package)[0]);
+        var toBring = this._package[resource];
+        this._workingOn.addMaterial(toBring, resource);
     };
     /**
      * Reset the building this minion was working on
      */
     BuildStrategy.prototype.dispose = function () {
         if (this._workingOn) {
-            this._workingOn.waitingToBeBuilt = true;
             this._workingOn = null;
         } // else the minion was idle
-        // Delete timer
-        this._buildingTimer.stop(true);
+        // Delete 3D model if any
+        if (this._resourceModel) {
+            this._resourceModel.dispose();
+        }
     };
     /**
      * The minion arrived at the given resouceslot.
@@ -116,15 +145,32 @@ var BuildStrategy = (function (_super) {
      */
     BuildStrategy.prototype.finishedWalkingOn = function (data) {
         // If the minion was traveling...
-        if (this._currentState == this._states.TRAVELING) {
-            // Make it generate !
-            this._currentState = this._states.BUILDING;
+        if (this._currentState == this._states.TRAVELING_TO_WAREHOUSE) {
+            this._currentState = this._states.AT_WAREHOUSE;
+        }
+        else if (this._currentState == this._states.TRAVELING_TO_BUILDING) {
+            this._currentState = this._states.AT_BUILDING;
         }
         else {
         }
     };
-    // The building will be updated every 1s
-    BuildStrategy.TIME_TO_BUILD = 500;
+    /**
+     * Find the nearest warehouse.
+     * Returns -1 if no warehouse found
+     */
+    BuildStrategy.prototype._findAndGoToNearestWarehouse = function () {
+        var warehouse = this._minion.getNearestWarehouse();
+        if (warehouse) {
+            // Save warehouse
+            this._warehouse = warehouse;
+            var nbHexToTravel = this._minion.moveTo(warehouse.workingSite);
+            return nbHexToTravel;
+        }
+        else {
+            console.warn('no warehouse found in base');
+            return -1;
+        }
+    };
     return BuildStrategy;
 }(WorkingStrategy));
 //# sourceMappingURL=BuildStrategy.js.map

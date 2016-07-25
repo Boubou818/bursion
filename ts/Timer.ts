@@ -29,6 +29,7 @@ class Timer {
     public onFinish:  () => void;
     /**If set, the callback action will be repeated the specified number of times */
     public repeat : number;
+    private repeatInit : number;
     /** Should the timer start directly after its creation ? */
     public autostart : boolean;
     /** Should the timer call 'callback function' immediately after starting ? */
@@ -37,7 +38,7 @@ class Timer {
     public autodestroy : boolean;
 
 
-    constructor(time: number, scene:BABYLON.Scene, options:{repeat?:number, autostart?:boolean, autodestroy?:boolean, immediate?:boolean}) {
+    constructor(time: number, scene:BABYLON.Scene, options:{repeat?:number, autostart?:boolean, autodestroy?:boolean, immediate?:boolean} = {}) {
 
         this.scene = scene;
 
@@ -60,6 +61,7 @@ class Timer {
 
         //If set, the callback action will be repeated the specified number of times
         this.repeat = options.repeat || 1;
+        this.repeatInit = this.repeat;
 
         // Should the timer start directly after its creation ?
         this.autostart = options.autostart || false;
@@ -70,16 +72,21 @@ class Timer {
         // Should the timer call 'callback function' immediately after starting ?
         this.immediate = options.immediate || false;
 
-        this.registeredFunction = () => {
-            if (this.started && !this.isOver && !this.paused) {
-                this.update();
-            }
-        };
+        this.registeredFunction = this._checkIfUpdate.bind(this);
         scene.registerBeforeRender(this.registeredFunction);
 
         // Start the timer is set to autostart
         if (this.autostart) {
             this.start();
+        }
+    }
+    
+    /**
+     * Check if this timer can be updated
+     */
+    private _checkIfUpdate () : void {
+        if (this.started && !this.isOver && !this.paused) {
+            this._update();
         }
     }
 
@@ -91,6 +98,14 @@ class Timer {
         this.isOver = false;
         this.started = false;
         this.paused = false;
+    }
+    
+    /**
+     * Reset the timer and its repeat number
+     */
+    public hardReset() {
+        this.reset();
+        this.repeat = this.repeatInit;
     }
 
     /**
@@ -139,7 +154,7 @@ class Timer {
      * The update function
      * @private
      */
-    private update() {
+    private _update() {
 
         this.currentTime -= this.scene.getEngine().getDeltaTime();
 

@@ -20,10 +20,8 @@ class BaseExtension extends Building {
      */
     protected _initCost() { 
         // Init cost
-        this._resourcesNeeded[Resources.Wood] = 10;
-        this._resourcesNeeded[Resources.Rock] = 20;
-        
-        this._constructionNumber = 100;
+        this._cost[Resources.Wood] = 10;
+        this._cost[Resources.Rock] = 20;
     }
     
     

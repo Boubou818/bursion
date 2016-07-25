@@ -7,10 +7,23 @@ var Warehouse = (function (_super) {
     __extends(Warehouse, _super);
     function Warehouse(game, base) {
         _super.call(this, game, base);
+        // The stock of this warehouse
+        this._stock = [];
     }
     Warehouse.prototype._initCost = function () {
-        this._resourcesNeeded[Resources.Wood] = 20;
-        this._resourcesNeeded[Resources.Rock] = 20;
+        this._cost[Resources.Wood] = 20;
+        this._cost[Resources.Rock] = 20;
+    };
+    /**
+     * Returns the amount of material for the given resource
+     */
+    Warehouse.prototype.getStockOf = function (res) {
+        if (this._stock[res]) {
+            return this._stock[res];
+        }
+        else {
+            return 0;
+        }
     };
     /**
      * Returns a 3D model corresponding to this shape
@@ -59,6 +72,25 @@ var Warehouse = (function (_super) {
         }
         this.material = mat;
     };
+    /**
+     * Add the given stock to the warehouse
+     * TODO
+     */
+    Warehouse.prototype.add = function (amount, res) {
+        if (!this._stock[res]) {
+            this._stock[res] = amount;
+        }
+        else {
+            this._stock[res] += amount;
+        }
+    };
+    /**
+     * Take from stock the given amount of resources
+     * TODO
+     */
+    Warehouse.prototype.take = function (amount, res) {
+        this._stock[res] -= amount;
+    };
     return Warehouse;
 }(Building));
 var StarterWarehouse = (function (_super) {
@@ -67,8 +99,8 @@ var StarterWarehouse = (function (_super) {
         _super.apply(this, arguments);
     }
     StarterWarehouse.prototype._initCost = function () {
-        this._resourcesNeeded[Resources.Wood] = 0;
-        this._resourcesNeeded[Resources.Rock] = 0;
+        this._cost[Resources.Wood] = 0;
+        this._cost[Resources.Rock] = 0;
     };
     /**
      * The starter extension
@@ -81,6 +113,14 @@ var StarterWarehouse = (function (_super) {
             var center = grid.getCenterXY(StarterWarehouse.TEMPLATE[i], StarterWarehouse.TEMPLATE[i + 1]);
             this._points.push(new BuildingPoint(new BABYLON.Vector3(center.x, 0, center.y), this));
         }
+        // Init stock
+        this._stock[Resources.Wood] = 100;
+        this._stock[Resources.Rock] = 100;
+        this._stock[Resources.Meat] = 100;
+    };
+    // This building is finished
+    StarterWarehouse.prototype.isNearlyFinished = function () {
+        return true;
     };
     // Q and R coordinates of a starter platform
     StarterWarehouse.TEMPLATE = [

@@ -12,7 +12,6 @@ var Game = (function () {
             _this.engine.resize();
         });
         this.initScene();
-        this.run();
     }
     Game.prototype.initScene = function () {
         this.scene = new BABYLON.Scene(this.engine);
@@ -20,6 +19,10 @@ var Game = (function () {
         camera.attachControl(this.engine.getRenderingCanvas());
         var light = new BABYLON.HemisphericLight('', new BABYLON.Vector3(0, 1, 0), this.scene);
         light.intensity = 1;
+        // Load assets
+        var loader = new Preloader(this);
+        loader.callback = this.run.bind(this);
+        loader.loadAssets();
     };
     Game.prototype.run = function () {
         var _this = this;
@@ -95,18 +98,16 @@ var Game = (function () {
         for (var _i = 0, _a = this._hoard; _i < _a.length; _i++) {
             var m = _a[_i];
             if (m.strategy && m.strategy instanceof BuildStrategy && m.strategy.isIdle()) {
-                m.setStrategy(new BuildStrategy(m));
+                m.setStrategy(new BuildStrategy(m)); // TODO find better than that
             }
         }
     };
     Game.prototype._initGame = function () {
         var _this = this;
-        // Init GUI 
-        this._gui = new GUIManager(this);
-        // Init resource map
-        this.resources[Resources.Wood] = 100;
-        this.resources[Resources.Rock] = 100;
-        this.resources[Resources.Meat] = 100;
+        // Init resources
+        this.resources[Resources.Wood] = 0;
+        this.resources[Resources.Rock] = 0;
+        this.resources[Resources.Meat] = 0;
         var ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 2, this.scene);
         ground.isVisible = false;
         var grid = new HexagonMap(15);
@@ -174,6 +175,24 @@ var Game = (function () {
         var bobby2 = new Minion('bobby2', this);
         this._hoard.push(bobby2);
         grid.draw(this.scene);
+        // Compute stock
+        this._computeTotalStock();
+        // Init GUI 
+        this._gui = new GUIManager(this);
+    };
+    /**
+     * Sum all resources from all warehouse
+     */
+    Game.prototype._computeTotalStock = function () {
+        for (var _i = 0, _a = this.base.buildings; _i < _a.length; _i++) {
+            var b = _a[_i];
+            if (b instanceof Warehouse) {
+                var warehouse = b;
+                this.resources[Resources.Wood] += warehouse.getStockOf(Resources.Wood);
+                this.resources[Resources.Rock] += warehouse.getStockOf(Resources.Rock);
+                this.resources[Resources.Meat] += warehouse.getStockOf(Resources.Meat);
+            }
+        }
     };
     return Game;
 }());

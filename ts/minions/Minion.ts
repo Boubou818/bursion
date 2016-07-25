@@ -73,39 +73,53 @@ class Minion extends BABYLON.Mesh {
         }
 
     }
+    
+    get game() : Game {
+        return this._game;
+    } 
 
     /**
      * Make the minion walk to the given hexagon: 
      * - Find shortest path to this hex
      * - Add a destination for each hex of the path
      * - make it moooove \o/
+     * Returns the number of hexagon this minion has to browse
      */
-    public moveTo(hex:MapHexagon) : void {
+    public moveTo(hex:MapHexagon) : number {
         
         let path = this.base.getPathFromTo(this.currentHexagon, hex);
-        if (path.length != 0) {
+        if (!path || path.length === 0) {
             // If a path is found, reset destinations
             this._controller.stop();
+            return 0;
+        } else {
+            for (let hex of path) {
+                let tmp = hex.center;
+                tmp.y = 1.25;
+                this._controller.addDestination(tmp, hex);
+            }
+            this._controller.start();
+            return path.length;
         }
-        for (let hex of path) {
-            let tmp = hex.center;
-            tmp.y = 1.25;
-            this._controller.addDestination(tmp, hex);
-        }
-        this._controller.start();
     }
 
     /** 
      * Returns the nearest heaxgon containing the given resource.
      */
-    public getNearestResource(res : Resources) : MapHexagon {
+    public getNearestResource(res : number) : MapHexagon {
         return this.base.getNearestResource(this.currentHexagon, res);
     }
     /** 
      * Returns the nearest building waiting to be built
      */
-    public getNearestBuilding() : Building {
+    public getNearestBuildingWaitingForMinion() : Building {
         return this.base.getNearestBuildingWaitingForMinion(this.currentHexagon);
+    }
+    /**
+     * Returns the nearest warehouse
+     */
+    public getNearestWarehouse() : Warehouse {
+        return this.base.getNearestWarehouse(this.currentHexagon);
     }
     
     public setStrategy(strat:WorkingStrategy) {
@@ -119,7 +133,7 @@ class Minion extends BABYLON.Mesh {
     /**
      * Add the given number of material to the game
      */
-    public addResourceToGame(amount:number, type:Resources) {
+    public addResourceToGame(amount:number, type:number) {
         this._game.addResources(this, amount, type);
     }
 

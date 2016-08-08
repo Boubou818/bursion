@@ -353,6 +353,13 @@ abstract class Building extends BABYLON.Mesh{
             this._materialIncoming[res] += amount;            
         }
     }
+
+    /**
+     * Restore the incoming resource of the building
+     */
+    public restoreIncomingMaterial(amount:number, res:Resources) {
+        this._materialIncoming[res] -= amount;   
+    }
     
     /**
      * Add the given material into the materials array of this building.

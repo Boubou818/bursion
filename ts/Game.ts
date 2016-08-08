@@ -69,13 +69,13 @@ class Game {
     public createNewExtension() {
         if (!this._currentShape) {
             this._currentShape = new BaseExtension(this, this.base);
-            if (this._currentShape.canBuild()) {
+            // if (this._currentShape.canBuild()) {
                 this._currentShape.preBuild();
-            } else {
-                console.warn('Cannot build a new base extension !');
-                this._currentShape.dispose();
-                this._currentShape = null;
-            }
+            // } else {
+            //     console.warn('Cannot build a new base extension !');
+            //     this._currentShape.dispose();
+            //     this._currentShape = null;
+            // }
         }
     }
 
@@ -101,21 +101,12 @@ class Game {
      */
     public build() {
         for (let m of this._hoard) {
-            m.setStrategy(new BuildStrategy(m));
+            if (m.strategy && m.strategy instanceof BuildStrategy){
+                // Nothing to do if the minion is already building
+            }else {
+                m.setStrategy(new BuildStrategy(m));
+            }
         }
-    }
-
-    /**
-     * Add the given amount of material of the given resource.
-     * Generates a gui element
-     */ 
-    public addResources(node:BABYLON.Node, amount:number, type:Resources) {
-        // Increment resources
-        this.resources[type] += amount;
-        // Display sprite
-        this._gui.displayResourceCounter(node);
-        // Update text value
-        this._gui.updateResourceText(this.resources[type], type);
     }
 
     /**
@@ -209,8 +200,17 @@ class Game {
         let bobby = new Minion('bobby', this);
         this._hoard.push(bobby);
         
-        let bobby2 = new Minion('bobby2', this);
-        this._hoard.push(bobby2);  
+        // let bobby2 = new Minion('bobby2', this);
+        // this._hoard.push(bobby2);  
+        
+        // let bobb32 = new Minion('bobby2', this);
+        // this._hoard.push(bobb32);  
+        
+        // let bobby42 = new Minion('bobby2', this);
+        // this._hoard.push(bobby42);  
+        
+        // let bobby52 = new Minion('bobby2', this);
+        // this._hoard.push(bobby52);  
 
         grid.draw(this);   
         
@@ -224,7 +224,11 @@ class Game {
     /**
      * Sum all resources from all warehouse
      */
-    private _computeTotalStock() : void {
+    private _computeTotalStock() : void {        
+        this.resources[Resources.Wood] = 0;
+        this.resources[Resources.Rock] = 0;
+        this.resources[Resources.Meat] = 0;
+
         for (let b of this.base.buildings) {
             if (b instanceof Warehouse) {
                 let warehouse = <Warehouse> b;

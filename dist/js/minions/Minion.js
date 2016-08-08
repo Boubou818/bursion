@@ -104,12 +104,6 @@ var Minion = (function (_super) {
         }
         this.strategy = strat;
     };
-    /**
-     * Add the given number of material to the game
-     */
-    Minion.prototype.addResourceToGame = function (amount, type) {
-        this._game.addResources(this, amount, type);
-    };
     // The strategy is applied each 150ms
     Minion.STRATEGY_CLOCK = 150;
     return Minion;

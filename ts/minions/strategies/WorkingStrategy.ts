@@ -56,7 +56,9 @@ abstract class WorkingStrategy {
      */
     public isIdle () {
         if (this._states.IDLE !== undefined) {
+            console.log('is idle : ', this._currentState === this._states.IDLE); 
             return this._currentState === this._states.IDLE;
+            
         }
         return false;
     }

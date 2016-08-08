@@ -31,8 +31,10 @@ var Resources;
     function getModelForResource(game, res) {
         switch (res) {
             case Resources.Wood:
-                return game.assets['wood'];
+                return game.assets['wood'].clone();
             case Resources.Rock:
+                var box = BABYLON.Mesh.CreateBox('rock', 0.5, game.scene);
+                return box;
             default:
                 return game.assets['wood'];
         }

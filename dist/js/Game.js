@@ -42,14 +42,8 @@ var Game = (function () {
     Game.prototype.createNewExtension = function () {
         if (!this._currentShape) {
             this._currentShape = new BaseExtension(this, this.base);
-            if (this._currentShape.canBuild()) {
-                this._currentShape.preBuild();
-            }
-            else {
-                console.warn('Cannot build a new base extension !');
-                this._currentShape.dispose();
-                this._currentShape = null;
-            }
+            // if (this._currentShape.canBuild()) {
+            this._currentShape.preBuild();
         }
     };
     /**
@@ -76,20 +70,12 @@ var Game = (function () {
     Game.prototype.build = function () {
         for (var _i = 0, _a = this._hoard; _i < _a.length; _i++) {
             var m = _a[_i];
-            m.setStrategy(new BuildStrategy(m));
+            if (m.strategy && m.strategy instanceof BuildStrategy) {
+            }
+            else {
+                m.setStrategy(new BuildStrategy(m));
+            }
         }
-    };
-    /**
-     * Add the given amount of material of the given resource.
-     * Generates a gui element
-     */
-    Game.prototype.addResources = function (node, amount, type) {
-        // Increment resources
-        this.resources[type] += amount;
-        // Display sprite
-        this._gui.displayResourceCounter(node);
-        // Update text value
-        this._gui.updateResourceText(this.resources[type], type);
     };
     /**
      * Wake up all builders. Called when a new building is created
@@ -172,8 +158,14 @@ var Game = (function () {
         // END DEBUG
         var bobby = new Minion('bobby', this);
         this._hoard.push(bobby);
-        var bobby2 = new Minion('bobby2', this);
-        this._hoard.push(bobby2);
+        // let bobby2 = new Minion('bobby2', this);
+        // this._hoard.push(bobby2);  
+        // let bobb32 = new Minion('bobby2', this);
+        // this._hoard.push(bobb32);  
+        // let bobby42 = new Minion('bobby2', this);
+        // this._hoard.push(bobby42);  
+        // let bobby52 = new Minion('bobby2', this);
+        // this._hoard.push(bobby52);  
         grid.draw(this);
         // Compute stock
         this._computeTotalStock();
@@ -184,6 +176,9 @@ var Game = (function () {
      * Sum all resources from all warehouse
      */
     Game.prototype._computeTotalStock = function () {
+        this.resources[Resources.Wood] = 0;
+        this.resources[Resources.Rock] = 0;
+        this.resources[Resources.Meat] = 0;
         for (var _i = 0, _a = this.base.buildings; _i < _a.length; _i++) {
             var b = _a[_i];
             if (b instanceof Warehouse) {

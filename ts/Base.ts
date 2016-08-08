@@ -48,8 +48,8 @@ class Base {
         drakkar.scaling.x = 3;
         
         // Create fog of war
-        this._fogOfWar = new FogOfWar(150, game.scene);
-        this._fogOfWar.position.y = 1.8/2+0.1; // TODO FIX THIS SHIT
+        // this._fogOfWar = new FogOfWar(150, game.scene);
+        // this._fogOfWar.position.y = 1.8/2+0.1; // TODO FIX THIS SHIT
         
         // Add this extension to the player base
         this.addBuilding(starter);
@@ -92,7 +92,7 @@ class Base {
         building.prepareToBuildOn(workingSite, resourcesHex); 
         
         // Remove fog where needed
-        this._fogOfWar.dissipateFog(this._hexToDissipateFog); 
+        // this._fogOfWar.dissipateFog(this._hexToDissipateFog);  
         
         // Add working site in the walking graph
         this._usableResources.push(building.workingSite);

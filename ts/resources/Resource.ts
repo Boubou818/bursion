@@ -41,8 +41,10 @@ namespace Resources {
     export function getModelForResource(game:Game, res : Resources) : BABYLON.Mesh {
         switch (res) {
             case Resources.Wood:
-                return game.assets['wood'];
+                return game.assets['wood'].clone();
             case Resources.Rock:
+                let box = BABYLON.Mesh.CreateBox('rock', 0.5, game.scene);
+                return box;
             default:
                 return game.assets['wood'];
         }

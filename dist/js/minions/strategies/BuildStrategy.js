@@ -72,13 +72,18 @@ var BuildStrategy = (function (_super) {
                 // He will notify when he'll arrive.
                 break;
             case this._states.AT_WAREHOUSE:
+                // Take resource
+                var hasResources = this._takeNeededResource();
+                if (!hasResources) {
+                    // Go back to idle state
+                    this._currentState = this._states.IDLE;
+                    break;
+                }
                 // Create 3D model of resource on minion and go to next state
                 var resource = Number(Object.keys(this._package)[0]);
                 this._resourceModel = Resources.getModelForResource(this._minion.game, resource);
                 this._resourceModel.position.y = 1;
                 this._resourceModel.parent = this._minion;
-                // Take resource
-                this._takeNeededResource();
                 // Go to building
                 this._minion.moveTo(this._workingOn.workingSite);
                 // Exit state
@@ -86,7 +91,7 @@ var BuildStrategy = (function (_super) {
                 break;
             case this._states.AT_BUILDING:
                 // Remove 3D model above the mlinion head
-                // TODO
+                this._resourceModel.dispose();
                 // Add package to material for this building
                 this._addPackageToBuilding();
                 // Check if the building is finished
@@ -101,11 +106,17 @@ var BuildStrategy = (function (_super) {
     };
     /**
      * Get the resource from the warehouse
+     * Returns false if the warehouse has no more resources
      */
     BuildStrategy.prototype._takeNeededResource = function () {
         var resource = Number(Object.keys(this._package)[0]);
         var toBring = this._package[resource];
-        this._warehouse.take(toBring, resource);
+        var realAmount = this._warehouse.take(toBring, resource);
+        if (realAmount == 0) {
+            return false;
+        }
+        this._package[resource] = realAmount;
+        return true;
     };
     /**
      * Choose a resource to bring to the building.
@@ -123,17 +134,44 @@ var BuildStrategy = (function (_super) {
         this._workingOn.addIncomingMaterial(toBring, resource);
     };
     /**
+    * Restore the package caried if any : restore on the warehouse and on the building
+    */
+    BuildStrategy.prototype._disposePackage = function () {
+        var resource = Number(Object.keys(this._package)[0]);
+        // resource = NaN if the package is empty
+        if (resource) {
+            var toBring = this._package[resource];
+            if (this._currentState === this._states.TRAVELING_TO_BUILDING) {
+                // reset incoming resources and restore stock on warehouse
+                this._workingOn.restoreIncomingMaterial(toBring, resource);
+                this._warehouse.add(toBring, resource);
+            }
+            else if (this._currentState === this._states.TRAVELING_TO_WAREHOUSE) {
+                // reset incoming resources on the building but don't restore stock
+                this._workingOn.restoreIncomingMaterial(toBring, resource);
+            }
+        } // else nothing to do, the package was empty
+        // Delete package
+        this._package = [];
+    };
+    /**
      * Add the package to the building
      */
     BuildStrategy.prototype._addPackageToBuilding = function () {
         var resource = Number(Object.keys(this._package)[0]);
         var toBring = this._package[resource];
         this._workingOn.addMaterial(toBring, resource);
+        // Delete package
+        this._package = [];
     };
     /**
-     * Reset the building this minion was working on
+     * Reset the building this minion was working on.
+     * If the minion was carrying a package, this one is replaced on the warehouse
+     * and incomingResource of the building are reset.
      */
     BuildStrategy.prototype.dispose = function () {
+        // Delete package if traveling to building
+        this._disposePackage();
         if (this._workingOn) {
             this._workingOn = null;
         } // else the minion was idle
@@ -144,7 +182,6 @@ var BuildStrategy = (function (_super) {
     };
     /**
      * The minion arrived at the given resouceslot.
-     * TODO
      */
     BuildStrategy.prototype.finishedWalkingOn = function (data) {
         // If the minion was traveling...

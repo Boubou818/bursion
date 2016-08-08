@@ -81,16 +81,21 @@ class BuildStrategy extends WorkingStrategy {
                 // He will notify when he'll arrive.
                 break;
 
-            case this._states.AT_WAREHOUSE:  
+            case this._states.AT_WAREHOUSE:             
+                
+                // Take resource
+                let hasResources = this._takeNeededResource();
+                if (! hasResources) {
+                    // Go back to idle state
+                    this._currentState = this._states.IDLE;
+                    break;
+                } 
                 
                 // Create 3D model of resource on minion and go to next state
                 let resource : number = Number(Object.keys(this._package)[0]); 
                 this._resourceModel = Resources.getModelForResource(this._minion.game, resource);
                 this._resourceModel.position.y = 1;
                 this._resourceModel.parent = this._minion;
-                
-                // Take resource
-                this._takeNeededResource();
                 
                 // Go to building
                 this._minion.moveTo(this._workingOn.workingSite);
@@ -101,7 +106,7 @@ class BuildStrategy extends WorkingStrategy {
                 
             case this._states.AT_BUILDING: 
                 // Remove 3D model above the mlinion head
-                // TODO
+                this._resourceModel.dispose();
                 
                 // Add package to material for this building
                 this._addPackageToBuilding();
@@ -120,13 +125,19 @@ class BuildStrategy extends WorkingStrategy {
     
     /**
      * Get the resource from the warehouse
+     * Returns false if the warehouse has no more resources
      */
-    private _takeNeededResource() {     
+    private _takeNeededResource() : boolean{     
         
         let resource : number = Number(Object.keys(this._package)[0]); 
         let toBring = this._package[resource];
         
-        this._warehouse.take(toBring, resource);
+        let realAmount = this._warehouse.take(toBring, resource);
+        if (realAmount == 0) {
+            return false;
+        }
+        this._package[resource] = realAmount;
+        return true;
     }
     
     /**
@@ -147,6 +158,29 @@ class BuildStrategy extends WorkingStrategy {
         // Register as 'incomingResource' into the building
         this._workingOn.addIncomingMaterial(toBring, resource);
     }
+
+    /**
+    * Restore the package caried if any : restore on the warehouse and on the building 
+    */
+    private _disposePackage() {
+        let resource : number = Number(Object.keys(this._package)[0]); 
+        // resource = NaN if the package is empty
+        if (resource) {
+            let toBring = this._package[resource];        
+            if (this._currentState === this._states.TRAVELING_TO_BUILDING) {
+                // reset incoming resources and restore stock on warehouse
+                this._workingOn.restoreIncomingMaterial(toBring, resource);
+                this._warehouse.add(toBring, resource);
+            }else if (this._currentState === this._states.TRAVELING_TO_WAREHOUSE) {
+                // reset incoming resources on the building but don't restore stock
+                this._workingOn.restoreIncomingMaterial(toBring, resource);
+            }
+
+        } // else nothing to do, the package was empty
+        
+        // Delete package
+        this._package = [];
+    }
     
     /**
      * Add the package to the building
@@ -155,12 +189,20 @@ class BuildStrategy extends WorkingStrategy {
         let resource : number = Number(Object.keys(this._package)[0]); 
         let toBring = this._package[resource];        
         this._workingOn.addMaterial(toBring, resource);
+
+        // Delete package
+        this._package = [];
     }
 
     /**
-     * Reset the building this minion was working on
+     * Reset the building this minion was working on.
+     * If the minion was carrying a package, this one is replaced on the warehouse
+     * and incomingResource of the building are reset.
      */
     public dispose() {
+        // Delete package if traveling to building
+        this._disposePackage();
+
         if (this._workingOn) {
             this._workingOn = null;
         } // else the minion was idle
@@ -173,7 +215,6 @@ class BuildStrategy extends WorkingStrategy {
 
     /**
      * The minion arrived at the given resouceslot.
-     * TODO
      */
     public finishedWalkingOn(data?: MapHexagon) {
         // If the minion was traveling...

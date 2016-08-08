@@ -304,6 +304,12 @@ var Building = (function (_super) {
         }
     };
     /**
+     * Restore the incoming resource of the building
+     */
+    Building.prototype.restoreIncomingMaterial = function (amount, res) {
+        this._materialIncoming[res] -= amount;
+    };
+    /**
      * Add the given material into the materials array of this building.
      */
     Building.prototype.addMaterial = function (amount, res) {

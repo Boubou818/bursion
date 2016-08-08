@@ -83,13 +83,40 @@ var Warehouse = (function (_super) {
         else {
             this._stock[res] += amount;
         }
+        console.log(this.toString());
     };
     /**
-     * Take from stock the given amount of resources
-     * TODO
+     * Take from stock the given amount of resources, and returns the amount
+     * effectiveley taken from the warehouse.
+     * Returns 0 if the given resource is empty
      */
     Warehouse.prototype.take = function (amount, res) {
-        this._stock[res] -= amount;
+        var realAmount = 0;
+        if (this._stock[res]) {
+            // If the resource is present and not empty
+            if (this._stock[res] >= amount) {
+                // If there is plenty    
+                this._stock[res] -= amount;
+                realAmount = amount;
+            }
+            else {
+                // If there is few
+                realAmount = this._stock[res];
+                this._stock[res] = 0;
+            }
+        }
+        else {
+            realAmount = 0;
+        }
+        console.log(this.toString());
+        return realAmount;
+    };
+    Warehouse.prototype.toString = function () {
+        var str = '';
+        for (var res in this._stock) {
+            str += 'resource : ' + res + ' : ' + this._stock[res] + '\n';
+        }
+        return str;
     };
     return Warehouse;
 }(Building));

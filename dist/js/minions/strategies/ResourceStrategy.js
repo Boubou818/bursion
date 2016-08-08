@@ -90,7 +90,7 @@ var ResourceStrategy = (function (_super) {
                 // Remove 3D model of the resource carried on by the minion
                 this._resourceModel.dispose();
                 // Add stock to the warehouse   
-                this._minion.addResourceToGame(this._package.amount, this._resource);
+                this._warehouse.add(this._package.amount, this._resource);
                 this._package = null;
                 // Go to idle state
                 this._currentState = this._states.IDLE;
@@ -119,6 +119,7 @@ var ResourceStrategy = (function (_super) {
     ResourceStrategy.prototype._findAndGoToNearestWarehouse = function () {
         var warehouse = this._minion.getNearestWarehouse();
         if (warehouse) {
+            this._warehouse = warehouse;
             this._minion.moveTo(warehouse.workingSite);
             return true;
         }

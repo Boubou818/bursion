@@ -21,6 +21,9 @@ class ResourceStrategy extends WorkingStrategy {
     // The timer used to generate resource
     private _generatingTimer: Timer;
 
+    // The nearest warehouse
+    private _warehouse: Warehouse;
+
     // The time to generate a given amount of resource
     private static TIME_TO_GENERATE: number = 2000;
 
@@ -116,7 +119,7 @@ class ResourceStrategy extends WorkingStrategy {
                 this._resourceModel.dispose();
 
                 // Add stock to the warehouse   
-                this._minion.addResourceToGame(this._package.amount, this._resource);
+                this._warehouse.add(this._package.amount, this._resource);
                 this._package = null;
 
                 // Go to idle state
@@ -148,6 +151,7 @@ class ResourceStrategy extends WorkingStrategy {
     private _findAndGoToNearestWarehouse(): boolean {
         let warehouse: Warehouse = this._minion.getNearestWarehouse();
         if (warehouse) {
+            this._warehouse = warehouse;
             this._minion.moveTo(warehouse.workingSite);
             return true;
         } else {

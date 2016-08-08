@@ -129,12 +129,5 @@ class Minion extends BABYLON.Mesh {
         }
         this.strategy = strat;
     }
-    
-    /**
-     * Add the given number of material to the game
-     */
-    public addResourceToGame(amount:number, type:number) {
-        this._game.addResources(this, amount, type);
-    }
 
 }

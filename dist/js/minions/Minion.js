@@ -23,7 +23,7 @@ var Minion = (function (_super) {
         this._child.material = mat;
         this._child.parent = this;
         this._controller = new MinionController(this);
-        this._controller.speed = 0.05;
+        this._controller.speed = 0.1;
         this.base = this._game.base;
         this.currentHexagon = this.base.getStarterHex();
         // Update minion position

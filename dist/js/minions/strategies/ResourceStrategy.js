@@ -77,7 +77,7 @@ var ResourceStrategy = (function (_super) {
                 break;
             case this._states.END_GENERATING:
                 // Create 3D model of resource on minion and go to next state
-                this._resourceModel = BABYLON.Mesh.CreateSphere('resource', 3, 0.5, this._minion.getScene());
+                this._resourceModel = Resources.getModelForResource(this._minion.game, this._resource);
                 this._resourceModel.position.y = 1;
                 this._resourceModel.parent = this._minion;
                 // Find nearest warehouse

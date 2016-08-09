@@ -172,6 +172,11 @@ class HexagonMap {
         }
         return canBuild;
     }
+
+    private _random(min, max) {
+        var random = Math.random();
+        return ((random * (max - min)) + min);
+    }
     
     /**
      * Draw the hexagon grid in the given scene.
@@ -255,14 +260,23 @@ class HexagonMap {
             // Add the mesh instance to the meshes list
             this._meshes[h.name] = hex;
 
-            if (h.resourceSlot.resource !== Resources.Empty) {
-                let basemesh = Resources.getModelForResource(game, h.resourceSlot.resource);
-                let wood = basemesh.clone('_resource_');                
+            if (h.resourceSlot.resource === Resources.Wood) {
+                let wood = game.assets['tree'].clone();//Resources.getModelForResource(game, h.resourceSlot.resource);
+                // let wood = basemesh.clone('_resource_');                
                 wood.setEnabled(true);
                 wood.position.copyFrom(h.center);
-                wood.position.y = 1.25;
-                wood.rotation.y = Math.random()-0.5;
-                wood.scaling.scaleInPlace(0.5);
+                wood.position.y = 0.75;
+                // wood.rotation.y = Math.random()-0.5;
+                wood.scaling.scaleInPlace(this._random(0.3,0.8));
+            }
+            if (h.resourceSlot.resource === Resources.Rock) {
+                let rock = game.assets['rock'].clone();//Resources.getModelForResource(game, h.resourceSlot.resource);
+                // let wood = basemesh.clone('_resource_');                
+                rock.setEnabled(true);
+                rock.position.copyFrom(h.center);
+                rock.position.y = 0.75;
+                // wood.rotation.y = Math.random()-0.5;
+                rock.scaling.scaleInPlace(this._random(0.3,0.8));
             }
 
 

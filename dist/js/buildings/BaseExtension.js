@@ -69,10 +69,7 @@ var BaseExtension = (function (_super) {
      * Returns a 3D model corresponding to this shape
      */
     BaseExtension.prototype._getBuildingModel = function () {
-        var b = BABYLON.Mesh.CreateBox('_baseExtension_', 0.7, this._game.scene);
-        b.position.copyFrom(this._points[0].center);
-        b.position.y = 1;
-        return b;
+        return null;
     };
     return BaseExtension;
 }(Building));

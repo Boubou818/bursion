@@ -8,6 +8,8 @@ var Preloader = (function () {
     }
     Preloader.prototype.loadAssets = function () {
         this._addMesh('wood');
+        this._addMesh('tree');
+        this._addMesh('rock');
         this._loader.load();
     };
     Preloader.prototype.onFinish = function () {
@@ -21,7 +23,7 @@ var Preloader = (function () {
         var parent = new BABYLON.Mesh('', this._scene);
         for (var _i = 0, _a = t.loadedMeshes; _i < _a.length; _i++) {
             var m = _a[_i];
-            // m.setEnabled(false);
+            m.setEnabled(false);
             m.getScene().stopAnimation(m);
             m.parent = parent;
         }

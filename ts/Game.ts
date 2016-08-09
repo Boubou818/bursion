@@ -35,6 +35,7 @@ class Game {
     private initScene() {
 
         this.scene = new BABYLON.Scene(this.engine);
+        this.scene.clearColor = BABYLON.Color3.Black();
         let camera = new BABYLON.ArcRotateCamera('', -1.5, 1, 100, new BABYLON.Vector3(0, 0, 0), this.scene);
         camera.attachControl(this.engine.getRenderingCanvas());
         let light = new BABYLON.HemisphericLight('', new BABYLON.Vector3(0, 1, 0), this.scene);

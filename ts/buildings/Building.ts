@@ -195,8 +195,8 @@ abstract class Building extends BABYLON.Mesh{
     protected abstract _initCost() : void;
     
     /**
-     * Retuens the 3D model of the building to add on hexagons. 
-     * The 3D model returned should have its position set one buildingpoint
+     * Returns the 3D model of the building to add on hexagons. 
+     * The 3D model returned should have its position set one buildingpoint. Can be null
      */
     protected abstract _getBuildingModel() : BABYLON.Mesh;
     
@@ -211,7 +211,7 @@ abstract class Building extends BABYLON.Mesh{
             let myhex = BABYLON.Mesh.CreateCylinder('', 0.5, 2, 2, 6, 1, this.getScene());
             myhex.rotation.y = Math.PI/2;
             myhex.position.copyFrom(center);
-            myhex.position.y = 0.65;
+            myhex.position.y = 0.6;
             hexes.push(myhex);
         }
         return BABYLON.Mesh.MergeMeshes(hexes, true);
@@ -255,7 +255,9 @@ abstract class Building extends BABYLON.Mesh{
         // Create the 3D model of the building        
         // Add the building and merge it with hexagons
         this._buildingModel = this._getBuildingModel();
-        this._buildingModel.parent = this;
+        if (this._buildingModel) {
+            this._buildingModel.parent = this;
+        }
         
         // Set prebuild material
         this._setPrebuildMaterial();

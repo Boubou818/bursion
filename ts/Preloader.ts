@@ -18,6 +18,8 @@ class Preloader {
     
     public loadAssets() {
         this._addMesh('wood');
+        this._addMesh('tree');
+        this._addMesh('rock');
         
         this._loader.load();
     }
@@ -35,7 +37,7 @@ class Preloader {
         let parent = new BABYLON.Mesh('', this._scene);
         
         for (let m of t.loadedMeshes) {
-            // m.setEnabled(false);
+            m.setEnabled(false);
             m.getScene().stopAnimation(m);
             m.parent = parent;
         }

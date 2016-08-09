@@ -184,7 +184,7 @@ var Building = (function (_super) {
             var myhex = BABYLON.Mesh.CreateCylinder('', 0.5, 2, 2, 6, 1, this.getScene());
             myhex.rotation.y = Math.PI / 2;
             myhex.position.copyFrom(center);
-            myhex.position.y = 0.65;
+            myhex.position.y = 0.6;
             hexes.push(myhex);
         }
         return BABYLON.Mesh.MergeMeshes(hexes, true);
@@ -218,7 +218,9 @@ var Building = (function (_super) {
         // Create the 3D model of the building        
         // Add the building and merge it with hexagons
         this._buildingModel = this._getBuildingModel();
-        this._buildingModel.parent = this;
+        if (this._buildingModel) {
+            this._buildingModel.parent = this;
+        }
         // Set prebuild material
         this._setPrebuildMaterial();
     };

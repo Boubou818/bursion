@@ -268,6 +268,7 @@ class HexagonMap {
                 wood.position.y = 0.75;
                 // wood.rotation.y = Math.random()-0.5;
                 wood.scaling.scaleInPlace(this._random(0.3,0.8));
+                h.resourceSlot.model = wood;
             }
             if (h.resourceSlot.resource === Resources.Rock) {
                 let rock = game.assets['rock'].clone();//Resources.getModelForResource(game, h.resourceSlot.resource);
@@ -277,6 +278,7 @@ class HexagonMap {
                 rock.position.y = 0.75;
                 // wood.rotation.y = Math.random()-0.5;
                 rock.scaling.scaleInPlace(this._random(0.3,0.8));
+                h.resourceSlot.model = rock;
             }
 
 

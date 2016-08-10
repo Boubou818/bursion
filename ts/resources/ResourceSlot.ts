@@ -4,13 +4,15 @@ class ResourceSlot {
     public resource : Resources = Resources.Empty;
     
     // The number of material this resource can generate.
-    public amount : number = 50;    
+    public amount : number = 20;    
 
     // The amount of material this resource will generate every 10 seconds
-    public gain : number = 0;   
+    public gain : number = 0;  
+
+    // The 3D mesh to displayed on the map
+    public model : BABYLON.Mesh; 
     
     constructor() {
-
     }
 
     /**
@@ -26,6 +28,13 @@ class ResourceSlot {
      */
     public extract(value:number){
         this.amount -= value;
+        if (this.amount <= 0) {
+            // destroy the 3D model
+            if (this.model) {
+                this.model.dispose();
+                this.model = null;
+            }
+        }
     }
 
 }

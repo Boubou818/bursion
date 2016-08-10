@@ -75,7 +75,6 @@ class Warehouse extends Building {
 
     /**
      * Add the given stock to the warehouse
-     * TODO
      */
     public add (amount:number, res : Resources) {
         if (! this._stock[res]) {
@@ -83,6 +82,7 @@ class Warehouse extends Building {
         } else {
             this._stock[res] += amount;            
         }
+        this._game.computeTotalStock();
         console.log(this.toString());
     }
 
@@ -107,7 +107,7 @@ class Warehouse extends Building {
         } else {
             realAmount = 0;
         }   
-        console.log(this.toString());
+        this._game.computeTotalStock();
         return realAmount;
     }
 

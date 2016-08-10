@@ -5,6 +5,7 @@ var GUIManager = (function () {
     function GUIManager(game) {
         // All text displaying resources
         this._resourcesText = [];
+        this._height = 0;
         /**
          * Create a simple animation
          * @param p The sprite position in pixels
@@ -45,26 +46,27 @@ var GUIManager = (function () {
         this._game = game;
         this._scene = game.scene;
         this._canvas2D = new BABYLON.ScreenSpaceCanvas2D(this._scene, { id: "game_screencanvas" });
+        this._height = this._scene.getEngine().getRenderHeight();
     }
     /**
      * Create a group2D for each resources. Each group is composed of a sprite and a text2D
      */
     GUIManager.prototype._initResourcesTexts = function () {
         // Wood
-        var textureWood = new BABYLON.Texture("img/gui/resource.png", this._scene, true, true);
-        var spriteWood = new BABYLON.Sprite2D(textureWood, { x: 0, y: 0, spriteSize: new BABYLON.Size(80, 80) });
-        var text2DWood = new BABYLON.Text2D(this._game.resources[Resources.Wood].toString(), { x: 50, marginAlignment: "h: center, v: center" });
-        var groupWood = new BABYLON.Group2D({ x: 60, y: 800, parent: this._canvas2D, children: [spriteWood, text2DWood] });
+        var textureWood = new BABYLON.Texture("img/gui/wood.png", this._scene, true, true);
+        var spriteWood = new BABYLON.Sprite2D(textureWood, { x: 0, y: 0, spriteSize: new BABYLON.Size(60, 60) });
+        var text2DWood = new BABYLON.Text2D('0', { x: 50, marginAlignment: "h: center, v: center" });
+        var groupWood = new BABYLON.Group2D({ x: 60, y: this._height - 100, parent: this._canvas2D, children: [spriteWood, text2DWood] });
         // Rock
-        var textureRock = new BABYLON.Texture("img/gui/resource.png", this._scene, true, true);
-        var spriteRock = new BABYLON.Sprite2D(textureRock, { x: 0, y: 0, spriteSize: new BABYLON.Size(80, 80) });
-        var text2DRock = new BABYLON.Text2D(this._game.resources[Resources.Rock].toString(), { x: 50, marginAlignment: "h: center, v: center" });
-        var groupRock = new BABYLON.Group2D({ x: 200, y: 800, parent: this._canvas2D, children: [spriteRock, text2DRock] });
+        var textureRock = new BABYLON.Texture("img/gui/rock.png", this._scene, true, true);
+        var spriteRock = new BABYLON.Sprite2D(textureRock, { x: 0, y: 0, spriteSize: new BABYLON.Size(60, 60) });
+        var text2DRock = new BABYLON.Text2D('0', { x: 50, marginAlignment: "h: center, v: center" });
+        var groupRock = new BABYLON.Group2D({ x: 200, y: this._height - 100, parent: this._canvas2D, children: [spriteRock, text2DRock] });
         // Meat
-        var textureMeat = new BABYLON.Texture("img/gui/resource.png", this._scene, true, true);
-        var spriteMeat = new BABYLON.Sprite2D(textureMeat, { x: 0, y: 0, spriteSize: new BABYLON.Size(80, 80) });
-        var text2DMeat = new BABYLON.Text2D(this._game.resources[Resources.Meat].toString(), { x: 50, marginAlignment: "h: center, v: center" });
-        var groupMeat = new BABYLON.Group2D({ x: 340, y: 800, parent: this._canvas2D, children: [spriteMeat, text2DMeat] });
+        var textureMeat = new BABYLON.Texture("img/gui/meat.png", this._scene, true, true);
+        var spriteMeat = new BABYLON.Sprite2D(textureMeat, { x: 0, y: 0, spriteSize: new BABYLON.Size(60, 60) });
+        var text2DMeat = new BABYLON.Text2D('0', { x: 50, marginAlignment: "h: center, v: center" });
+        var groupMeat = new BABYLON.Group2D({ x: 340, y: this._height - 100, parent: this._canvas2D, children: [spriteMeat, text2DMeat] });
         this._resourcesText[Resources.Wood] = text2DWood;
         this._resourcesText[Resources.Rock] = text2DRock;
         this._resourcesText[Resources.Meat] = text2DMeat;
@@ -72,8 +74,10 @@ var GUIManager = (function () {
     /**
      * Update the resource value displayed in the GUI
      */
-    GUIManager.prototype.updateResourceText = function (value, res) {
-        this._resourcesText[res].text = value.toString();
+    GUIManager.prototype.updateResourcesText = function () {
+        for (var res in this._game.resources) {
+            this._resourcesText[res].text = this._game.resources[res].toString();
+        }
     };
     /**
      * Create the 'static' button :

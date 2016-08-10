@@ -74,7 +74,6 @@ var Warehouse = (function (_super) {
     };
     /**
      * Add the given stock to the warehouse
-     * TODO
      */
     Warehouse.prototype.add = function (amount, res) {
         if (!this._stock[res]) {
@@ -83,6 +82,7 @@ var Warehouse = (function (_super) {
         else {
             this._stock[res] += amount;
         }
+        this._game.computeTotalStock();
         console.log(this.toString());
     };
     /**
@@ -108,7 +108,7 @@ var Warehouse = (function (_super) {
         else {
             realAmount = 0;
         }
-        console.log(this.toString());
+        this._game.computeTotalStock();
         return realAmount;
     };
     Warehouse.prototype.toString = function () {

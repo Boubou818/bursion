@@ -34,8 +34,7 @@ var Game = (function () {
         });
         // Load first level
         this._initGame();
-        this._gui.initHUD();
-        this.scene.debugLayer.show();
+        // this.scene.debugLayer.show();
     };
     /**
      * Build a new shape
@@ -168,15 +167,16 @@ var Game = (function () {
         // let bobby52 = new Minion('bobby2', this);
         // this._hoard.push(bobby52);  
         grid.draw(this);
-        // Compute stock
-        this._computeTotalStock();
         // Init GUI 
         this._gui = new GUIManager(this);
+        this._gui.initHUD();
+        // Compute stock
+        this.computeTotalStock();
     };
     /**
      * Sum all resources from all warehouse
      */
-    Game.prototype._computeTotalStock = function () {
+    Game.prototype.computeTotalStock = function () {
         this.resources[Resources.Wood] = 0;
         this.resources[Resources.Rock] = 0;
         this.resources[Resources.Meat] = 0;
@@ -189,6 +189,7 @@ var Game = (function () {
                 this.resources[Resources.Meat] += warehouse.getStockOf(Resources.Meat);
             }
         }
+        this._gui.updateResourcesText();
     };
     return Game;
 }());

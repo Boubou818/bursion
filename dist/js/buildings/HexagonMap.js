@@ -247,6 +247,7 @@ var HexagonMap = (function () {
                 wood.position.y = 0.75;
                 // wood.rotation.y = Math.random()-0.5;
                 wood.scaling.scaleInPlace(this._random(0.3, 0.8));
+                h.resourceSlot.model = wood;
             }
             if (h.resourceSlot.resource === Resources.Rock) {
                 var rock = game.assets['rock'].clone(); //Resources.getModelForResource(game, h.resourceSlot.resource);
@@ -256,6 +257,7 @@ var HexagonMap = (function () {
                 rock.position.y = 0.75;
                 // wood.rotation.y = Math.random()-0.5;
                 rock.scaling.scaleInPlace(this._random(0.3, 0.8));
+                h.resourceSlot.model = rock;
             }
         }
     };

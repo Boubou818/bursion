@@ -19,7 +19,10 @@ class Preloader {
     public loadAssets() {
         this._addMesh('wood');
         this._addMesh('tree');
+        this._addMesh('tree', 'tree2');
         this._addMesh('rock');
+        this._addMesh('grass');
+        this._addMesh('boar');
         
         this._loader.load();
     }
@@ -28,8 +31,12 @@ class Preloader {
         this.callback();
     }
     
-    private _addMesh(name :string) {
-        let task = this._loader.addMeshTask(name, '', `assets/3d/${name}/`, `${name}.babylon`);
+    private _addMesh(folder :string, name?:string ) {
+        if (name) {
+            var task = this._loader.addMeshTask(name, '', `assets/3d/${folder}/`, `${name}.babylon`);
+        } else {
+            var task = this._loader.addMeshTask(folder, '', `assets/3d/${folder}/`, `${folder}.babylon`);
+        }
         task.onSuccess = this._addMeshAssetToGame.bind(this);
     }
     

@@ -30,11 +30,19 @@ class ResourceSlot {
         this.amount -= value;
         if (this.amount <= 0) {
             // destroy the 3D model
-            if (this.model) {
-                this.model.dispose();
-                this.model = null;
-            }
+            this.dispose();
         }
+    }
+    
+    public dispose() {
+        if (this.model) {
+            this.model.dispose();
+            this.model = null;
+        }
+        
+        this.resource = Resources.Empty;
+        this.amount = 0;
+        
     }
 
 }

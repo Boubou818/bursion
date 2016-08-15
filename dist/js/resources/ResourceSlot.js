@@ -21,11 +21,16 @@ var ResourceSlot = (function () {
         this.amount -= value;
         if (this.amount <= 0) {
             // destroy the 3D model
-            if (this.model) {
-                this.model.dispose();
-                this.model = null;
-            }
+            this.dispose();
         }
+    };
+    ResourceSlot.prototype.dispose = function () {
+        if (this.model) {
+            this.model.dispose();
+            this.model = null;
+        }
+        this.resource = Resources.Empty;
+        this.amount = 0;
     };
     return ResourceSlot;
 }());

@@ -58,7 +58,7 @@ class Base {
         starter.finishBuild();
         // Delete all resources on the starter         
         for (let hex of starter.usableResources) {
-            hex.resourceSlot.resource = Resources.Empty;
+            hex.resourceSlot.dispose();
         }
     }
 

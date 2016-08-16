@@ -9,14 +9,22 @@ var Preloader = (function () {
     Preloader.prototype.loadAssets = function () {
         this._addMesh('wood');
         this._addMesh('tree');
+        this._addMesh('tree', 'tree2');
         this._addMesh('rock');
+        this._addMesh('grass');
+        this._addMesh('boar');
         this._loader.load();
     };
     Preloader.prototype.onFinish = function () {
         this.callback();
     };
-    Preloader.prototype._addMesh = function (name) {
-        var task = this._loader.addMeshTask(name, '', "assets/3d/" + name + "/", name + ".babylon");
+    Preloader.prototype._addMesh = function (folder, name) {
+        if (name) {
+            var task = this._loader.addMeshTask(name, '', "assets/3d/" + folder + "/", name + ".babylon");
+        }
+        else {
+            var task = this._loader.addMeshTask(folder, '', "assets/3d/" + folder + "/", folder + ".babylon");
+        }
         task.onSuccess = this._addMeshAssetToGame.bind(this);
     };
     Preloader.prototype._addMeshAssetToGame = function (t) {

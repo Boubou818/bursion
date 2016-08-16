@@ -76,7 +76,7 @@ var GUIManager = (function () {
      */
     GUIManager.prototype.updateResourcesText = function () {
         for (var res in this._game.resources) {
-            this._resourcesText[res].text = this._game.resources[res].toString();
+            this._resourcesText[res].text = this._game.resources[res].toString() + " ";
         }
     };
     /**

@@ -50,7 +50,7 @@ class HexagonMap {
 
             // Generate resources on land only
             if (hex.type === HexagonType.Land) {
-                let randomInt = Math.floor(Math.random() * 2); // random int between 0 and 1, two resources : wood and rock
+                let randomInt = Math.floor(Math.random() * 3); // random int between 0 and 2, two resources : wood, meat and rock
                 let randomProba = Math.random();
                 switch (randomInt) {
                     case 0:
@@ -60,7 +60,12 @@ class HexagonMap {
                         break;
                     case 1 : 
                         if (randomProba < Resources.getProbability(Resources.Rock)) {
-                            hex.resourceSlot.resource =Resources.Rock;
+                            hex.resourceSlot.resource = Resources.Rock;
+                        } //else it's empty by default
+                        
+                    case 2 : 
+                        if (randomProba < Resources.getProbability(Resources.Meat)) {
+                            hex.resourceSlot.resource = Resources.Meat;
                         } //else it's empty by default
                 
                     default:
@@ -225,13 +230,6 @@ class HexagonMap {
         water2Material.diffuseColor = BABYLON.Color3.FromInts(38, 62, 66);
         water2Material.specularColor = BABYLON.Color3.Black();
         water2Ref.material = water2Material;   
-
-        // Rock
-        let rockRef = BABYLON.Mesh.CreateCylinder('_rock_', 2, 0.3, 0.3, 6, 1, scene);
-        rockRef.isVisible = false;
-        let rockMaterial = new BABYLON.StandardMaterial('', scene);
-        rockMaterial.diffuseColor = BABYLON.Color3.FromInts(170,170,170);
-        rockRef.material = rockMaterial;
         
         for (let h of this._map){
 
@@ -261,14 +259,18 @@ class HexagonMap {
             this._meshes[h.name] = hex;
 
             if (h.resourceSlot.resource === Resources.Wood) {
-                let wood = game.assets['tree'].clone();//Resources.getModelForResource(game, h.resourceSlot.resource);
-                // let wood = basemesh.clone('_resource_');                
+                let wood;
+                // if (Math.random() > 0.5) {
+                    wood = game.assets['tree2'].clone();
+                // } else {                    
+                //     wood = game.assets['tree2'].clone();
+                // }
                 wood.setEnabled(true);
                 wood.position.copyFrom(h.center);
                 wood.position.y = 0.75;
-                // wood.rotation.y = Math.random()-0.5;
+                wood.rotation.y = Math.random()-0.5;
                 wood.scaling.scaleInPlace(this._random(0.3,0.8));
-                h.resourceSlot.model = wood;
+                h.resourceSlot.model = wood; 
             }
             if (h.resourceSlot.resource === Resources.Rock) {
                 let rock = game.assets['rock'].clone();//Resources.getModelForResource(game, h.resourceSlot.resource);
@@ -277,9 +279,28 @@ class HexagonMap {
                 rock.position.copyFrom(h.center);
                 rock.position.y = 0.75;
                 // wood.rotation.y = Math.random()-0.5;
-                rock.scaling.scaleInPlace(this._random(0.3,0.8));
+                // rock.scaling.scaleInPlace(this._random(0.3,0.8));
                 h.resourceSlot.model = rock;
+            }            
+            if (h.resourceSlot.resource === Resources.Meat) {
+                let boar = game.assets['boar'].clone();//Resources.getModelForResource(game, h.resourceSlot.resource);
+                // let wood = basemesh.clone('_resource_');                
+                boar.setEnabled(true);
+                boar.position.copyFrom(h.center);
+                boar.position.y = 0.75;
+                boar.rotation.y = Math.random()-0.5;
+                // boar.scaling.scaleInPlace(10);
+                h.resourceSlot.model = boar;
             }
+            // if (h.resourceSlot.resource === Resources.Empty && h.type === HexagonType.Land) {
+            //     let grass = game.assets['grass'].clone();//Resources.getModelForResource(game, h.resourceSlot.resource);
+            //     // let wood = basemesh.clone('_resource_');                
+            //     grass.setEnabled(true);
+            //     grass.position.copyFrom(h.center);
+            //     grass.position.y = 0.75;
+            //     grass.rotation.y = Math.random()-0.5;
+            //     h.resourceSlot.model = grass;
+            // }
 
 
             //     wood.isVisible = true;

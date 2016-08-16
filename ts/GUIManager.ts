@@ -58,7 +58,7 @@ class GUIManager {
      */
     public updateResourcesText() {
         for (let res in this._game.resources) {
-            this._resourcesText[res].text = this._game.resources[res].toString();
+            this._resourcesText[res].text = this._game.resources[res].toString()+" ";
         }
     }
     

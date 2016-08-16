@@ -38,7 +38,7 @@ var Base = (function () {
         // Delete all resources on the starter         
         for (var _i = 0, _a = starter.usableResources; _i < _a.length; _i++) {
             var hex = _a[_i];
-            hex.resourceSlot.resource = Resources.Empty;
+            hex.resourceSlot.dispose();
         }
     }
     /**

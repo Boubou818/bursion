@@ -28,8 +28,12 @@ namespace Resources {
     export function getProbability(res : number) {
         switch (res) {
             case Resources.Wood:
+                return 0.35;  
             case Resources.Rock:
-                return 0.15;        
+                return 0.15;  
+                
+            case Resources.Meat:
+                return 0.05;      
             default:
                 return 0;
         }

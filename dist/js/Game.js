@@ -19,7 +19,9 @@ var Game = (function () {
         var camera = new BABYLON.ArcRotateCamera('', -1.5, 1, 100, new BABYLON.Vector3(0, 0, 0), this.scene);
         camera.attachControl(this.engine.getRenderingCanvas());
         var light = new BABYLON.HemisphericLight('', new BABYLON.Vector3(0, 1, 0), this.scene);
-        light.intensity = 1;
+        light.intensity = 0.5;
+        var dir = new BABYLON.DirectionalLight('dir', new BABYLON.Vector3(-0.5, -1, 0.5), this.scene);
+        dir.intensity = 0.7;
         // Load assets
         var loader = new Preloader(this);
         loader.callback = this.run.bind(this);
@@ -96,7 +98,8 @@ var Game = (function () {
         this.resources[Resources.Meat] = 0;
         var ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 2, this.scene);
         ground.isVisible = false;
-        var grid = new HexagonMap(15);
+        var grid = new HexagonMap(10);
+        grid.draw(this);
         this.scene.pointerMovePredicate = function (mesh) {
             return mesh.name === 'ground';
         };
@@ -165,8 +168,7 @@ var Game = (function () {
         // let bobby42 = new Minion('bobby2', this);
         // this._hoard.push(bobby42);  
         // let bobby52 = new Minion('bobby2', this);
-        // this._hoard.push(bobby52);  
-        grid.draw(this);
+        // this._hoard.push(bobby52);
         // Init GUI 
         this._gui = new GUIManager(this);
         this._gui.initHUD();

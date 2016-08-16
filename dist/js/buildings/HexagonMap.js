@@ -42,7 +42,7 @@ var HexagonMap = (function () {
             }
             // Generate resources on land only
             if (hex.type === HexagonType.Land) {
-                var randomInt = Math.floor(Math.random() * 2); // random int between 0 and 1, two resources : wood and rock
+                var randomInt = Math.floor(Math.random() * 3); // random int between 0 and 2, two resources : wood, meat and rock
                 var randomProba = Math.random();
                 switch (randomInt) {
                     case 0:
@@ -53,6 +53,10 @@ var HexagonMap = (function () {
                     case 1:
                         if (randomProba < Resources.getProbability(Resources.Rock)) {
                             hex.resourceSlot.resource = Resources.Rock;
+                        } //else it's empty by default
+                    case 2:
+                        if (randomProba < Resources.getProbability(Resources.Meat)) {
+                            hex.resourceSlot.resource = Resources.Meat;
                         } //else it's empty by default
                     default:
                         break;
@@ -210,12 +214,6 @@ var HexagonMap = (function () {
         water2Material.diffuseColor = BABYLON.Color3.FromInts(38, 62, 66);
         water2Material.specularColor = BABYLON.Color3.Black();
         water2Ref.material = water2Material;
-        // Rock
-        var rockRef = BABYLON.Mesh.CreateCylinder('_rock_', 2, 0.3, 0.3, 6, 1, scene);
-        rockRef.isVisible = false;
-        var rockMaterial = new BABYLON.StandardMaterial('', scene);
-        rockMaterial.diffuseColor = BABYLON.Color3.FromInts(170, 170, 170);
-        rockRef.material = rockMaterial;
         for (var _i = 0, _a = this._map; _i < _a.length; _i++) {
             var h = _a[_i];
             var hex = null;
@@ -240,12 +238,16 @@ var HexagonMap = (function () {
             // Add the mesh instance to the meshes list
             this._meshes[h.name] = hex;
             if (h.resourceSlot.resource === Resources.Wood) {
-                var wood = game.assets['tree'].clone(); //Resources.getModelForResource(game, h.resourceSlot.resource);
-                // let wood = basemesh.clone('_resource_');                
+                var wood = void 0;
+                // if (Math.random() > 0.5) {
+                wood = game.assets['tree2'].clone();
+                // } else {                    
+                //     wood = game.assets['tree2'].clone();
+                // }
                 wood.setEnabled(true);
                 wood.position.copyFrom(h.center);
                 wood.position.y = 0.75;
-                // wood.rotation.y = Math.random()-0.5;
+                wood.rotation.y = Math.random() - 0.5;
                 wood.scaling.scaleInPlace(this._random(0.3, 0.8));
                 h.resourceSlot.model = wood;
             }
@@ -256,8 +258,18 @@ var HexagonMap = (function () {
                 rock.position.copyFrom(h.center);
                 rock.position.y = 0.75;
                 // wood.rotation.y = Math.random()-0.5;
-                rock.scaling.scaleInPlace(this._random(0.3, 0.8));
+                // rock.scaling.scaleInPlace(this._random(0.3,0.8));
                 h.resourceSlot.model = rock;
+            }
+            if (h.resourceSlot.resource === Resources.Meat) {
+                var boar = game.assets['boar'].clone(); //Resources.getModelForResource(game, h.resourceSlot.resource);
+                // let wood = basemesh.clone('_resource_');                
+                boar.setEnabled(true);
+                boar.position.copyFrom(h.center);
+                boar.position.y = 0.75;
+                boar.rotation.y = Math.random() - 0.5;
+                // boar.scaling.scaleInPlace(10);
+                h.resourceSlot.model = boar;
             }
         }
     };

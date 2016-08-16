@@ -271,6 +271,15 @@ var HexagonMap = (function () {
                 // boar.scaling.scaleInPlace(10);
                 h.resourceSlot.model = boar;
             }
+            if (h.resourceSlot.resource === Resources.Empty && h.type === HexagonType.Land) {
+                var grass = game.assets['grass'].clone(); //Resources.getModelForResource(game, h.resourceSlot.resource);
+                // let wood = basemesh.clone('_resource_');                
+                grass.setEnabled(true);
+                grass.position.copyFrom(h.center);
+                grass.position.y = 0.75;
+                grass.rotation.y = Math.random() - 0.5;
+                h.resourceSlot.model = grass;
+            }
         }
     };
     return HexagonMap;

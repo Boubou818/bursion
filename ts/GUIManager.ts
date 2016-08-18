@@ -33,19 +33,19 @@ class GUIManager {
         // Wood
         let textureWood = new BABYLON.Texture("img/gui/wood.png", this._scene, true, true);
         let spriteWood = new BABYLON.Sprite2D(textureWood,{x:0, y:0, spriteSize: new BABYLON.Size(60,60)}); 
-        let text2DWood = new BABYLON.Text2D('0', { x:50, marginAlignment: "h: center, v: center" });        
+        let text2DWood = new BABYLON.Text2D('0', { x:50, marginAlignment: "h: center, v: center", fontName: "30pt kingthings_italiqueregular"});        
         let groupWood = new BABYLON.Group2D({x:60, y:this._height - 100, parent: this._canvas2D, children: [spriteWood, text2DWood]});
         
         // Rock
         let textureRock = new BABYLON.Texture("img/gui/rock.png", this._scene, true, true);
         let spriteRock = new BABYLON.Sprite2D(textureRock,{x:0, y:0, spriteSize: new BABYLON.Size(60,60)}); 
-        let text2DRock = new BABYLON.Text2D('0', { x:50, marginAlignment: "h: center, v: center" });        
+        let text2DRock = new BABYLON.Text2D('0', { x:50, marginAlignment: "h: center, v: center", fontName: "30pt kingthings_italiqueregular" });        
         let groupRock = new BABYLON.Group2D({x:200, y:this._height - 100, parent: this._canvas2D, children: [spriteRock, text2DRock]});
         
         // Meat
         let textureMeat = new BABYLON.Texture("img/gui/meat.png", this._scene, true, true);
         let spriteMeat = new BABYLON.Sprite2D(textureMeat,{x:0, y:0, spriteSize: new BABYLON.Size(60,60)}); 
-        let text2DMeat = new BABYLON.Text2D('0', { x:50, marginAlignment: "h: center, v: center" });        
+        let text2DMeat = new BABYLON.Text2D('0', { x:50, marginAlignment: "h: center, v: center", fontName: "30pt kingthings_italiqueregular" });        
         let groupMeat = new BABYLON.Group2D({x:340, y:this._height - 100, parent: this._canvas2D, children: [spriteMeat, text2DMeat]});
         
         this._resourcesText[Resources.Wood] = text2DWood;
@@ -78,7 +78,7 @@ class GUIManager {
 			fill: "#40C040FF",
 			children: 
 			[
-				new BABYLON.Text2D("New extension", { marginAlignment: "h: center, v: center" })
+				new BABYLON.Text2D("New extension", { marginAlignment: "h: center, v: center", fontName: "20pt kingthings_italiqueregular" })
 			]
 		});
         // Add action to the build button
@@ -90,7 +90,7 @@ class GUIManager {
 			fill: "#40C040FF",
 			children: 
 			[
-				new BABYLON.Text2D("Gather Wood", { marginAlignment: "h: center, v: center" })
+				new BABYLON.Text2D("Gather Wood", { marginAlignment: "h: center, v: center", fontName: "20pt kingthings_italiqueregular" })
 			]
 		});
         // Add action to the button
@@ -102,7 +102,7 @@ class GUIManager {
 			fill: "#40C040FF",
 			children: 
 			[
-				new BABYLON.Text2D("Gather Rock", { marginAlignment: "h: center, v: center" })
+				new BABYLON.Text2D("Gather Rock", { marginAlignment: "h: center, v: center", fontName: "20pt kingthings_italiqueregular" })
 			]
 		});
         // Add action to the button
@@ -114,7 +114,7 @@ class GUIManager {
 			fill: "#40C040FF",
 			children: 
 			[
-				new BABYLON.Text2D("Build", { marginAlignment: "h: center, v: center" })
+				new BABYLON.Text2D("Build", { marginAlignment: "h: center, v: center", fontName: "20pt kingthings_italiqueregular" })
 			]
 		});
         // Add action to the button

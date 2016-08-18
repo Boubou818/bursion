@@ -11,7 +11,11 @@ var Game = (function () {
         window.addEventListener("resize", function () {
             _this.engine.resize();
         });
-        this.initScene();
+        // Load fonts
+        var font = new FontFaceObserver("kingthings_italiqueregular");
+        font.load().then(function () {
+            _this.initScene();
+        });
     }
     Game.prototype.initScene = function () {
         this.scene = new BABYLON.Scene(this.engine);

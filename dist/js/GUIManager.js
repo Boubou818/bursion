@@ -55,17 +55,17 @@ var GUIManager = (function () {
         // Wood
         var textureWood = new BABYLON.Texture("img/gui/wood.png", this._scene, true, true);
         var spriteWood = new BABYLON.Sprite2D(textureWood, { x: 0, y: 0, spriteSize: new BABYLON.Size(60, 60) });
-        var text2DWood = new BABYLON.Text2D('0', { x: 50, marginAlignment: "h: center, v: center" });
+        var text2DWood = new BABYLON.Text2D('0', { x: 50, marginAlignment: "h: center, v: center", fontName: "30pt kingthings_italiqueregular" });
         var groupWood = new BABYLON.Group2D({ x: 60, y: this._height - 100, parent: this._canvas2D, children: [spriteWood, text2DWood] });
         // Rock
         var textureRock = new BABYLON.Texture("img/gui/rock.png", this._scene, true, true);
         var spriteRock = new BABYLON.Sprite2D(textureRock, { x: 0, y: 0, spriteSize: new BABYLON.Size(60, 60) });
-        var text2DRock = new BABYLON.Text2D('0', { x: 50, marginAlignment: "h: center, v: center" });
+        var text2DRock = new BABYLON.Text2D('0', { x: 50, marginAlignment: "h: center, v: center", fontName: "30pt kingthings_italiqueregular" });
         var groupRock = new BABYLON.Group2D({ x: 200, y: this._height - 100, parent: this._canvas2D, children: [spriteRock, text2DRock] });
         // Meat
         var textureMeat = new BABYLON.Texture("img/gui/meat.png", this._scene, true, true);
         var spriteMeat = new BABYLON.Sprite2D(textureMeat, { x: 0, y: 0, spriteSize: new BABYLON.Size(60, 60) });
-        var text2DMeat = new BABYLON.Text2D('0', { x: 50, marginAlignment: "h: center, v: center" });
+        var text2DMeat = new BABYLON.Text2D('0', { x: 50, marginAlignment: "h: center, v: center", fontName: "30pt kingthings_italiqueregular" });
         var groupMeat = new BABYLON.Group2D({ x: 340, y: this._height - 100, parent: this._canvas2D, children: [spriteMeat, text2DMeat] });
         this._resourcesText[Resources.Wood] = text2DWood;
         this._resourcesText[Resources.Rock] = text2DRock;
@@ -91,7 +91,7 @@ var GUIManager = (function () {
         var buttonCreateExt = new BABYLON.Rectangle2D({ parent: this._canvas2D, id: "new_ext", x: 60, y: 100, width: 120, height: 40,
             fill: "#40C040FF",
             children: [
-                new BABYLON.Text2D("New extension", { marginAlignment: "h: center, v: center" })
+                new BABYLON.Text2D("New extension", { marginAlignment: "h: center, v: center", fontName: "20pt kingthings_italiqueregular" })
             ]
         });
         // Add action to the build button
@@ -100,7 +100,7 @@ var GUIManager = (function () {
         var buttonWood = new BABYLON.Rectangle2D({ parent: this._canvas2D, id: "gatherWood", x: 200, y: 100, width: 120, height: 40,
             fill: "#40C040FF",
             children: [
-                new BABYLON.Text2D("Gather Wood", { marginAlignment: "h: center, v: center" })
+                new BABYLON.Text2D("Gather Wood", { marginAlignment: "h: center, v: center", fontName: "20pt kingthings_italiqueregular" })
             ]
         });
         // Add action to the button
@@ -109,7 +109,7 @@ var GUIManager = (function () {
         var buttonRock = new BABYLON.Rectangle2D({ parent: this._canvas2D, id: "gatherRock", x: 340, y: 100, width: 120, height: 40,
             fill: "#40C040FF",
             children: [
-                new BABYLON.Text2D("Gather Rock", { marginAlignment: "h: center, v: center" })
+                new BABYLON.Text2D("Gather Rock", { marginAlignment: "h: center, v: center", fontName: "20pt kingthings_italiqueregular" })
             ]
         });
         // Add action to the button
@@ -118,7 +118,7 @@ var GUIManager = (function () {
         var buttonBuild = new BABYLON.Rectangle2D({ parent: this._canvas2D, id: "build", x: 480, y: 100, width: 120, height: 40,
             fill: "#40C040FF",
             children: [
-                new BABYLON.Text2D("Build", { marginAlignment: "h: center, v: center" })
+                new BABYLON.Text2D("Build", { marginAlignment: "h: center, v: center", fontName: "20pt kingthings_italiqueregular" })
             ]
         });
         // Add action to the button

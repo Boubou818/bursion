@@ -29,7 +29,12 @@ class Game {
             this.engine.resize();
         });
 
-        this.initScene();
+        // Load fonts
+        var font = new FontFaceObserver("kingthings_italiqueregular");		
+		font.load().then(() => {
+            this.initScene();
+		});
+
     }
 
     private initScene() {

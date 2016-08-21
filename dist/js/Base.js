@@ -24,10 +24,7 @@ var Base = (function () {
         var starterPosition = this._map.basePosition;
         starter.position.copyFrom(starterPosition.center);
         var drakkarPosition = this._map.drakkarPosition;
-        var drakkar = BABYLON.Mesh.CreateBox('', 1, game.scene);
-        drakkar.position.copyFrom(drakkarPosition.center);
-        drakkar.position.y = 1;
-        drakkar.scaling.x = 3;
+        var drakkar = new Drakkar(game, drakkarPosition.center);
         // Create fog of war
         // this._fogOfWar = new FogOfWar(150, game.scene);
         // this._fogOfWar.position.y = 1.8/2+0.1; // TODO FIX THIS SHIT

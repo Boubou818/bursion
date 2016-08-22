@@ -54,7 +54,7 @@ class Base {
         starter.finishBuild();
         // Delete all resources on the starter         
         for (let hex of starter.usableResources) {
-            hex.resourceSlot.dispose();
+            this._map.removeMapHex(hex);
         }
     }
 

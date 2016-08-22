@@ -31,10 +31,10 @@ class Drakkar {
         this._model.scaling.x = 3;
         
         // Vertex shader - standard
-        BABYLON.Effect.ShadersStore['drakkarVertexShader'] = "attribute vec3 position;attribute vec2 uv;uniform mat4 worldViewProjection;varying vec2 vUV;void main(){gl_Position=worldViewProjection*vec4(position,1.),vUV=uv;}";        
+        BABYLON.Effect.ShadersStore['drakkarVertexShader'] = "attribute vec3 position;attribute vec2 uv;uniform mat4 worldViewProjection;varying vec2 vUV;varying vec3 pos;void main(){gl_Position=worldViewProjection*vec4(position,1.),vUV=uv;pos = normalize(vec3(position));}";        
         
         // Fragment shader - TODO changer ca en fonction de la hauteur du pixel
-        BABYLON.Effect.ShadersStore['drakkarFragmentShader'] = "varying vec2 vUV;uniform sampler2D textureSampler;uniform float percentage;void main(){vec4 color=texture2D(textureSampler,vUV);if(vUV.g>percentage)color.a=0.5;gl_FragColor=color;}";
+        BABYLON.Effect.ShadersStore['drakkarFragmentShader'] = "varying vec2 vUV;uniform sampler2D textureSampler;uniform float percentage;varying vec3 pos;void main(){vec4 color=texture2D(textureSampler,vUV);if(pos.y>percentage)color.a=0.5;gl_FragColor=color;}";
                 
         this._shader = new BABYLON.ShaderMaterial('drakkarShader', this._game.scene, 'drakkar', {
                 attributes: ["position", "normal", "uv"],

@@ -244,7 +244,6 @@ var HexagonMap = (function () {
      * Hexagons and resources are two different models.
      */
     HexagonMap.prototype.draw = function (game) {
-        var _this = this;
         var scene = game.scene;
         // land
         // let land = game.createInstanceAsset('hexa-land', '__land__');
@@ -288,41 +287,45 @@ var HexagonMap = (function () {
             timer = new Timer(delay, scene, { autostart: false, autodestroy: true });
             timers.push(timer);
             delay += 2.5;
-            timer.callback = function () {
-                var hex = null;
-                switch (h.type) {
-                    case HexagonType.DeepWater:
-                        hex = water2Ref.createInstance('' + h.q + ' ' + h.r);
-                        break;
-                    case HexagonType.Water:
-                        hex = water1Ref.createInstance('' + h.q + ' ' + h.r);
-                        break;
-                    case HexagonType.Beach:
-                        hex = beachRef.createInstance('' + h.q + ' ' + h.r);
-                        break;
-                    case HexagonType.Land:
-                    default:
+            var hex = null;
+            switch (h.type) {
+                case HexagonType.DeepWater:
+                    hex = water2Ref.createInstance('' + h.q + ' ' + h.r);
+                    break;
+                case HexagonType.Water:
+                    hex = water1Ref.createInstance('' + h.q + ' ' + h.r);
+                    break;
+                case HexagonType.Beach:
+                    hex = beachRef.createInstance('' + h.q + ' ' + h.r);
+                    break;
+                case HexagonType.Land:
+                default:
+                    if (Math.random() > 0.5) {
                         hex = game.createInstanceAsset('hexa-land', '__land__');
-                        break;
-                }
-                hex.rotation.y += _this._randomInt(-6, 6) * Math.PI / 3;
-                hex.isVisible = true;
-                hex.position.copyFrom(h.center);
-                console.log('height : ', h.center.y);
+                    }
+                    else {
+                        hex = game.createInstanceAsset('hexa-land-empty', '__land__');
+                    }
+                    break;
+            }
+            hex.rotation.y += this_1._randomInt(-6, 6) * Math.PI / 3;
+            hex.isVisible = true;
+            hex.position.copyFrom(h.center);
+            hex.position.y = -10;
+            // Add the mesh instance to the meshes list
+            this_1._meshes[h.name] = hex;
+            ease = new BABYLON.BackEase(1);
+            ease.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEOUT);
+            timer.callback = function () {
                 // this._assignResourceModel(h, game);
-                var ease = new BABYLON.BackEase(1);
-                ease.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEOUT);
-                BABYLON.Animation.CreateAndStartAnimation('pos', hex, 'position.y', 60, 60, -10, hex.position.y, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, ease, function () {
-                    hex.freezeWorldMatrix();
-                });
-                // Add the mesh instance to the meshes list
-                _this._meshes[h.name] = hex;
+                BABYLON.Animation.CreateAndStartAnimation('pos', hex, 'position.y', 60, 60, -10, h.center.y, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, ease);
             };
             timers.forEach(function (tt) {
                 tt.start();
             });
         };
-        var timer;
+        var this_1 = this;
+        var timer, ease;
         for (var _i = 0, _a = this._map; _i < _a.length; _i++) {
             var h = _a[_i];
             _loop_1(h);

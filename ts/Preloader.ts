@@ -25,6 +25,7 @@ class Preloader {
         this._addMesh('grass');
         this._addMesh('boar');
         this._addMesh('hexa-land');
+        this._addMesh('hexa-land', 'hexa-land-empty');
         
         this._loader.load();
     }
@@ -52,6 +53,7 @@ class Preloader {
         }
         // parent.setEnabled(false);
                 
+        console.log(t.name);
         this._game.assets[t.name] = parent;
     }
     

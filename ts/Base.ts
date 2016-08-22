@@ -41,11 +41,7 @@ class Base {
         starter.position.copyFrom(starterPosition.center);
         
         let drakkarPosition : MapHexagon = this._map.drakkarPosition;
-        let drakkar = BABYLON.Mesh.CreateBox('', 1, game.scene);
-        
-        drakkar.position.copyFrom(drakkarPosition.center);
-        drakkar.position.y = 1;
-        drakkar.scaling.x = 3;
+        let drakkar = new Drakkar(game, drakkarPosition.center);
         
         // Create fog of war
         // this._fogOfWar = new FogOfWar(150, game.scene);

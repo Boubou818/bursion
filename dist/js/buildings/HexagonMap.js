@@ -172,23 +172,92 @@ var HexagonMap = (function () {
         var random = Math.random();
         return ((random * (max - min)) + min);
     };
+    HexagonMap.prototype._randomInt = function (min, max) {
+        var random = Math.random();
+        return Math.floor(((random * (max - min)) + min));
+    };
+    // private _createHexModel(h:MapHexagon, game : Game) {
+    //     var hex = null, 
+    //     model = null;
+    //     switch (h.type) {
+    //         case HexagonType.DeepWater:
+    //             model = game.scene.getMeshByName('__deepwater__');
+    //             break;    
+    //         case HexagonType.Water:
+    //             model = game.scene.getMeshByName('__water__');
+    //             break;    
+    //         case HexagonType.Beach:
+    //             model = game.scene.getMeshByName('__beach__');
+    //             break;    
+    //         case HexagonType.Land:        
+    //         default:
+    //             model = null;
+    //             break;
+    //     }
+    //     if (model) {
+    //     hex = model.createInstance(''+h.q+' '+h.r);
+    //     } else {
+    //         hex = game.createInstanceAsset('hexa-land', '__land__')
+    //     }
+    //     hex.isVisible = true;
+    //     hex.position.copyFrom(h.center);
+    // }
+    HexagonMap.prototype._assignResourceModel = function (h, game) {
+        if (h.resourceSlot.resource === Resources.Wood) {
+            var wood = void 0;
+            wood = game.createInstanceAsset('tree2');
+            wood.setEnabled(true);
+            wood.position.copyFrom(h.center);
+            wood.position.y = 0.75;
+            wood.rotation.y = Math.random() - 0.5;
+            wood.scaling.scaleInPlace(this._random(0.3, 0.8));
+            wood.freezeWorldMatrix();
+            h.resourceSlot.model = wood;
+        }
+        // if (h.resourceSlot.resource === Resources.Rock) {
+        //     let rock = game.createInstanceAsset('rock');              
+        //     rock.setEnabled(true);
+        //     rock.position.copyFrom(h.center);
+        //     rock.position.y = 0.75;
+        //     h.resourceSlot.model = rock;
+        // }            
+        // if (h.resourceSlot.resource === Resources.Meat) {
+        //     let boar = game.createInstanceAsset('boar');             
+        //     boar.setEnabled(true);
+        //     boar.position.copyFrom(h.center);
+        //     boar.position.y = 0.75;
+        //     boar.rotation.y = Math.random()-0.5;
+        //     h.resourceSlot.model = boar;
+        // }
+        // if (h.resourceSlot.resource === Resources.Empty && h.type === HexagonType.Land) {
+        //     let grass = game.createInstanceAsset('grass');               
+        //     grass.setEnabled(true);
+        //     grass.position.copyFrom(h.center);
+        //     grass.position.y = 0.75;
+        //     grass.scaling.scaleInPlace(this._random(0.7, 1));
+        //     // grass.freezeWorldMatrix();
+        //     h.resourceSlot.model = grass;
+        // }             
+    };
     /**
      * Draw the hexagon grid in the given scene.
      * Hexagons and resources are two different models.
      */
     HexagonMap.prototype.draw = function (game) {
+        var _this = this;
         var scene = game.scene;
         // land
-        var land = BABYLON.Mesh.CreateCylinder('', 1.5, 1.9, 1.9, 6, 1, scene);
-        land.rotation.y = Math.PI / 2;
-        land.isVisible = false;
-        land.convertToUnIndexedMesh();
-        var landMaterial = new BABYLON.StandardMaterial('grass', scene);
-        landMaterial.diffuseColor = BABYLON.Color3.FromInts(161, 176, 51);
-        landMaterial.specularColor = BABYLON.Color3.Black();
-        land.material = landMaterial;
+        // let land = game.createInstanceAsset('hexa-land', '__land__');
+        // let land = BABYLON.Mesh.CreateCylinder('__land__', 1.5, 1.9,1.9, 6, 1, scene);
+        // land.rotation.y = Math.PI/2;
+        // land.isVisible = false;
+        // land.convertToUnIndexedMesh();
+        // let landMaterial = new BABYLON.StandardMaterial('grass', scene);
+        // landMaterial.diffuseColor = BABYLON.Color3.FromInts(161, 176, 51);
+        // landMaterial.specularColor = BABYLON.Color3.Black();
+        // land.material = landMaterial;
         // beach
-        var beachRef = BABYLON.Mesh.CreateCylinder('', 1, 1.95, 1.95, 6, 1, scene);
+        var beachRef = BABYLON.Mesh.CreateCylinder('__beach__', 1, 1.95, 1.95, 6, 1, scene);
         beachRef.rotation.y = Math.PI / 2;
         beachRef.isVisible = false;
         beachRef.convertToUnIndexedMesh();
@@ -197,7 +266,7 @@ var HexagonMap = (function () {
         beachMaterial.specularColor = BABYLON.Color3.Black();
         beachRef.material = beachMaterial;
         // water1
-        var water1Ref = BABYLON.Mesh.CreateCylinder('', 0.8, 1.95, 1.95, 6, 1, scene);
+        var water1Ref = BABYLON.Mesh.CreateCylinder('__water__', 0.8, 1.95, 1.95, 6, 1, scene);
         water1Ref.rotation.y = Math.PI / 2;
         water1Ref.isVisible = false;
         water1Ref.convertToUnIndexedMesh();
@@ -206,7 +275,7 @@ var HexagonMap = (function () {
         water1Material.specularColor = BABYLON.Color3.Black();
         water1Ref.material = water1Material;
         // water2 - deeper  
-        var water2Ref = BABYLON.Mesh.CreateCylinder('', 0.6, 1.97, 1.97, 6, 1, scene);
+        var water2Ref = BABYLON.Mesh.CreateCylinder('__deepwater__', 0.6, 1.97, 1.97, 6, 1, scene);
         water2Ref.rotation.y = Math.PI / 2;
         water2Ref.isVisible = false;
         water2Ref.convertToUnIndexedMesh();
@@ -214,74 +283,49 @@ var HexagonMap = (function () {
         water2Material.diffuseColor = BABYLON.Color3.FromInts(38, 62, 66);
         water2Material.specularColor = BABYLON.Color3.Black();
         water2Ref.material = water2Material;
+        var delay = 0, timers = [];
+        var _loop_1 = function(h) {
+            timer = new Timer(delay, scene, { autostart: false, autodestroy: true });
+            timers.push(timer);
+            delay += 2.5;
+            timer.callback = function () {
+                var hex = null;
+                switch (h.type) {
+                    case HexagonType.DeepWater:
+                        hex = water2Ref.createInstance('' + h.q + ' ' + h.r);
+                        break;
+                    case HexagonType.Water:
+                        hex = water1Ref.createInstance('' + h.q + ' ' + h.r);
+                        break;
+                    case HexagonType.Beach:
+                        hex = beachRef.createInstance('' + h.q + ' ' + h.r);
+                        break;
+                    case HexagonType.Land:
+                    default:
+                        hex = game.createInstanceAsset('hexa-land', '__land__');
+                        break;
+                }
+                hex.rotation.y += _this._randomInt(-6, 6) * Math.PI / 3;
+                hex.isVisible = true;
+                hex.position.copyFrom(h.center);
+                console.log('height : ', h.center.y);
+                // this._assignResourceModel(h, game);
+                var ease = new BABYLON.BackEase(1);
+                ease.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEOUT);
+                BABYLON.Animation.CreateAndStartAnimation('pos', hex, 'position.y', 60, 60, -10, hex.position.y, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, ease, function () {
+                    hex.freezeWorldMatrix();
+                });
+                // Add the mesh instance to the meshes list
+                _this._meshes[h.name] = hex;
+            };
+            timers.forEach(function (tt) {
+                tt.start();
+            });
+        };
+        var timer;
         for (var _i = 0, _a = this._map; _i < _a.length; _i++) {
             var h = _a[_i];
-            var hex = null;
-            switch (h.type) {
-                case HexagonType.DeepWater:
-                    hex = water2Ref.createInstance('' + h.q + ' ' + h.r);
-                    break;
-                case HexagonType.Water:
-                    hex = water1Ref.createInstance('' + h.q + ' ' + h.r);
-                    break;
-                case HexagonType.Beach:
-                    hex = beachRef.createInstance('' + h.q + ' ' + h.r);
-                    break;
-                case HexagonType.Land:
-                default:
-                    hex = land.createInstance('' + h.q + ' ' + h.r);
-                    break;
-            }
-            hex.isVisible = true;
-            hex.position.copyFrom(h.center);
-            hex.freezeWorldMatrix();
-            // Add the mesh instance to the meshes list
-            this._meshes[h.name] = hex;
-            if (h.resourceSlot.resource === Resources.Wood) {
-                var wood = void 0;
-                // if (Math.random() > 0.5) {
-                wood = game.assets['tree2'].clone();
-                // } else {                    
-                //     wood = game.assets['tree2'].clone();
-                // }
-                wood.setEnabled(true);
-                wood.position.copyFrom(h.center);
-                wood.position.y = 0.75;
-                wood.rotation.y = Math.random() - 0.5;
-                wood.scaling.scaleInPlace(this._random(0.3, 0.8));
-                wood.freezeWorldMatrix();
-                h.resourceSlot.model = wood;
-            }
-            if (h.resourceSlot.resource === Resources.Rock) {
-                var rock = game.assets['rock'].clone(); //Resources.getModelForResource(game, h.resourceSlot.resource);
-                // let wood = basemesh.clone('_resource_');                
-                rock.setEnabled(true);
-                rock.position.copyFrom(h.center);
-                rock.position.y = 0.75;
-                // wood.rotation.y = Math.random()-0.5;
-                // rock.scaling.scaleInPlace(this._random(0.3,0.8));
-                h.resourceSlot.model = rock;
-            }
-            if (h.resourceSlot.resource === Resources.Meat) {
-                var boar = game.assets['boar'].clone(); //Resources.getModelForResource(game, h.resourceSlot.resource);
-                // let wood = basemesh.clone('_resource_');                
-                boar.setEnabled(true);
-                boar.position.copyFrom(h.center);
-                boar.position.y = 0.75;
-                boar.rotation.y = Math.random() - 0.5;
-                // boar.scaling.scaleInPlace(10);
-                h.resourceSlot.model = boar;
-            }
-            if (h.resourceSlot.resource === Resources.Empty && h.type === HexagonType.Land) {
-                var grass = game.assets['grass'].clone(); //Resources.getModelForResource(game, h.resourceSlot.resource);
-                // let wood = basemesh.clone('_resource_');                
-                grass.setEnabled(true);
-                grass.position.copyFrom(h.center);
-                grass.position.y = 0.75;
-                grass.scaling.scaleInPlace(this._random(0.7, 1));
-                grass.freezeWorldMatrix();
-                h.resourceSlot.model = grass;
-            }
+            _loop_1(h);
         }
     };
     return HexagonMap;

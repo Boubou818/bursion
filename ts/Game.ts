@@ -43,12 +43,16 @@ class Game {
         this.scene.clearColor = BABYLON.Color3.Black(); 
 
         let camera = new BABYLON.ArcRotateCamera('', -1.5, 1, 100, new BABYLON.Vector3(0, 0, 0), this.scene);
+        camera.wheelPrecision *= 2;
         camera.attachControl(this.engine.getRenderingCanvas());
         let light = new BABYLON.HemisphericLight('', new BABYLON.Vector3(0, 1, 0), this.scene);
         light.intensity = 0.5;
         
         let dir = new BABYLON.DirectionalLight('dir', new BABYLON.Vector3(-0.5, -1, 0.5), this.scene);
         dir.intensity = 0.7;
+
+        // Background
+        new BABYLON.Layer('back', 'img/background/bg.jpg', this.scene, true);
                 
         // Load assets
         let loader = new Preloader(this);
@@ -60,6 +64,11 @@ class Game {
     private run() {
 
         this.scene.executeWhenReady(() => {
+            
+            // Remove loader
+            var loader = <HTMLElement> document.querySelector("#loader");
+            loader.style.display = "none";
+
             this.engine.runRenderLoop(() => {
                 this.scene.render();
             });
@@ -68,7 +77,7 @@ class Game {
         // Load first level
         this._initGame();
 
-        // this.scene.debugLayer.show();
+        this.scene.debugLayer.show();
     }
 
     /**
@@ -128,6 +137,28 @@ class Game {
         }
     }
 
+    /**
+     * Creates an instance of the given resource name.
+     */
+    public createInstanceAsset(name:string, newname?:string, newscale?:number) : BABYLON.AbstractMesh {
+        var model : BABYLON.Mesh = this.assets[name];
+        var childrens = model.getDescendants();
+        if (!newname) {
+            newname = name+'_instance';
+        }
+        var mesh = model.createInstance(newname);
+ 
+        for (let c of childrens) {
+            var child = <BABYLON.Mesh> c;
+            var inst = child.createInstance('');
+            inst.parent = mesh;
+        }
+        if (newscale) {
+            mesh.scaling.scaleInPlace(newscale);
+        }
+        return mesh;
+    }
+
 
     private _initGame() {
         // Init resources
@@ -138,7 +169,7 @@ class Game {
         let ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 2, this.scene);
         ground.isVisible = false;
 
-        let grid = new HexagonMap(10);  
+        let grid = new HexagonMap(5);   
 
         grid.draw(this);  
 
@@ -181,46 +212,46 @@ class Game {
         }
 
         // DEBUG : VIEW GRAPH BETWEEN HEXAGONS
-        let viewLink = (hex: MapHexagon, neighbors) => {
-            // center of the hexagon
-            let b = BABYLON.Mesh.CreateBox('', 0.2, this.scene);
-            b.position.copyFrom(hex.center);
-            b.position.y = 1.5;
+        // let viewLink = (hex: MapHexagon, neighbors) => {
+        //     // center of the hexagon
+        //     let b = BABYLON.Mesh.CreateBox('', 0.2, this.scene);
+        //     b.position.copyFrom(hex.center);
+        //     b.position.y = 1.5;
 
-            for (let n in neighbors) {
-                // get hex by name
-                let hexn = this.base.getHexByName(n);
-                let pos = hexn.center;
-                pos.y = 1.5;
-                BABYLON.Mesh.CreateLines('', [b.position.clone(), pos], this.scene);
-            }
-        }
-        let viewGraph = (graph) => {
-            for (let vertex in graph.vertices) {
-                // get hex by name
-                let hex = this.base.getHexByName(vertex);
-                viewLink(hex, graph.vertices[vertex]);
-            }
-        }
-        window.addEventListener('keydown', () => {
-            viewGraph(this.base.graph);
-        });
+        //     for (let n in neighbors) {
+        //         // get hex by name
+        //         let hexn = this.base.getHexByName(n);
+        //         let pos = hexn.center;
+        //         pos.y = 1.5;
+        //         BABYLON.Mesh.CreateLines('', [b.position.clone(), pos], this.scene);
+        //     }
+        // }
+        // let viewGraph = (graph) => {
+        //     for (let vertex in graph.vertices) {
+        //         // get hex by name
+        //         let hex = this.base.getHexByName(vertex);
+        //         viewLink(hex, graph.vertices[vertex]);
+        //     }
+        // }
+        // window.addEventListener('keydown', () => {
+        //     viewGraph(this.base.graph);
+        // });
         // END DEBUG
 
         let bobby = new Minion('bobby', this);
         this._hoard.push(bobby);
         
-        // let bobby2 = new Minion('bobby2', this);
-        // this._hoard.push(bobby2);  
+        let bobby2 = new Minion('bobby2', this);
+        this._hoard.push(bobby2);  
         
-        // let bobb32 = new Minion('bobby2', this);
-        // this._hoard.push(bobb32);  
+        let bobb32 = new Minion('bobby2', this);
+        this._hoard.push(bobb32);  
         
-        // let bobby42 = new Minion('bobby2', this);
-        // this._hoard.push(bobby42);  
+        let bobby42 = new Minion('bobby2', this);
+        this._hoard.push(bobby42);  
         
-        // let bobby52 = new Minion('bobby2', this);
-        // this._hoard.push(bobby52);
+        let bobby52 = new Minion('bobby2', this);
+        this._hoard.push(bobby52);
 
         // Init GUI 
         this._gui = new GUIManager(this); 

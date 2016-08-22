@@ -12,6 +12,7 @@ class Preloader {
         this._scene = this._game.scene;
         
         this._loader = new BABYLON.AssetsManager(this._scene);
+        this._loader.useDefaultLoadingScreen = false;
         this._loader.onFinish = this.onFinish.bind(this);
               
     }
@@ -23,6 +24,7 @@ class Preloader {
         this._addMesh('rock');
         this._addMesh('grass');
         this._addMesh('boar');
+        this._addMesh('hexa-land');
         
         this._loader.load();
     }

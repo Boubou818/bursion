@@ -10,7 +10,7 @@ class ResourceSlot {
     public gain : number = 0;  
 
     // The 3D mesh to displayed on the map
-    public model : BABYLON.Mesh; 
+    public model : BABYLON.AbstractMesh; 
     
     constructor() {
     }

@@ -43,8 +43,8 @@ class Game {
         this.scene = new BABYLON.Scene(this.engine);
         this.scene.clearColor = BABYLON.Color3.Black(); 
 
-        let camera = new BABYLON.ArcRotateCamera('', -1.5, 1, 100, new BABYLON.Vector3(0, 0, 0), this.scene);
-        camera.wheelPrecision *= 2;
+        let camera = new BABYLON.ArcRotateCamera('', -1.5, 1, 20, new BABYLON.Vector3(0, 0, 0), this.scene);
+        camera.wheelPrecision *= 10;
         camera.attachControl(this.engine.getRenderingCanvas());
         let light = new BABYLON.HemisphericLight('', new BABYLON.Vector3(0, 1, 0), this.scene);
         light.intensity = 0.5;
@@ -141,7 +141,7 @@ class Game {
     /**
      * Creates an instance of the given resource name.
      */
-    public createInstanceAsset(name:string, newname?:string, newscale?:number) : BABYLON.AbstractMesh {
+    public createInstanceAsset(name:string, newname?:string) : BABYLON.AbstractMesh {
         var model : BABYLON.Mesh = this.assets[name];
         var childrens = model.getDescendants();
         if (!newname) {
@@ -154,8 +154,22 @@ class Game {
             var inst = child.createInstance('');
             inst.parent = mesh;
         }
-        if (newscale) {
-            mesh.scaling.scaleInPlace(newscale);
+        return mesh;
+    }
+    
+    
+    public createCloneAsset(name:string, newname?:string) : BABYLON.AbstractMesh {
+        var model : BABYLON.Mesh = this.assets[name];
+        var childrens = model.getDescendants();
+        if (!newname) {
+            newname = name+'_clone';
+        }
+        var mesh = model.clone(newname);
+ 
+        for (let c of childrens) {
+            var child = <BABYLON.Mesh> c;
+            var inst = child.clone('');
+            inst.parent = mesh;
         }
         return mesh;
     }
@@ -170,7 +184,7 @@ class Game {
         let ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 2, this.scene);
         ground.isVisible = false;
 
-        let grid = new HexagonMap(10);   
+        let grid = new HexagonMap(5);   
 
         grid.draw(this);  
 

@@ -181,10 +181,12 @@ var Building = (function (_super) {
         for (var _i = 0, _a = this._points; _i < _a.length; _i++) {
             var p = _a[_i];
             var center = p.center;
-            var myhex = BABYLON.Mesh.CreateCylinder('', 0.5, 2, 2, 6, 1, this.getScene());
-            myhex.rotation.y = Math.PI / 2;
+            var myhex = this._game.createCloneAsset('hexa-land');
+            myhex.setEnabled(true);
+            // BABYLON.Mesh.CreateCylinder('', 0.5, 2, 2, 6, 1, this.getScene());
+            // myhex.rotation.y = Math.PI/2;
             myhex.position.copyFrom(center);
-            myhex.position.y = 0.6;
+            // myhex.position.y = 0.6;
             hexes.push(myhex);
         }
         return BABYLON.Mesh.MergeMeshes(hexes, true);

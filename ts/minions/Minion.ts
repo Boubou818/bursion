@@ -50,7 +50,7 @@ class Minion extends BABYLON.Mesh {
 
         // Update minion position
         this.position.copyFrom(this.currentHexagon.center);
-        this.position.y = 1.25;
+        this.position.y = 0.5;
 
         // At each destination, the current hexagon where the minion lives is updated.
         this._controller.atEachDestination = (hx:MapHexagon) => {

@@ -21,8 +21,8 @@ var Game = (function () {
     Game.prototype.initScene = function () {
         this.scene = new BABYLON.Scene(this.engine);
         this.scene.clearColor = BABYLON.Color3.Black();
-        var camera = new BABYLON.ArcRotateCamera('', -1.5, 1, 100, new BABYLON.Vector3(0, 0, 0), this.scene);
-        camera.wheelPrecision *= 2;
+        var camera = new BABYLON.ArcRotateCamera('', -1.5, 1, 20, new BABYLON.Vector3(0, 0, 0), this.scene);
+        camera.wheelPrecision *= 10;
         camera.attachControl(this.engine.getRenderingCanvas());
         var light = new BABYLON.HemisphericLight('', new BABYLON.Vector3(0, 1, 0), this.scene);
         light.intensity = 0.5;
@@ -104,7 +104,7 @@ var Game = (function () {
     /**
      * Creates an instance of the given resource name.
      */
-    Game.prototype.createInstanceAsset = function (name, newname, newscale) {
+    Game.prototype.createInstanceAsset = function (name, newname) {
         var model = this.assets[name];
         var childrens = model.getDescendants();
         if (!newname) {
@@ -117,8 +117,20 @@ var Game = (function () {
             var inst = child.createInstance('');
             inst.parent = mesh;
         }
-        if (newscale) {
-            mesh.scaling.scaleInPlace(newscale);
+        return mesh;
+    };
+    Game.prototype.createCloneAsset = function (name, newname) {
+        var model = this.assets[name];
+        var childrens = model.getDescendants();
+        if (!newname) {
+            newname = name + '_clone';
+        }
+        var mesh = model.clone(newname);
+        for (var _i = 0, childrens_2 = childrens; _i < childrens_2.length; _i++) {
+            var c = childrens_2[_i];
+            var child = c;
+            var inst = child.clone('');
+            inst.parent = mesh;
         }
         return mesh;
     };
@@ -130,7 +142,7 @@ var Game = (function () {
         this.resources[Resources.Meat] = 0;
         var ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 2, this.scene);
         ground.isVisible = false;
-        var grid = new HexagonMap(10);
+        var grid = new HexagonMap(5);
         grid.draw(this);
         this.scene.pointerMovePredicate = function (mesh) {
             return mesh.name === 'ground';

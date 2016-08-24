@@ -206,12 +206,15 @@ abstract class Building extends BABYLON.Mesh{
     private _createBuildingMesh() : BABYLON.Mesh {
         // Merge all cylinders
         let hexes = [];        
-        for (let p of this._points) {
+        for (let p of this._points) { 
             let center = p.center;
-            let myhex = BABYLON.Mesh.CreateCylinder('', 0.5, 2, 2, 6, 1, this.getScene());
-            myhex.rotation.y = Math.PI/2;
+            let myhex = this._game.createCloneAsset('hexa-land'); 
+            myhex.setEnabled(true);
+                         
+            // BABYLON.Mesh.CreateCylinder('', 0.5, 2, 2, 6, 1, this.getScene());
+            // myhex.rotation.y = Math.PI/2;
             myhex.position.copyFrom(center);
-            myhex.position.y = 0.6;
+            // myhex.position.y = 0.6;
             hexes.push(myhex);
         }
         return BABYLON.Mesh.MergeMeshes(hexes, true);

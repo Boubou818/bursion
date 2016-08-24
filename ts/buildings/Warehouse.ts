@@ -129,9 +129,7 @@ class StarterWarehouse extends Warehouse {
         -1, 1,
         0, 0,
         1, 0, 
-        0, 1, 
-        1, 1,
-        2, 1
+        0, 1
         ];        
         
     protected _initCost() {   
@@ -162,5 +160,13 @@ class StarterWarehouse extends Warehouse {
     // This building is finished
     public isNearlyFinished() : boolean {        
         return true;
+    }
+    
+    /**
+     * Override the parent model with an empty mesh
+     */
+    protected _getBuildingModel() : BABYLON.Mesh {
+        let b = new BABYLON.Mesh('_warehouse_', this._game.scene);
+        return b;
     }
 }

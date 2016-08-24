@@ -216,23 +216,22 @@ class HexagonMap {
 
     private _assignResourceModel(h:MapHexagon, game:Game) {
          if (h.resourceSlot.resource === Resources.Wood) {
-            let wood;
-            wood = game.createInstanceAsset('trees');
+            let wood = game.createInstanceAsset('trees');
             wood.setEnabled(true);
             wood.position.copyFrom(h.center);
-            wood.position.y = 0.75;
+            // wood.position.y = 0.75;
             wood.rotation.y = Math.random()-0.5;
-            wood.scaling.scaleInPlace(this._random(0.3,0.8));                
+            // wood.scaling.scaleInPlace(this._random(0.3,0.8));                
             wood.freezeWorldMatrix();
             h.resourceSlot.model = wood; 
         }
-        // if (h.resourceSlot.resource === Resources.Rock) {
-        //     let rock = game.createInstanceAsset('rock');              
-        //     rock.setEnabled(true);
-        //     rock.position.copyFrom(h.center);
-        //     rock.position.y = 0.75;
-        //     h.resourceSlot.model = rock;
-        // }            
+        if (h.resourceSlot.resource === Resources.Rock) {
+            let rock = game.createInstanceAsset('rock');              
+            rock.setEnabled(true);
+            rock.position.copyFrom(h.center);
+            // rock.position.y = 0.75;
+            h.resourceSlot.model = rock;
+        }            
         // if (h.resourceSlot.resource === Resources.Meat) {
         //     let boar = game.createInstanceAsset('boar');             
         //     boar.setEnabled(true);
@@ -259,20 +258,9 @@ class HexagonMap {
     public draw(game:Game) {
 
         let scene : BABYLON.Scene = game.scene;
-                
-        // land
-        // let land = game.createInstanceAsset('hexa-land', '__land__');
-        // let land = BABYLON.Mesh.CreateCylinder('__land__', 1.5, 1.9,1.9, 6, 1, scene);
-        // land.rotation.y = Math.PI/2;
-        // land.isVisible = false;
-        // land.convertToUnIndexedMesh();
-        // let landMaterial = new BABYLON.StandardMaterial('grass', scene);
-        // landMaterial.diffuseColor = BABYLON.Color3.FromInts(161, 176, 51);
-        // landMaterial.specularColor = BABYLON.Color3.Black();
-        // land.material = landMaterial;
         
         // beach
-        let beachRef = BABYLON.Mesh.CreateCylinder('__beach__', 1, 1.95, 1.95, 6, 1, scene);
+        let beachRef = BABYLON.Mesh.CreateCylinder('__beach__', 0.5, 1.95, 1.95, 6, 1, scene);
         beachRef.rotation.y = Math.PI/2;
         beachRef.isVisible = false;        
         beachRef.convertToUnIndexedMesh();
@@ -282,7 +270,7 @@ class HexagonMap {
         beachRef.material = beachMaterial;
 
         // water1
-        let water1Ref = BABYLON.Mesh.CreateCylinder('__water__', 0.8, 1.95, 1.95, 6, 1, scene);
+        let water1Ref = BABYLON.Mesh.CreateCylinder('__water__', 0.5, 1.95, 1.95, 6, 1, scene);
         water1Ref.rotation.y = Math.PI/2;
         water1Ref.isVisible = false;
         water1Ref.convertToUnIndexedMesh();
@@ -292,7 +280,7 @@ class HexagonMap {
         water1Ref.material = water1Material;
 
         // water2 - deeper  
-        let water2Ref = BABYLON.Mesh.CreateCylinder('__deepwater__', 0.6, 1.97, 1.97, 6, 1, scene);
+        let water2Ref = BABYLON.Mesh.CreateCylinder('__deepwater__', 0.5, 1.97, 1.97, 6, 1, scene);
         water2Ref.rotation.y = Math.PI/2;
         water2Ref.isVisible = false;
         water2Ref.convertToUnIndexedMesh();
@@ -332,6 +320,7 @@ class HexagonMap {
         
             hex.rotation.y += this._randomInt(-6,6) * Math.PI/3; 
             hex.isVisible = true;
+            // h.center.y = 10;
             hex.position.copyFrom(h.center); 
             hex.position.y = 100;
             // Add the mesh instance to the meshes list
@@ -340,17 +329,17 @@ class HexagonMap {
             var ease = new BABYLON.QuarticEase();
             ease.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEOUT);
 
+            this._assignResourceModel(h, game);
+
                 
 
             timer.callback = () => {
-
-                // this._assignResourceModel(h, game);
 
                 BABYLON.Animation.CreateAndStartAnimation(
                     'pos', 
                     hex, 'position.y', 
                     60, 60, 
-                    100, h.center.y, 
+                    hex.position.y, h.center.y, 
                     BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, 
                     ease);         
             }

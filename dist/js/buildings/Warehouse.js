@@ -149,14 +149,19 @@ var StarterWarehouse = (function (_super) {
     StarterWarehouse.prototype.isNearlyFinished = function () {
         return true;
     };
+    /**
+     * Override the parent model with an empty mesh
+     */
+    StarterWarehouse.prototype._getBuildingModel = function () {
+        var b = new BABYLON.Mesh('_warehouse_', this._game.scene);
+        return b;
+    };
     // Q and R coordinates of a starter platform
     StarterWarehouse.TEMPLATE = [
         -1, 1,
         0, 0,
         1, 0,
-        0, 1,
-        1, 1,
-        2, 1
+        0, 1
     ];
     return StarterWarehouse;
 }(Warehouse));

@@ -27,7 +27,7 @@ class Drakkar {
         // 3D model creation
         this._model = game.createInstanceAsset('drakkar');        
         this._model.position.copyFrom(position);
-        this._model.position.y = 1.5;
+        this._model.position.y = 1.25;
         this._model.rotation.y = -Math.PI/2;
         this._model.scaling.scaleInPlace(0.25);
         

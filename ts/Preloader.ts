@@ -19,13 +19,16 @@ class Preloader {
     
     public loadAssets() {
         this._addMesh('wood');
-        this._addMesh('tree');
-        this._addMesh('tree', 'tree2');
+        this._addMesh('wood', 'trees');
+        // this._addMesh('tree');
+        // this._addMesh('tree', 'tree2'); 
         this._addMesh('rock');
         this._addMesh('grass');
         this._addMesh('boar');
-        this._addMesh('hexa-land');
-        this._addMesh('hexa-land', 'hexa-land-empty');
+        // this._addMesh('hexa-land');
+        this._addMesh('hexas', 'hexa-empty');
+        this._addMesh('drakkar');
+        this._addMesh('hexas', 'hexa-land');
         
         this._loader.load();
     }

@@ -205,7 +205,7 @@ var HexagonMap = (function () {
     HexagonMap.prototype._assignResourceModel = function (h, game) {
         if (h.resourceSlot.resource === Resources.Wood) {
             var wood = void 0;
-            wood = game.createInstanceAsset('tree2');
+            wood = game.createInstanceAsset('trees');
             wood.setEnabled(true);
             wood.position.copyFrom(h.center);
             wood.position.y = 0.75;
@@ -300,25 +300,24 @@ var HexagonMap = (function () {
                     break;
                 case HexagonType.Land:
                 default:
-                    if (Math.random() > 0.5) {
-                        hex = game.createInstanceAsset('hexa-land', '__land__');
-                    }
-                    else {
-                        hex = game.createInstanceAsset('hexa-land-empty', '__land__');
-                    }
+                    // if (Math.random() > 0.5) {
+                    //     hex = game.createInstanceAsset('hexa-land', '__land__');
+                    // } else {
+                    hex = game.createInstanceAsset('hexa-empty', '__land__');
+                    // } 
                     break;
             }
             hex.rotation.y += this_1._randomInt(-6, 6) * Math.PI / 3;
             hex.isVisible = true;
             hex.position.copyFrom(h.center);
-            hex.position.y = -10;
+            hex.position.y = 100;
             // Add the mesh instance to the meshes list
             this_1._meshes[h.name] = hex;
-            ease = new BABYLON.BackEase(1);
+            ease = new BABYLON.QuarticEase();
             ease.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEOUT);
             timer.callback = function () {
                 // this._assignResourceModel(h, game);
-                BABYLON.Animation.CreateAndStartAnimation('pos', hex, 'position.y', 60, 60, -10, h.center.y, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, ease);
+                BABYLON.Animation.CreateAndStartAnimation('pos', hex, 'position.y', 60, 60, 100, h.center.y, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, ease);
             };
             timers.forEach(function (tt) {
                 tt.start();

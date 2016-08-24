@@ -21,6 +21,7 @@ class Game {
 
         let canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById(canvasId);
         this.engine = new BABYLON.Engine(canvas, true);
+        this.engine.enableOfflineSupport = false;
 
         this.assets = [];
         this.scene = null;
@@ -169,7 +170,7 @@ class Game {
         let ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 2, this.scene);
         ground.isVisible = false;
 
-        let grid = new HexagonMap(5);   
+        let grid = new HexagonMap(10);   
 
         grid.draw(this);  
 
@@ -241,17 +242,17 @@ class Game {
         let bobby = new Minion('bobby', this);
         this._hoard.push(bobby);
         
-        let bobby2 = new Minion('bobby2', this);
-        this._hoard.push(bobby2);  
+        // let bobby2 = new Minion('bobby2', this);
+        // this._hoard.push(bobby2);  
         
-        let bobb32 = new Minion('bobby2', this);
-        this._hoard.push(bobb32);  
+        // let bobb32 = new Minion('bobby2', this);
+        // this._hoard.push(bobb32);  
         
-        let bobby42 = new Minion('bobby2', this);
-        this._hoard.push(bobby42);  
+        // let bobby42 = new Minion('bobby2', this);
+        // this._hoard.push(bobby42);  
         
-        let bobby52 = new Minion('bobby2', this);
-        this._hoard.push(bobby52);
+        // let bobby52 = new Minion('bobby2', this);
+        // this._hoard.push(bobby52);
 
         // Init GUI 
         this._gui = new GUIManager(this); 

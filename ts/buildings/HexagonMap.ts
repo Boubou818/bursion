@@ -217,7 +217,7 @@ class HexagonMap {
     private _assignResourceModel(h:MapHexagon, game:Game) {
          if (h.resourceSlot.resource === Resources.Wood) {
             let wood;
-            wood = game.createInstanceAsset('tree2');
+            wood = game.createInstanceAsset('trees');
             wood.setEnabled(true);
             wood.position.copyFrom(h.center);
             wood.position.y = 0.75;
@@ -322,22 +322,22 @@ class HexagonMap {
                     break;    
                 case HexagonType.Land:        
                 default:
-                if (Math.random() > 0.5) {
-                    hex = game.createInstanceAsset('hexa-land', '__land__');
-                } else {
-                    hex = game.createInstanceAsset('hexa-land-empty', '__land__');
-                } 
+                // if (Math.random() > 0.5) {
+                //     hex = game.createInstanceAsset('hexa-land', '__land__');
+                // } else {
+                    hex = game.createInstanceAsset('hexa-empty', '__land__');
+                // } 
                     break;
             }
         
             hex.rotation.y += this._randomInt(-6,6) * Math.PI/3; 
             hex.isVisible = true;
             hex.position.copyFrom(h.center); 
-            hex.position.y = -10;
+            hex.position.y = 100;
             // Add the mesh instance to the meshes list
             this._meshes[h.name] = hex;  
 
-            var ease = new BABYLON.BackEase(1);
+            var ease = new BABYLON.QuarticEase();
             ease.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEOUT);
 
                 
@@ -350,7 +350,7 @@ class HexagonMap {
                     'pos', 
                     hex, 'position.y', 
                     60, 60, 
-                    -10, h.center.y, 
+                    100, h.center.y, 
                     BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, 
                     ease);         
             }

@@ -6,6 +6,7 @@ var Game = (function () {
         this.resources = [];
         var canvas = document.getElementById(canvasId);
         this.engine = new BABYLON.Engine(canvas, true);
+        this.engine.enableOfflineSupport = false;
         this.assets = [];
         this.scene = null;
         window.addEventListener("resize", function () {
@@ -129,7 +130,7 @@ var Game = (function () {
         this.resources[Resources.Meat] = 0;
         var ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 2, this.scene);
         ground.isVisible = false;
-        var grid = new HexagonMap(5);
+        var grid = new HexagonMap(10);
         grid.draw(this);
         this.scene.pointerMovePredicate = function (mesh) {
             return mesh.name === 'ground';
@@ -192,14 +193,14 @@ var Game = (function () {
         // END DEBUG
         var bobby = new Minion('bobby', this);
         this._hoard.push(bobby);
-        var bobby2 = new Minion('bobby2', this);
-        this._hoard.push(bobby2);
-        var bobb32 = new Minion('bobby2', this);
-        this._hoard.push(bobb32);
-        var bobby42 = new Minion('bobby2', this);
-        this._hoard.push(bobby42);
-        var bobby52 = new Minion('bobby2', this);
-        this._hoard.push(bobby52);
+        // let bobby2 = new Minion('bobby2', this);
+        // this._hoard.push(bobby2);  
+        // let bobb32 = new Minion('bobby2', this);
+        // this._hoard.push(bobb32);  
+        // let bobby42 = new Minion('bobby2', this);
+        // this._hoard.push(bobby42);  
+        // let bobby52 = new Minion('bobby2', this);
+        // this._hoard.push(bobby52);
         // Init GUI 
         this._gui = new GUIManager(this);
         this._gui.initHUD();

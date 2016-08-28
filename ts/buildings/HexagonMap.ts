@@ -6,8 +6,8 @@ declare var Grid : any;
  */
 class HexagonMap {
     
-    // The Hexagon grid containing land, water and deepwater hexagons
-    private  _map : Array<MapHexagon> = [];   
+    // The Hexagon grid containing land, water and deepwater hexagons, indexed by hexagon name
+    private  _map : {[hexName:string] : MapHexagon} = {};
 
     // The numbre of rings the map has
     private _size : number;
@@ -16,10 +16,7 @@ class HexagonMap {
     private _basePosition : MapHexagon = null;
     
     // The starting position of the drakkar on the map
-    private _drakkarPosition : MapHexagon = null;
-    
-    // The list of all hexagons meshes on the map, indexed by hexagon name
-    private _meshes : {[hexName:string] : BABYLON.AbstractMesh} = {};
+    private _drakkarPosition : MapHexagon = null;    
     
     constructor(size:number) {
         this._size  = size;
@@ -72,7 +69,7 @@ class HexagonMap {
                         break;
                 }
             }
-            this._map.push(hex); 
+            this._map[hex.name] = hex; 
         }        
         
         // get starters position
@@ -115,13 +112,16 @@ class HexagonMap {
     public getNearestHex (p:BABYLON.Vector3) : MapHexagon {
         let min = 99999,
         res = null;
-        this._map.forEach((hex:MapHexagon) => {
-            let dist = BABYLON.Vector3.DistanceSquared(hex.center, p);
-            if (dist < min) {
-                min = dist;
-                res = hex;
+        for (let name in this._map) {
+            let hex = this._map[name];
+            if (hex) {
+                let dist = BABYLON.Vector3.DistanceSquared(hex.center, p);
+                if (dist < min) {
+                    min = dist;
+                    res = hex;
+                }
             }
-        });
+        };
         return res;
     }
 
@@ -130,10 +130,13 @@ class HexagonMap {
      */
     public getResourceHex(p : BuildingPoint) : MapHexagon {
 
-        for (let hex of this._map) {
-            let dist = hex.distanceToPoint(p);
-            if (dist < BABYLON.Epsilon) {
-               return hex;
+        for (let name in this._map) {
+            let hex = this._map[name];
+            if (hex) {
+                let dist = hex.distanceToPoint(p);
+                if (dist < BABYLON.Epsilon) {
+                return hex;
+                }
             }
         }
         return null;
@@ -144,10 +147,13 @@ class HexagonMap {
      * Returns null if not found
      */
     private _getHexagonByHexCoordinates(q : number, r:number) : MapHexagon {
-        for (let hex of this._map) {
-            if (hex.q == q && hex.r == r) {
-                return hex;
-            }   
+        for (let name in this._map) {
+            let hex = this._map[name];
+            if (hex) {
+                if (hex.q == q && hex.r == r) {
+                    return hex;
+                }   
+            }
         }
         return null;
     }
@@ -157,10 +163,10 @@ class HexagonMap {
      */
     public removeMapHex(hexagon:MapHexagon) {
         if (hexagon) {
-            let mapHex = this._meshes[hexagon.name];
+            let mapHex = this._map[hexagon.name];
             if (mapHex) {
                 mapHex.dispose();
-                this._meshes[hexagon.name] = null;
+                this._map[hexagon.name] = null;
             }
         }
     }
@@ -291,7 +297,9 @@ class HexagonMap {
         
         var delay = 0, 
         timers = [];
-        for (let h of this._map){
+        
+        for (let name in this._map) {
+            let h = this._map[name];
 
             var timer = new Timer(delay, scene, {autostart:false, autodestroy:true});
             timers.push(timer);
@@ -324,7 +332,7 @@ class HexagonMap {
             hex.position.copyFrom(h.center); 
             hex.position.y = 100;
             // Add the mesh instance to the meshes list
-            this._meshes[h.name] = hex;  
+            h.model = hex;
 
             var ease = new BABYLON.QuarticEase();
             ease.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEOUT);

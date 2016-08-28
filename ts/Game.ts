@@ -155,10 +155,10 @@ class Game {
             inst.parent = mesh;
         }
         return mesh;
-    }
-    
+    }    
     
     public createCloneAsset(name:string, newname?:string) : BABYLON.AbstractMesh {
+        console.log(`%c CLONING - Building clone of : ${name}`, 'color: #79BD8F');
         var model : BABYLON.Mesh = this.assets[name];
         var childrens = model.getDescendants();
         if (!newname) {
@@ -166,11 +166,14 @@ class Game {
         }
         var mesh = model.clone(newname);
  
+        console.log(`%c CLONING - Iterating over children`, 'color: #79BD8F');
         for (let c of childrens) {
+            console.log(`%c CLONING - Child found : ${c.name}`, 'color: #79BD8F');
             var child = <BABYLON.Mesh> c;
             var inst = child.clone('');
             inst.parent = mesh;
         }
+        console.log(`%c CLONING - End cloning`, 'color: #79BD8F');
         return mesh;
     }
 
@@ -202,7 +205,7 @@ class Game {
                     let mat = <BABYLON.StandardMaterial>this._currentShape.material;
                     if (this.base.canBuildHere(this._currentShape)) {
                         mat.diffuseColor = BABYLON.Color3.Green();
-                    } else {
+                    } else { 
                         mat.diffuseColor = BABYLON.Color3.Red();
                     }
 

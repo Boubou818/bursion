@@ -28,7 +28,7 @@ var Minion = (function (_super) {
         this.currentHexagon = this.base.getStarterHex();
         // Update minion position
         this.position.copyFrom(this.currentHexagon.center);
-        this.position.y = 0.5;
+        this.position.y = 0.25;
         // At each destination, the current hexagon where the minion lives is updated.
         this._controller.atEachDestination = function (hx) {
             _this.currentHexagon = hx;
@@ -72,7 +72,7 @@ var Minion = (function (_super) {
             for (var _i = 0, path_1 = path; _i < path_1.length; _i++) {
                 var hex_1 = path_1[_i];
                 var tmp = hex_1.center;
-                tmp.y = 1.25;
+                tmp.y = 0.25;
                 this._controller.addDestination(tmp, hex_1);
             }
             this._controller.start();

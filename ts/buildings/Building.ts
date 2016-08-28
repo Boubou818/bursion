@@ -201,23 +201,33 @@ abstract class Building extends BABYLON.Mesh{
     protected abstract _getBuildingModel() : BABYLON.Mesh;
     
     /**
+     * Create a mesh from an asset name that can be merged at will
+     */
+    private _createBaseBuildingMesh(name:string) : BABYLON.AbstractMesh {
+        var toMerge = [];
+        let model = this._game.assets[name];
+        var childrens = model.getDescendants();
+        for (var i = 0; i < childrens.length; i++) {
+            toMerge.push(childrens[i].clone());     
+        }        
+        return BABYLON.Mesh.MergeMeshes(toMerge, true);
+    }
+    
+    /**
      * Create the shape of the building.
      */
     private _createBuildingMesh() : BABYLON.Mesh {
         // Merge all cylinders
         let hexes = [];        
+        let mesh = new BABYLON.Mesh('', this._game.scene);
         for (let p of this._points) { 
             let center = p.center;
-            let myhex = this._game.createCloneAsset('hexa-land'); 
-            myhex.setEnabled(true);
-                         
-            // BABYLON.Mesh.CreateCylinder('', 0.5, 2, 2, 6, 1, this.getScene());
-            // myhex.rotation.y = Math.PI/2;
+            let myhex = this._createBaseBuildingMesh('hexa-selected');
             myhex.position.copyFrom(center);
-            // myhex.position.y = 0.6;
             hexes.push(myhex);
         }
-        return BABYLON.Mesh.MergeMeshes(hexes, true);
+        var merged = BABYLON.Mesh.MergeMeshes(hexes, true);
+        return merged; 
     }
     
     /**
@@ -253,6 +263,8 @@ abstract class Building extends BABYLON.Mesh{
         
         // Create it      
         this._shape = this._createBuildingMesh();
+        var arc= <BABYLON.ArcRotateCamera> this._game.scene.activeCamera;
+        arc.setTarget(this._shape.position);
         this._shape.parent = this;
         
         // Create the 3D model of the building        

@@ -120,18 +120,22 @@ var Game = (function () {
         return mesh;
     };
     Game.prototype.createCloneAsset = function (name, newname) {
+        console.log("%c CLONING - Building clone of : " + name, 'color: #79BD8F');
         var model = this.assets[name];
         var childrens = model.getDescendants();
         if (!newname) {
             newname = name + '_clone';
         }
         var mesh = model.clone(newname);
+        console.log("%c CLONING - Iterating over children", 'color: #79BD8F');
         for (var _i = 0, childrens_2 = childrens; _i < childrens_2.length; _i++) {
             var c = childrens_2[_i];
+            console.log("%c CLONING - Child found : " + c.name, 'color: #79BD8F');
             var child = c;
             var inst = child.clone('');
             inst.parent = mesh;
         }
+        console.log("%c CLONING - End cloning", 'color: #79BD8F');
         return mesh;
     };
     Game.prototype._initGame = function () {

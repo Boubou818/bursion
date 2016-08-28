@@ -57,6 +57,15 @@ var MapHexagon = (function () {
     MapHexagon.distanceSquared = function (hex1, hex2) {
         return BABYLON.Vector3.DistanceSquared(hex1.center, hex2.center);
     };
+    /**
+     * Overrides the default dispose to dispose the resource slot as well
+     */
+    MapHexagon.prototype.dispose = function () {
+        if (this.model) {
+            this.model.dispose();
+        }
+        this.resourceSlot.dispose();
+    };
     // The distance between two neighbors
     MapHexagon.DISTANCE_BETWEEN_TWO_NEIGHBORS = 1.75;
     return MapHexagon;

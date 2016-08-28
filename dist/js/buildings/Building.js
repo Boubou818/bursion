@@ -173,23 +173,33 @@ var Building = (function (_super) {
         return canBuild;
     };
     /**
+     * Create a mesh from an asset name that can be merged at will
+     */
+    Building.prototype._createBaseBuildingMesh = function (name) {
+        var toMerge = [];
+        var model = this._game.assets[name];
+        var childrens = model.getDescendants();
+        for (var i = 0; i < childrens.length; i++) {
+            toMerge.push(childrens[i].clone());
+        }
+        return BABYLON.Mesh.MergeMeshes(toMerge, true);
+    };
+    /**
      * Create the shape of the building.
      */
     Building.prototype._createBuildingMesh = function () {
         // Merge all cylinders
         var hexes = [];
+        var mesh = new BABYLON.Mesh('', this._game.scene);
         for (var _i = 0, _a = this._points; _i < _a.length; _i++) {
             var p = _a[_i];
             var center = p.center;
-            var myhex = this._game.createCloneAsset('hexa-land');
-            myhex.setEnabled(true);
-            // BABYLON.Mesh.CreateCylinder('', 0.5, 2, 2, 6, 1, this.getScene());
-            // myhex.rotation.y = Math.PI/2;
+            var myhex = this._createBaseBuildingMesh('hexa-selected');
             myhex.position.copyFrom(center);
-            // myhex.position.y = 0.6;
             hexes.push(myhex);
         }
-        return BABYLON.Mesh.MergeMeshes(hexes, true);
+        var merged = BABYLON.Mesh.MergeMeshes(hexes, true);
+        return merged;
     };
     /**
      * Returns true if this building overlap with the one given as a parameter
@@ -216,6 +226,8 @@ var Building = (function (_super) {
         this._initBuilding();
         // Create it      
         this._shape = this._createBuildingMesh();
+        var arc = this._game.scene.activeCamera;
+        arc.setTarget(this._shape.position);
         this._shape.parent = this;
         // Create the 3D model of the building        
         // Add the building and merge it with hexagons

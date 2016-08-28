@@ -18,6 +18,9 @@ class MapHexagon {
     // The type of this hexagon: land, water, deepwater
     public type : HexagonType;
     
+    // The 3D model linked to this hexagon
+    public model : BABYLON.AbstractMesh;
+    
     // The distance between two neighbors
     private static DISTANCE_BETWEEN_TWO_NEIGHBORS = 1.75;
     
@@ -79,4 +82,13 @@ class MapHexagon {
         return BABYLON.Vector3.DistanceSquared(hex1.center, hex2.center);
     }
     
+    /**
+     * Overrides the default dispose to dispose the resource slot as well
+     */
+    public dispose(){
+        if (this.model) {
+            this.model.dispose();
+        }
+        this.resourceSlot.dispose();
+    }   
 }

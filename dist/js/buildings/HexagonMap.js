@@ -4,14 +4,12 @@
  */
 var HexagonMap = (function () {
     function HexagonMap(size) {
-        // The Hexagon grid containing land, water and deepwater hexagons
-        this._map = [];
+        // The Hexagon grid containing land, water and deepwater hexagons, indexed by hexagon name
+        this._map = {};
         // The starting position on the map
         this._basePosition = null;
         // The starting position of the drakkar on the map
         this._drakkarPosition = null;
-        // The list of all hexagons meshes on the map, indexed by hexagon name
-        this._meshes = {};
         this._size = size;
         var grid = MapHexagon.getDefaultGrid();
         var mapCoords = grid.hexagon(0, 0, size + 10, true);
@@ -62,7 +60,7 @@ var HexagonMap = (function () {
                         break;
                 }
             }
-            this._map.push(hex);
+            this._map[hex.name] = hex;
         }
         // get starters position
         // Base position
@@ -108,24 +106,30 @@ var HexagonMap = (function () {
      */
     HexagonMap.prototype.getNearestHex = function (p) {
         var min = 99999, res = null;
-        this._map.forEach(function (hex) {
-            var dist = BABYLON.Vector3.DistanceSquared(hex.center, p);
-            if (dist < min) {
-                min = dist;
-                res = hex;
+        for (var name_1 in this._map) {
+            var hex = this._map[name_1];
+            if (hex) {
+                var dist = BABYLON.Vector3.DistanceSquared(hex.center, p);
+                if (dist < min) {
+                    min = dist;
+                    res = hex;
+                }
             }
-        });
+        }
+        ;
         return res;
     };
     /**
      * Returns the hexagon present on the map corresponding to the given position
      */
     HexagonMap.prototype.getResourceHex = function (p) {
-        for (var _i = 0, _a = this._map; _i < _a.length; _i++) {
-            var hex = _a[_i];
-            var dist = hex.distanceToPoint(p);
-            if (dist < BABYLON.Epsilon) {
-                return hex;
+        for (var name_2 in this._map) {
+            var hex = this._map[name_2];
+            if (hex) {
+                var dist = hex.distanceToPoint(p);
+                if (dist < BABYLON.Epsilon) {
+                    return hex;
+                }
             }
         }
         return null;
@@ -135,10 +139,12 @@ var HexagonMap = (function () {
      * Returns null if not found
      */
     HexagonMap.prototype._getHexagonByHexCoordinates = function (q, r) {
-        for (var _i = 0, _a = this._map; _i < _a.length; _i++) {
-            var hex = _a[_i];
-            if (hex.q == q && hex.r == r) {
-                return hex;
+        for (var name_3 in this._map) {
+            var hex = this._map[name_3];
+            if (hex) {
+                if (hex.q == q && hex.r == r) {
+                    return hex;
+                }
             }
         }
         return null;
@@ -148,10 +154,10 @@ var HexagonMap = (function () {
      */
     HexagonMap.prototype.removeMapHex = function (hexagon) {
         if (hexagon) {
-            var mapHex = this._meshes[hexagon.name];
+            var mapHex = this._map[hexagon.name];
             if (mapHex) {
                 mapHex.dispose();
-                this._meshes[hexagon.name] = null;
+                this._map[hexagon.name] = null;
             }
         }
     };
@@ -272,7 +278,8 @@ var HexagonMap = (function () {
         water2Material.specularColor = BABYLON.Color3.Black();
         water2Ref.material = water2Material;
         var delay = 0, timers = [];
-        var _loop_1 = function(h) {
+        var _loop_1 = function(name_4) {
+            var h = this_1._map[name_4];
             timer = new Timer(delay, scene, { autostart: false, autodestroy: true });
             timers.push(timer);
             delay += 2.5;
@@ -302,7 +309,7 @@ var HexagonMap = (function () {
             hex.position.copyFrom(h.center);
             hex.position.y = 100;
             // Add the mesh instance to the meshes list
-            this_1._meshes[h.name] = hex;
+            h.model = hex;
             ease = new BABYLON.QuarticEase();
             ease.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEOUT);
             this_1._assignResourceModel(h, game);
@@ -315,9 +322,8 @@ var HexagonMap = (function () {
         };
         var this_1 = this;
         var timer, ease;
-        for (var _i = 0, _a = this._map; _i < _a.length; _i++) {
-            var h = _a[_i];
-            _loop_1(h);
+        for (var name_4 in this._map) {
+            _loop_1(name_4);
         }
     };
     return HexagonMap;

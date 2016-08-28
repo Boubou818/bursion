@@ -56,7 +56,7 @@ class BaseExtension extends Building {
      * Create and set base extension material
      */
     protected _setFinishedMaterial() : void {        
-        let mat : BABYLON.Material = this._game.scene.getMaterialByName('_baseExtensionFinishedMaterial_');
+        let mat : BABYLON.Material = this._game.scene.getMaterialByName('sol_selected');
         if (!mat) {
             let mymat = new BABYLON.StandardMaterial('_baseExtensionFinishedMaterial_', this._game.scene);
             mymat.diffuseColor = BABYLON.Color3.FromInts(126, 138, 162);

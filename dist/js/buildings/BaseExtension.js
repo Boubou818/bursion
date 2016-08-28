@@ -56,7 +56,7 @@ var BaseExtension = (function (_super) {
      * Create and set base extension material
      */
     BaseExtension.prototype._setFinishedMaterial = function () {
-        var mat = this._game.scene.getMaterialByName('_baseExtensionFinishedMaterial_');
+        var mat = this._game.scene.getMaterialByName('sol_selected');
         if (!mat) {
             var mymat = new BABYLON.StandardMaterial('_baseExtensionFinishedMaterial_', this._game.scene);
             mymat.diffuseColor = BABYLON.Color3.FromInts(126, 138, 162);

@@ -85,10 +85,12 @@ class MapHexagon {
     /**
      * Overrides the default dispose to dispose the resource slot as well
      */
-    public dispose(){
+    public dispose(disposeResource?:boolean){
         if (this.model) {
             this.model.dispose();
         }
-        this.resourceSlot.dispose();
+        if (disposeResource) {
+            this.resourceSlot.dispose();
+        }
     }   
 }

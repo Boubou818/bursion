@@ -36,7 +36,7 @@ class Warehouse extends Building {
      * Create and set base extension material
      */
     protected _setFinishedMaterial() : void {        
-        let mat : BABYLON.Material = this._game.scene.getMaterialByName('sol_selected');
+        let mat : BABYLON.Material = this._game.scene.getMaterialByName('base');
         if (!mat) {
             let mymat = new BABYLON.StandardMaterial('_warehouseFinishedMaterial_', this._game.scene);
             mymat.diffuseColor = BABYLON.Color3.FromInts(255,0,0);

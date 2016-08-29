@@ -88,37 +88,37 @@ var GUIManager = (function () {
      */
     GUIManager.prototype.initHUD = function () {
         this._initResourcesTexts();
-        var buttonCreateExt = new BABYLON.Rectangle2D({ parent: this._canvas2D, id: "new_ext", x: 60, y: 100, width: 120, height: 40,
+        var buttonCreateExt = new BABYLON.Rectangle2D({ parent: this._canvas2D, id: "new_ext", x: 60, y: 50, width: 120, height: 40,
             fill: "#40C040FF",
             children: [
-                new BABYLON.Text2D("New extension", { marginAlignment: "h: center, v: center", fontName: "20pt kingthings_italiqueregular" })
+                new BABYLON.Text2D("New extension", { marginAlignment: "h: center, v: center" /*, fontName: "20pt kingthings_italiqueregular"*/ })
             ]
         });
         // Add action to the build button
         buttonCreateExt.pointerEventObservable.add(this._game.createNewExtension.bind(this._game), BABYLON.PrimitivePointerInfo.PointerUp);
         // Gather wood
-        var buttonWood = new BABYLON.Rectangle2D({ parent: this._canvas2D, id: "gatherWood", x: 200, y: 100, width: 120, height: 40,
+        var buttonWood = new BABYLON.Rectangle2D({ parent: this._canvas2D, id: "gatherWood", x: 200, y: 50, width: 120, height: 40,
             fill: "#40C040FF",
             children: [
-                new BABYLON.Text2D("Gather Wood", { marginAlignment: "h: center, v: center", fontName: "20pt kingthings_italiqueregular" })
+                new BABYLON.Text2D("Gather Wood", { marginAlignment: "h: center, v: center" /*, fontName: "20pt kingthings_italiqueregular"*/ })
             ]
         });
         // Add action to the button
         buttonWood.pointerEventObservable.add(this._game.gatherWood.bind(this._game), BABYLON.PrimitivePointerInfo.PointerUp);
         // Gather wood
-        var buttonRock = new BABYLON.Rectangle2D({ parent: this._canvas2D, id: "gatherRock", x: 340, y: 100, width: 120, height: 40,
+        var buttonRock = new BABYLON.Rectangle2D({ parent: this._canvas2D, id: "gatherRock", x: 340, y: 50, width: 120, height: 40,
             fill: "#40C040FF",
             children: [
-                new BABYLON.Text2D("Gather Rock", { marginAlignment: "h: center, v: center", fontName: "20pt kingthings_italiqueregular" })
+                new BABYLON.Text2D("Gather Rock", { marginAlignment: "h: center, v: center" /*, fontName: "20pt kingthings_italiqueregular"*/ })
             ]
         });
         // Add action to the button
         buttonRock.pointerEventObservable.add(this._game.gatherRock.bind(this._game), BABYLON.PrimitivePointerInfo.PointerUp);
         // Gather wood
-        var buttonBuild = new BABYLON.Rectangle2D({ parent: this._canvas2D, id: "build", x: 480, y: 100, width: 120, height: 40,
+        var buttonBuild = new BABYLON.Rectangle2D({ parent: this._canvas2D, id: "build", x: 480, y: 50, width: 120, height: 40,
             fill: "#40C040FF",
             children: [
-                new BABYLON.Text2D("Build", { marginAlignment: "h: center, v: center", fontName: "20pt kingthings_italiqueregular" })
+                new BABYLON.Text2D("Build", { marginAlignment: "h: center, v: center" /*, fontName: "20pt kingthings_italiqueregular"*/ })
             ]
         });
         // Add action to the button

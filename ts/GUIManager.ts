@@ -74,11 +74,11 @@ class GUIManager {
         this._initResourcesTexts();
         
         let buttonCreateExt = new BABYLON.Rectangle2D(
-		{ 	parent: this._canvas2D, id: "new_ext", x: 60, y: 100, width: 120, height: 40, 
+		{ 	parent: this._canvas2D, id: "new_ext", x: 60, y: 50, width: 120, height: 40, 
 			fill: "#40C040FF",
 			children: 
 			[
-				new BABYLON.Text2D("New extension", { marginAlignment: "h: center, v: center", fontName: "20pt kingthings_italiqueregular" })
+				new BABYLON.Text2D("New extension", { marginAlignment: "h: center, v: center"/*, fontName: "20pt kingthings_italiqueregular"*/ })
 			]
 		});
         // Add action to the build button
@@ -86,11 +86,11 @@ class GUIManager {
 
         // Gather wood
         let buttonWood = new BABYLON.Rectangle2D(
-		{ 	parent: this._canvas2D, id: "gatherWood", x: 200, y: 100, width: 120, height: 40, 
+		{ 	parent: this._canvas2D, id: "gatherWood", x: 200, y: 50, width: 120, height: 40, 
 			fill: "#40C040FF",
 			children: 
 			[
-				new BABYLON.Text2D("Gather Wood", { marginAlignment: "h: center, v: center", fontName: "20pt kingthings_italiqueregular" })
+				new BABYLON.Text2D("Gather Wood", { marginAlignment: "h: center, v: center"/*, fontName: "20pt kingthings_italiqueregular"*/ })
 			]
 		});
         // Add action to the button
@@ -98,11 +98,11 @@ class GUIManager {
         
         // Gather wood
         let buttonRock = new BABYLON.Rectangle2D(
-		{ 	parent: this._canvas2D, id: "gatherRock", x: 340, y: 100, width: 120, height: 40, 
+		{ 	parent: this._canvas2D, id: "gatherRock", x: 340, y: 50, width: 120, height: 40, 
 			fill: "#40C040FF",
 			children: 
 			[
-				new BABYLON.Text2D("Gather Rock", { marginAlignment: "h: center, v: center", fontName: "20pt kingthings_italiqueregular" })
+				new BABYLON.Text2D("Gather Rock", { marginAlignment: "h: center, v: center"/*, fontName: "20pt kingthings_italiqueregular"*/ })
 			]
 		});
         // Add action to the button
@@ -110,11 +110,11 @@ class GUIManager {
         
         // Gather wood
         let buttonBuild = new BABYLON.Rectangle2D(
-		{ 	parent: this._canvas2D, id: "build", x: 480, y: 100, width: 120, height: 40, 
+		{ 	parent: this._canvas2D, id: "build", x: 480, y: 50, width: 120, height: 40, 
 			fill: "#40C040FF",
 			children: 
 			[
-				new BABYLON.Text2D("Build", { marginAlignment: "h: center, v: center", fontName: "20pt kingthings_italiqueregular" })
+				new BABYLON.Text2D("Build", { marginAlignment: "h: center, v: center"/*, fontName: "20pt kingthings_italiqueregular"*/ })
 			]
 		});
         // Add action to the button

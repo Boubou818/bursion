@@ -29,14 +29,13 @@ var Base = (function () {
         // this._fogOfWar = new FogOfWar(150, game.scene);
         // this._fogOfWar.position.y = 1.8/2+0.1; // TODO FIX THIS SHIT
         // Add this extension to the player base
-        this.addBuilding(starter);
+        this.addBuilding(starter, true);
         // The starter should not be waiting for minions
         starter.finishBuild();
         // Delete all resources on the starter         
-        for (var _i = 0, _a = starter.usableResources; _i < _a.length; _i++) {
-            var hex = _a[_i];
-            this._map.removeMapHex(hex);
-        }
+        // for (let hex of starter.usableResources) {
+        //     this._map.removeMapHex(hex);
+        // }
     }
     /**
      * Returns the first hexagon of the base
@@ -48,7 +47,7 @@ var Base = (function () {
      * Add a building to the player base
      * @param building the extension to add to the base
      */
-    Base.prototype.addBuilding = function (building) {
+    Base.prototype.addBuilding = function (building, removeResources) {
         // Unfold all hexagons of the map and add them to the base
         var resourcesHex = this._getResourcesOnMap(building);
         // Get the working site hexagon - where minion will build it
@@ -57,7 +56,7 @@ var Base = (function () {
         for (var _i = 0, resourcesHex_1 = resourcesHex; _i < resourcesHex_1.length; _i++) {
             var hex = resourcesHex_1[_i];
             this._hexToDissipateFog.push(hex);
-            this._map.removeMapHex(hex);
+            this._map.removeMapHex(hex, removeResources);
         }
         this.buildings.push(building);
         // Build it

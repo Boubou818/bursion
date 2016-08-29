@@ -37,7 +37,7 @@ var Warehouse = (function (_super) {
      * Create and set base extension material
      */
     Warehouse.prototype._setFinishedMaterial = function () {
-        var mat = this._game.scene.getMaterialByName('sol_selected');
+        var mat = this._game.scene.getMaterialByName('base');
         if (!mat) {
             var mymat = new BABYLON.StandardMaterial('_warehouseFinishedMaterial_', this._game.scene);
             mymat.diffuseColor = BABYLON.Color3.FromInts(255, 0, 0);

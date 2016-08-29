@@ -152,11 +152,11 @@ var HexagonMap = (function () {
     /**
      * Remove the given hex from the map
      */
-    HexagonMap.prototype.removeMapHex = function (hexagon) {
+    HexagonMap.prototype.removeMapHex = function (hexagon, disposeResource) {
         if (hexagon) {
             var mapHex = this._map[hexagon.name];
             if (mapHex) {
-                mapHex.dispose();
+                mapHex.dispose(disposeResource);
                 this._map[hexagon.name] = null;
             }
         }
@@ -250,33 +250,33 @@ var HexagonMap = (function () {
      */
     HexagonMap.prototype.draw = function (game) {
         var scene = game.scene;
-        // beach
-        var beachRef = BABYLON.Mesh.CreateCylinder('__beach__', 0.5, 1.95, 1.95, 6, 1, scene);
-        beachRef.rotation.y = Math.PI / 2;
-        beachRef.isVisible = false;
-        beachRef.convertToUnIndexedMesh();
-        var beachMaterial = new BABYLON.StandardMaterial('beach', scene);
-        beachMaterial.diffuseColor = BABYLON.Color3.FromInts(255, 232, 204);
-        beachMaterial.specularColor = BABYLON.Color3.Black();
-        beachRef.material = beachMaterial;
-        // water1
-        var water1Ref = BABYLON.Mesh.CreateCylinder('__water__', 0.5, 1.95, 1.95, 6, 1, scene);
-        water1Ref.rotation.y = Math.PI / 2;
-        water1Ref.isVisible = false;
-        water1Ref.convertToUnIndexedMesh();
-        var water1Material = new BABYLON.StandardMaterial('grass', scene);
-        water1Material.diffuseColor = BABYLON.Color3.FromInts(77, 119, 99);
-        water1Material.specularColor = BABYLON.Color3.Black();
-        water1Ref.material = water1Material;
-        // water2 - deeper  
-        var water2Ref = BABYLON.Mesh.CreateCylinder('__deepwater__', 0.5, 1.97, 1.97, 6, 1, scene);
-        water2Ref.rotation.y = Math.PI / 2;
-        water2Ref.isVisible = false;
-        water2Ref.convertToUnIndexedMesh();
-        var water2Material = new BABYLON.StandardMaterial('grass', scene);
-        water2Material.diffuseColor = BABYLON.Color3.FromInts(38, 62, 66);
-        water2Material.specularColor = BABYLON.Color3.Black();
-        water2Ref.material = water2Material;
+        // // beach
+        // let beachRef = BABYLON.Mesh.CreateCylinder('__beach__', 0.5, 1.95, 1.95, 6, 1, scene);
+        // beachRef.rotation.y = Math.PI/2;
+        // beachRef.isVisible = false;        
+        // beachRef.convertToUnIndexedMesh();
+        // let beachMaterial = new BABYLON.StandardMaterial('beach', scene);
+        // beachMaterial.diffuseColor = BABYLON.Color3.FromInts(255,232,204);
+        // beachMaterial.specularColor = BABYLON.Color3.Black();
+        // beachRef.material = beachMaterial;
+        // // water1
+        // let water1Ref = BABYLON.Mesh.CreateCylinder('__water__', 0.5, 1.95, 1.95, 6, 1, scene);
+        // water1Ref.rotation.y = Math.PI/2;
+        // water1Ref.isVisible = false;
+        // water1Ref.convertToUnIndexedMesh();
+        // let water1Material = new BABYLON.StandardMaterial('grass', scene);
+        // water1Material.diffuseColor = BABYLON.Color3.FromInts(77, 119, 99);
+        // water1Material.specularColor = BABYLON.Color3.Black();
+        // water1Ref.material = water1Material;
+        // // water2 - deeper  
+        // let water2Ref = BABYLON.Mesh.CreateCylinder('__deepwater__', 0.5, 1.97, 1.97, 6, 1, scene);
+        // water2Ref.rotation.y = Math.PI/2;
+        // water2Ref.isVisible = false;
+        // water2Ref.convertToUnIndexedMesh();
+        // let water2Material = new BABYLON.StandardMaterial('grass', scene);
+        // water2Material.diffuseColor = BABYLON.Color3.FromInts(38, 62, 66);
+        // water2Material.specularColor = BABYLON.Color3.Black();
+        // water2Ref.material = water2Material;   
         var delay = 0, timers = [];
         var _loop_1 = function(name_4) {
             var h = this_1._map[name_4];
@@ -286,13 +286,13 @@ var HexagonMap = (function () {
             var hex = null;
             switch (h.type) {
                 case HexagonType.DeepWater:
-                    hex = water2Ref.createInstance('' + h.q + ' ' + h.r);
+                    hex = game.createInstanceAsset('hexa-water2', '__water2__');
                     break;
                 case HexagonType.Water:
-                    hex = water1Ref.createInstance('' + h.q + ' ' + h.r);
+                    hex = game.createInstanceAsset('hexa-water1', '__water1__');
                     break;
                 case HexagonType.Beach:
-                    hex = beachRef.createInstance('' + h.q + ' ' + h.r);
+                    hex = game.createInstanceAsset('hexa-beach', '__beach__');
                     break;
                 case HexagonType.Land:
                 default:

@@ -48,14 +48,14 @@ class Base {
         // this._fogOfWar.position.y = 1.8/2+0.1; // TODO FIX THIS SHIT
         
         // Add this extension to the player base
-        this.addBuilding(starter);
+        this.addBuilding(starter, true);
         
         // The starter should not be waiting for minions
         starter.finishBuild();
         // Delete all resources on the starter         
-        for (let hex of starter.usableResources) {
-            this._map.removeMapHex(hex);
-        }
+        // for (let hex of starter.usableResources) {
+        //     this._map.removeMapHex(hex);
+        // }
     }
 
     /**
@@ -69,7 +69,7 @@ class Base {
      * Add a building to the player base 
      * @param building the extension to add to the base
      */
-    public addBuilding(building : Building) { 
+    public addBuilding(building : Building, removeResources?:boolean) { 
         
         // Unfold all hexagons of the map and add them to the base
         let resourcesHex = this._getResourcesOnMap(building)
@@ -80,7 +80,7 @@ class Base {
         // Remove mesh from the map and add it to dissipate the fog
         for (let hex of resourcesHex) {               
             this._hexToDissipateFog.push(hex);  
-            this._map.removeMapHex(hex);      
+            this._map.removeMapHex(hex, removeResources); 
         }        
         this.buildings.push(building);  
                 

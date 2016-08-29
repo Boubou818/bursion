@@ -60,11 +60,13 @@ var MapHexagon = (function () {
     /**
      * Overrides the default dispose to dispose the resource slot as well
      */
-    MapHexagon.prototype.dispose = function () {
+    MapHexagon.prototype.dispose = function (disposeResource) {
         if (this.model) {
             this.model.dispose();
         }
-        this.resourceSlot.dispose();
+        if (disposeResource) {
+            this.resourceSlot.dispose();
+        }
     };
     // The distance between two neighbors
     MapHexagon.DISTANCE_BETWEEN_TWO_NEIGHBORS = 1.75;

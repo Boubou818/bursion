@@ -25,8 +25,10 @@ class Preloader {
         this._addMesh('boar');
         this._addMesh('hexas', 'hexa-empty');
         this._addMesh('drakkar');
-        this._addMesh('hexas', 'hexa-land');
         this._addMesh('hexas', 'hexa-selected');
+        this._addMesh('hexas', 'hexa-water1');
+        this._addMesh('hexas', 'hexa-water2');
+        this._addMesh('hexas', 'hexa-beach'); 
         
         this._loader.load();
     }
@@ -46,15 +48,19 @@ class Preloader {
     
     private _addMeshAssetToGame(t: BABYLON.MeshAssetTask) {
         let parent = new BABYLON.Mesh('', this._scene);
+        console.group();
+        console.log(`%c Loading : ${t.name}`, 'background: #333; color: #bada55');
         
         for (let m of t.loadedMeshes) {
             m.setEnabled(false);
             m.getScene().stopAnimation(m);
             m.parent = parent;
+            console.log(m.material);
         }
         parent.setEnabled(false);
                 
-        console.log(`%c Loaded : ${t.name}`, 'background: #333; color: #bada55');
+        
+        console.groupEnd();
         this._game.assets[t.name] = parent;
     }
     

@@ -20,6 +20,7 @@ class Preloader {
     public loadAssets() {
         this._addMesh('wood');
         this._addMesh('wood', 'trees');
+        this._addMesh('meat', 'meat');
         this._addMesh('rock');
         this._addMesh('grass');
         this._addMesh('boar');

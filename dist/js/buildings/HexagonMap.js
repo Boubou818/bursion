@@ -287,6 +287,12 @@ var HexagonMap = (function () {
             switch (h.type) {
                 case HexagonType.DeepWater:
                     hex = game.createInstanceAsset('hexa-water2', '__water2__');
+                    // Whale
+                    if (Math.random() < 0.005) {
+                        var whale = game.createInstanceAsset('whale', '__whale__');
+                        whale.position.copyFrom(h.center);
+                        whale.scaling.scaleInPlace(3);
+                    }
                     break;
                 case HexagonType.Water:
                     hex = game.createInstanceAsset('hexa-water1', '__water1__');

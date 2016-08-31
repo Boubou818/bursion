@@ -153,8 +153,9 @@ var StarterWarehouse = (function (_super) {
      * Override the parent model with an empty mesh
      */
     StarterWarehouse.prototype._getBuildingModel = function () {
-        var b = new BABYLON.Mesh('_warehouse_', this._game.scene);
-        return b;
+        var warehouseModel = this._game.createInstanceAsset('warehouse');
+        warehouseModel.position.copyFrom(this._points[0].center);
+        return warehouseModel;
     };
     // Q and R coordinates of a starter platform
     StarterWarehouse.TEMPLATE = [

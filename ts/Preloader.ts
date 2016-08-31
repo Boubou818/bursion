@@ -30,6 +30,8 @@ class Preloader {
         this._addMesh('hexas', 'hexa-water1');
         this._addMesh('hexas', 'hexa-water2');
         this._addMesh('hexas', 'hexa-beach'); 
+        this._addMesh('environment', 'whale');
+        this._addMesh('buildings', 'warehouse'); 
         
         this._loader.load();
     }

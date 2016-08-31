@@ -165,8 +165,9 @@ class StarterWarehouse extends Warehouse {
     /**
      * Override the parent model with an empty mesh
      */
-    protected _getBuildingModel() : BABYLON.Mesh {
-        let b = new BABYLON.Mesh('_warehouse_', this._game.scene);
-        return b;
+    protected _getBuildingModel() : BABYLON.AbstractMesh {
+        let warehouseModel = this._game.createInstanceAsset('warehouse');
+        warehouseModel.position.copyFrom(this._points[0].center);
+        return warehouseModel; 
     }
 }

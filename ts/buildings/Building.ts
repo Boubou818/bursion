@@ -63,7 +63,7 @@ abstract class Building extends BABYLON.Mesh{
     protected _shape : BABYLON.Mesh;
     
     // The 3D model of the building. Its parent is this building
-    protected _buildingModel : BABYLON.Mesh;
+    protected _buildingModel : BABYLON.AbstractMesh;
     
     // All resources incoming from builders. This building is nearly finished when resourcesIncoming == cost
     private _materialIncoming : ResourceMap<number> = [];
@@ -198,7 +198,7 @@ abstract class Building extends BABYLON.Mesh{
      * Returns the 3D model of the building to add on hexagons. 
      * The 3D model returned should have its position set one buildingpoint. Can be null
      */
-    protected abstract _getBuildingModel() : BABYLON.Mesh;
+    protected abstract _getBuildingModel() : BABYLON.AbstractMesh;
     
     /**
      * Create a mesh from an asset name that can be merged at will

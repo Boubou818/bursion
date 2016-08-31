@@ -10,16 +10,18 @@ var Preloader = (function () {
     Preloader.prototype.loadAssets = function () {
         this._addMesh('wood');
         this._addMesh('wood', 'trees');
+        this._addMesh('meat', 'meat');
         this._addMesh('rock');
         this._addMesh('grass');
         this._addMesh('boar');
         this._addMesh('hexas', 'hexa-empty');
         this._addMesh('drakkar');
-        // this._addMesh('hexas', 'hexa-land');
         this._addMesh('hexas', 'hexa-selected');
         this._addMesh('hexas', 'hexa-water1');
         this._addMesh('hexas', 'hexa-water2');
         this._addMesh('hexas', 'hexa-beach');
+        this._addMesh('environment', 'whale');
+        this._addMesh('buildings', 'warehouse');
         this._loader.load();
     };
     Preloader.prototype.onFinish = function () {

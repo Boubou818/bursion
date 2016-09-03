@@ -13,6 +13,8 @@
         "GUIManager.ts",
         "Preloader.ts",
         "Drakkar.ts",
+        
+        "helpers/Scheduler.ts",
 
         "buildings/FogOfWar.ts",
         "buildings/HexagonType.ts",

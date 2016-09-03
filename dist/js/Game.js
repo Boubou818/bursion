@@ -147,81 +147,82 @@ var Game = (function () {
         var ground = BABYLON.Mesh.CreateGround("ground", 100, 100, 2, this.scene);
         ground.isVisible = false;
         var grid = new HexagonMap(5);
-        grid.draw(this);
-        this.scene.pointerMovePredicate = function (mesh) {
-            return mesh.name === 'ground';
-        };
-        this.base = new Base(this, grid);
-        this.scene.onPointerMove = function (evt, pr) {
-            if (_this._currentShape) {
-                if (pr.hit) {
-                    var overlaps = false;
-                    // Update shape color
-                    var mat = _this._currentShape.material;
+        grid.draw(this, function () {
+            _this.scene.pointerMovePredicate = function (mesh) {
+                return mesh.name === 'ground';
+            };
+            _this.base = new Base(_this, grid);
+            _this.scene.onPointerMove = function (evt, pr) {
+                if (_this._currentShape) {
+                    if (pr.hit) {
+                        var overlaps = false;
+                        // Update shape color
+                        var mat = _this._currentShape.material;
+                        if (_this.base.canBuildHere(_this._currentShape)) {
+                            mat.diffuseColor = BABYLON.Color3.Green();
+                        }
+                        else {
+                            mat.diffuseColor = BABYLON.Color3.Red();
+                        }
+                        var p = pr.pickedPoint;
+                        p.y = 0;
+                        // get nearest hex
+                        var nearest = grid.getNearestHex(p);
+                        if (nearest) {
+                            _this._currentShape.position.copyFrom(nearest.center);
+                        }
+                    }
+                }
+            };
+            _this.scene.onPointerDown = function (evt, pr) {
+                if (_this._currentShape) {
                     if (_this.base.canBuildHere(_this._currentShape)) {
-                        mat.diffuseColor = BABYLON.Color3.Green();
-                    }
-                    else {
-                        mat.diffuseColor = BABYLON.Color3.Red();
-                    }
-                    var p = pr.pickedPoint;
-                    p.y = 0;
-                    // get nearest hex
-                    var nearest = grid.getNearestHex(p);
-                    if (nearest) {
-                        _this._currentShape.position.copyFrom(nearest.center);
+                        _this.base.addBuilding(_this._currentShape);
+                        _this._currentShape = null;
                     }
                 }
-            }
-        };
-        this.scene.onPointerDown = function (evt, pr) {
-            if (_this._currentShape) {
-                if (_this.base.canBuildHere(_this._currentShape)) {
-                    _this.base.addBuilding(_this._currentShape);
-                    _this._currentShape = null;
-                }
-            }
-        };
-        // DEBUG : VIEW GRAPH BETWEEN HEXAGONS
-        // let viewLink = (hex: MapHexagon, neighbors) => {
-        //     // center of the hexagon
-        //     let b = BABYLON.Mesh.CreateBox('', 0.2, this.scene);
-        //     b.position.copyFrom(hex.center);
-        //     b.position.y = 1.5;
-        //     for (let n in neighbors) {
-        //         // get hex by name
-        //         let hexn = this.base.getHexByName(n);
-        //         let pos = hexn.center;
-        //         pos.y = 1.5;
-        //         BABYLON.Mesh.CreateLines('', [b.position.clone(), pos], this.scene);
-        //     }
-        // }
-        // let viewGraph = (graph) => {
-        //     for (let vertex in graph.vertices) {
-        //         // get hex by name
-        //         let hex = this.base.getHexByName(vertex);
-        //         viewLink(hex, graph.vertices[vertex]);
-        //     }
-        // }
-        // window.addEventListener('keydown', () => {
-        //     viewGraph(this.base.graph);
-        // });
-        // END DEBUG
-        var bobby = new Minion('bobby', this);
-        this._hoard.push(bobby);
-        // let bobby2 = new Minion('bobby2', this);
-        // this._hoard.push(bobby2);  
-        // let bobb32 = new Minion('bobby2', this);
-        // this._hoard.push(bobb32);  
-        // let bobby42 = new Minion('bobby2', this);
-        // this._hoard.push(bobby42);  
-        // let bobby52 = new Minion('bobby2', this);
-        // this._hoard.push(bobby52);
-        // Init GUI 
-        this._gui = new GUIManager(this);
-        this._gui.initHUD();
-        // Compute stock
-        this.computeTotalStock();
+            };
+            // DEBUG : VIEW GRAPH BETWEEN HEXAGONS
+            // let viewLink = (hex: MapHexagon, neighbors) => {
+            //     // center of the hexagon
+            //     let b = BABYLON.Mesh.CreateBox('', 0.2, this.scene);
+            //     b.position.copyFrom(hex.center);
+            //     b.position.y = 1.5;
+            //     for (let n in neighbors) {
+            //         // get hex by name
+            //         let hexn = this.base.getHexByName(n);
+            //         let pos = hexn.center;
+            //         pos.y = 1.5;
+            //         BABYLON.Mesh.CreateLines('', [b.position.clone(), pos], this.scene);
+            //     }
+            // }
+            // let viewGraph = (graph) => {
+            //     for (let vertex in graph.vertices) {
+            //         // get hex by name
+            //         let hex = this.base.getHexByName(vertex);
+            //         viewLink(hex, graph.vertices[vertex]);
+            //     }
+            // }
+            // window.addEventListener('keydown', () => {
+            //     viewGraph(this.base.graph);
+            // });
+            // END DEBUG
+            var bobby = new Minion('bobby', _this);
+            _this._hoard.push(bobby);
+            // let bobby2 = new Minion('bobby2', this);
+            // this._hoard.push(bobby2);  
+            // let bobb32 = new Minion('bobby2', this);
+            // this._hoard.push(bobb32);  
+            // let bobby42 = new Minion('bobby2', this);
+            // this._hoard.push(bobby42);  
+            // let bobby52 = new Minion('bobby2', this);
+            // this._hoard.push(bobby52);
+            // Init GUI 
+            _this._gui = new GUIManager(_this);
+            _this._gui.initHUD();
+            // Compute stock
+            _this.computeTotalStock();
+        });
     };
     /**
      * Sum all resources from all warehouse

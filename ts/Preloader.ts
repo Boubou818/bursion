@@ -58,7 +58,6 @@ class Preloader {
             m.setEnabled(false);
             m.getScene().stopAnimation(m);
             m.parent = parent;
-            console.log(m.material);
         }
         parent.setEnabled(false);
                 

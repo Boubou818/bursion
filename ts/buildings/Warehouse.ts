@@ -27,10 +27,10 @@ class Warehouse extends Building {
     /** 
      * Returns a 3D model corresponding to this shape
      */
-    protected _getBuildingModel() : BABYLON.Mesh {
-        let b = BABYLON.Mesh.CreateBox('_warehouse_', 0.5, this._game.scene);
-        b.position.copyFrom(this._points[this._points.length-1].center);
-        return b;
+    protected _getBuildingModel() : BABYLON.AbstractMesh {        
+        let warehouseModel = this._game.createInstanceAsset('warehouse');
+        warehouseModel.position.copyFrom(this._points[0].center);
+        return warehouseModel; 
     }
     /**
      * Create and set base extension material
@@ -160,14 +160,5 @@ class StarterWarehouse extends Warehouse {
     // This building is finished
     public isNearlyFinished() : boolean {        
         return true;
-    }
-    
-    /**
-     * Override the parent model with an empty mesh
-     */
-    protected _getBuildingModel() : BABYLON.AbstractMesh {
-        let warehouseModel = this._game.createInstanceAsset('warehouse');
-        warehouseModel.position.copyFrom(this._points[0].center);
-        return warehouseModel; 
     }
 }

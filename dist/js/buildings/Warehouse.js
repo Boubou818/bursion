@@ -29,9 +29,9 @@ var Warehouse = (function (_super) {
      * Returns a 3D model corresponding to this shape
      */
     Warehouse.prototype._getBuildingModel = function () {
-        var b = BABYLON.Mesh.CreateBox('_warehouse_', 0.5, this._game.scene);
-        b.position.copyFrom(this._points[this._points.length - 1].center);
-        return b;
+        var warehouseModel = this._game.createInstanceAsset('warehouse');
+        warehouseModel.position.copyFrom(this._points[0].center);
+        return warehouseModel;
     };
     /**
      * Create and set base extension material
@@ -148,14 +148,6 @@ var StarterWarehouse = (function (_super) {
     // This building is finished
     StarterWarehouse.prototype.isNearlyFinished = function () {
         return true;
-    };
-    /**
-     * Override the parent model with an empty mesh
-     */
-    StarterWarehouse.prototype._getBuildingModel = function () {
-        var warehouseModel = this._game.createInstanceAsset('warehouse');
-        warehouseModel.position.copyFrom(this._points[0].center);
-        return warehouseModel;
     };
     // Q and R coordinates of a starter platform
     StarterWarehouse.TEMPLATE = [

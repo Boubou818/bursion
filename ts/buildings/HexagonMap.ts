@@ -193,51 +193,37 @@ class HexagonMap {
         return Math.floor(((random * (max - min)) + min));
     }
 
-    // private _createHexModel(h:MapHexagon, game : Game) {
-    //     var hex = null, 
-    //     model = null;
-    //     switch (h.type) {
-    //         case HexagonType.DeepWater:
-    //             model = game.scene.getMeshByName('__deepwater__');
-    //             break;    
-    //         case HexagonType.Water:
-    //             model = game.scene.getMeshByName('__water__');
-    //             break;    
-    //         case HexagonType.Beach:
-    //             model = game.scene.getMeshByName('__beach__');
-    //             break;    
-    //         case HexagonType.Land:        
-    //         default:
-    //             model = null;
-    //             break;
-    //     }
-    //     if (model) {
-    //     hex = model.createInstance(''+h.q+' '+h.r);
-    //     } else {
-    //         hex = game.createInstanceAsset('hexa-land', '__land__')
-    //     }
-    //     hex.isVisible = true;
-    //     hex.position.copyFrom(h.center);
-    // }
 
-    private _assignResourceModel(h:MapHexagon, game:Game) {
-         if (h.resourceSlot.resource === Resources.Wood) {
-            let wood = game.createInstanceAsset('trees');
-            wood.setEnabled(true);
-            wood.position.copyFrom(h.center);
-            // wood.position.y = 0.75;
-            wood.rotation.y = Math.random()-0.5;
-            // wood.scaling.scaleInPlace(this._random(0.3,0.8));                
-            wood.freezeWorldMatrix();
-            h.resourceSlot.model = wood; 
+    private _assignResourceModel(h:MapHexagon, game:Game) : Timer {
+        let timer = new Timer(500, game.scene, {autostart:false, autodestroy:true});
+        
+        if (h.resourceSlot.resource === Resources.Wood) {
+            timer.callback = () => {
+                let wood = game.createInstanceAsset('trees');
+                wood.setEnabled(true);
+                wood.position.copyFrom(h.center);
+                wood.rotation.y = Math.random()-0.5;   
+                h.resourceSlot.model = wood;
+            } 
         }
         if (h.resourceSlot.resource === Resources.Rock) {
-            let rock = game.createInstanceAsset('rock');              
-            rock.setEnabled(true);
-            rock.position.copyFrom(h.center);
-            // rock.position.y = 0.75;
-            h.resourceSlot.model = rock;
-        }            
+            timer.callback = () => {
+                let rock = game.createInstanceAsset('rock');              
+                rock.setEnabled(true);
+                rock.position.copyFrom(h.center);
+                h.resourceSlot.model = rock;
+            } 
+        }    
+        if (h.type === HexagonType.DeepWater) {            
+            timer.callback = () => {
+                // Whale
+                if (Math.random() < 0.005) {
+                    let whale = game.createInstanceAsset('whale', '__whale__');
+                    whale.position.copyFrom(h.center);
+                    whale.scaling.scaleInPlace(2);
+                }
+            }
+        }        
         // if (h.resourceSlot.resource === Resources.Meat) {
         //     let boar = game.createInstanceAsset('boar');             
         //     boar.setEnabled(true);
@@ -254,67 +240,47 @@ class HexagonMap {
         //     grass.scaling.scaleInPlace(this._random(0.7, 1));
         //     // grass.freezeWorldMatrix();
         //     h.resourceSlot.model = grass;
-        // }             
+        // }   
+        return timer;          
     }
     
     /**
      * Draw the hexagon grid in the given scene.
      * Hexagons and resources are two different models.
+     * @param game The game instance
+     * @param callback The function called when the map is finished to be drawn (after all animations are finished)
      */
-    public draw(game:Game) {
+    public draw(game:Game, callback:()=>void) {
 
         let scene : BABYLON.Scene = game.scene;
         
-        // // beach
-        // let beachRef = BABYLON.Mesh.CreateCylinder('__beach__', 0.5, 1.95, 1.95, 6, 1, scene);
-        // beachRef.rotation.y = Math.PI/2;
-        // beachRef.isVisible = false;        
-        // beachRef.convertToUnIndexedMesh();
-        // let beachMaterial = new BABYLON.StandardMaterial('beach', scene);
-        // beachMaterial.diffuseColor = BABYLON.Color3.FromInts(255,232,204);
-        // beachMaterial.specularColor = BABYLON.Color3.Black();
-        // beachRef.material = beachMaterial;
-
-        // // water1
-        // let water1Ref = BABYLON.Mesh.CreateCylinder('__water__', 0.5, 1.95, 1.95, 6, 1, scene);
-        // water1Ref.rotation.y = Math.PI/2;
-        // water1Ref.isVisible = false;
-        // water1Ref.convertToUnIndexedMesh();
-        // let water1Material = new BABYLON.StandardMaterial('grass', scene);
-        // water1Material.diffuseColor = BABYLON.Color3.FromInts(77, 119, 99);
-        // water1Material.specularColor = BABYLON.Color3.Black();
-        // water1Ref.material = water1Material;
-
-        // // water2 - deeper  
-        // let water2Ref = BABYLON.Mesh.CreateCylinder('__deepwater__', 0.5, 1.97, 1.97, 6, 1, scene);
-        // water2Ref.rotation.y = Math.PI/2;
-        // water2Ref.isVisible = false;
-        // water2Ref.convertToUnIndexedMesh();
-        // let water2Material = new BABYLON.StandardMaterial('grass', scene);
-        // water2Material.diffuseColor = BABYLON.Color3.FromInts(38, 62, 66);
-        // water2Material.specularColor = BABYLON.Color3.Black();
-        // water2Ref.material = water2Material;   
+        var delay = 0;
         
-        var delay = 0, 
-        timers = [];
+        // Hexa scheduler
+        let schedulerResources = new Scheduler();
+        schedulerResources.whenAllOver = () => {
+           console.log("ALL OVER");
+           callback();
+        };
+        
+        // Ressources scheduler
+        let schedulerHexa = new Scheduler();
+        schedulerHexa.whenAllOver = () => {
+           console.log("Building resources");
+            schedulerResources.start();
+        };
         
         for (let name in this._map) {
             let h = this._map[name];
 
             var timer = new Timer(delay, scene, {autostart:false, autodestroy:true});
-            timers.push(timer);
-            delay += 2.5;
+            delay += 1.5;
 
-            let hex = null;
+            let hex = null;    
+            let ressourceTimer : Timer = null;        
             switch (h.type) {
                 case HexagonType.DeepWater:
                     hex = game.createInstanceAsset('hexa-water2', '__water2__');
-                    // Whale
-                    if (Math.random() < 0.005) {
-                        let whale = game.createInstanceAsset('whale', '__whale__');
-                        whale.position.copyFrom(h.center);
-                        whale.scaling.scaleInPlace(3);
-                    }
                     break;    
                 case HexagonType.Water:
                     hex =  game.createInstanceAsset('hexa-water1', '__water1__');
@@ -324,11 +290,7 @@ class HexagonMap {
                     break;    
                 case HexagonType.Land:        
                 default:
-                // if (Math.random() > 0.5) {
-                //     hex = game.createInstanceAsset('hexa-land', '__land__');
-                // } else {
                     hex = game.createInstanceAsset('hexa-empty', '__land__');
-                // } 
                     break;
             }
         
@@ -343,12 +305,11 @@ class HexagonMap {
             var ease = new BABYLON.QuarticEase();
             ease.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEOUT);
 
-            this._assignResourceModel(h, game);
-
-                
+            ressourceTimer = this._assignResourceModel(h, game);
+            schedulerResources.add(ressourceTimer);
 
             timer.callback = () => {
-
+                                
                 BABYLON.Animation.CreateAndStartAnimation(
                     'pos', 
                     hex, 'position.y', 
@@ -358,9 +319,8 @@ class HexagonMap {
                     ease);         
             }
             
-            timers.forEach((tt) => {
-                tt.start();
-            });     
+            schedulerHexa.add(timer);
         }
+        schedulerHexa.start();
     }
 }

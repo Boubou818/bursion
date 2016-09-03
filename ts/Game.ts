@@ -189,95 +189,96 @@ class Game {
 
         let grid = new HexagonMap(5);   
 
-        grid.draw(this);  
+        grid.draw(this, () => {
+            this.scene.pointerMovePredicate = (mesh) => {
+                return mesh.name === 'ground';
+            }
 
-        this.scene.pointerMovePredicate = (mesh) => {
-            return mesh.name === 'ground';
-        }
+            this.base = new Base(this, grid);
 
-        this.base = new Base(this, grid);
+            this.scene.onPointerMove = (evt, pr) => {
+                if (this._currentShape) {
+                    if (pr.hit) {
+                        let overlaps = false;
+                        // Update shape color
+                        let mat = <BABYLON.StandardMaterial>this._currentShape.material;
+                        if (this.base.canBuildHere(this._currentShape)) {
+                            mat.diffuseColor = BABYLON.Color3.Green();
+                        } else { 
+                            mat.diffuseColor = BABYLON.Color3.Red();
+                        }
 
-        this.scene.onPointerMove = (evt, pr) => {
-            if (this._currentShape) {
-                if (pr.hit) {
-                    let overlaps = false;
-                    // Update shape color
-                    let mat = <BABYLON.StandardMaterial>this._currentShape.material;
+                        let p = pr.pickedPoint;
+                        p.y = 0;
+                        // get nearest hex
+                        let nearest = grid.getNearestHex(p);
+                        if (nearest) {
+                            this._currentShape.position.copyFrom(nearest.center);
+                        }
+                    }
+                }
+            }
+
+            this.scene.onPointerDown = (evt, pr) => {
+                if (this._currentShape) {
                     if (this.base.canBuildHere(this._currentShape)) {
-                        mat.diffuseColor = BABYLON.Color3.Green();
-                    } else { 
-                        mat.diffuseColor = BABYLON.Color3.Red();
-                    }
-
-                    let p = pr.pickedPoint;
-                    p.y = 0;
-                    // get nearest hex
-                    let nearest = grid.getNearestHex(p);
-                    if (nearest) {
-                        this._currentShape.position.copyFrom(nearest.center);
+                        this.base.addBuilding(this._currentShape);
+                        this._currentShape = null;
                     }
                 }
             }
-        }
 
-        this.scene.onPointerDown = (evt, pr) => {
-            if (this._currentShape) {
-                if (this.base.canBuildHere(this._currentShape)) {
-                    this.base.addBuilding(this._currentShape);
-                    this._currentShape = null;
-                }
-            }
-        }
+            // DEBUG : VIEW GRAPH BETWEEN HEXAGONS
+            // let viewLink = (hex: MapHexagon, neighbors) => {
+            //     // center of the hexagon
+            //     let b = BABYLON.Mesh.CreateBox('', 0.2, this.scene);
+            //     b.position.copyFrom(hex.center);
+            //     b.position.y = 1.5;
 
-        // DEBUG : VIEW GRAPH BETWEEN HEXAGONS
-        // let viewLink = (hex: MapHexagon, neighbors) => {
-        //     // center of the hexagon
-        //     let b = BABYLON.Mesh.CreateBox('', 0.2, this.scene);
-        //     b.position.copyFrom(hex.center);
-        //     b.position.y = 1.5;
+            //     for (let n in neighbors) {
+            //         // get hex by name
+            //         let hexn = this.base.getHexByName(n);
+            //         let pos = hexn.center;
+            //         pos.y = 1.5;
+            //         BABYLON.Mesh.CreateLines('', [b.position.clone(), pos], this.scene);
+            //     }
+            // }
+            // let viewGraph = (graph) => {
+            //     for (let vertex in graph.vertices) {
+            //         // get hex by name
+            //         let hex = this.base.getHexByName(vertex);
+            //         viewLink(hex, graph.vertices[vertex]);
+            //     }
+            // }
+            // window.addEventListener('keydown', () => {
+            //     viewGraph(this.base.graph);
+            // });
+            // END DEBUG
 
-        //     for (let n in neighbors) {
-        //         // get hex by name
-        //         let hexn = this.base.getHexByName(n);
-        //         let pos = hexn.center;
-        //         pos.y = 1.5;
-        //         BABYLON.Mesh.CreateLines('', [b.position.clone(), pos], this.scene);
-        //     }
-        // }
-        // let viewGraph = (graph) => {
-        //     for (let vertex in graph.vertices) {
-        //         // get hex by name
-        //         let hex = this.base.getHexByName(vertex);
-        //         viewLink(hex, graph.vertices[vertex]);
-        //     }
-        // }
-        // window.addEventListener('keydown', () => {
-        //     viewGraph(this.base.graph);
-        // });
-        // END DEBUG
+            let bobby = new Minion('bobby', this);
+            this._hoard.push(bobby);
+            
+            // let bobby2 = new Minion('bobby2', this);
+            // this._hoard.push(bobby2);  
+            
+            // let bobb32 = new Minion('bobby2', this);
+            // this._hoard.push(bobb32);  
+            
+            // let bobby42 = new Minion('bobby2', this);
+            // this._hoard.push(bobby42);  
+            
+            // let bobby52 = new Minion('bobby2', this);
+            // this._hoard.push(bobby52);
 
-        let bobby = new Minion('bobby', this);
-        this._hoard.push(bobby);
-        
-        // let bobby2 = new Minion('bobby2', this);
-        // this._hoard.push(bobby2);  
-        
-        // let bobb32 = new Minion('bobby2', this);
-        // this._hoard.push(bobb32);  
-        
-        // let bobby42 = new Minion('bobby2', this);
-        // this._hoard.push(bobby42);  
-        
-        // let bobby52 = new Minion('bobby2', this);
-        // this._hoard.push(bobby52);
-
-        // Init GUI 
-        this._gui = new GUIManager(this); 
-        this._gui.initHUD();
-        
-        // Compute stock
-        this.computeTotalStock();
-        
+            // Init GUI 
+            this._gui = new GUIManager(this); 
+            this._gui.initHUD();
+            
+            // Compute stock
+            this.computeTotalStock();
+            
+            
+        });  
     }
     
     /**

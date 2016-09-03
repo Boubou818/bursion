@@ -182,8 +182,46 @@ var HexagonMap = (function () {
         var random = Math.random();
         return Math.floor(((random * (max - min)) + min));
     };
+    HexagonMap.prototype._createResourceAnimation = function (model, duration) {
+        var quarter = duration * 60 * 0.001 / 4;
+        var p = model.position;
+        model.scaling.scaleInPlace(0);
+        // Position animation
+        var position = new BABYLON.Animation("", "position.y", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        position.setKeys([
+            { frame: 0, value: 0 },
+            { frame: quarter, value: p.y + 1 },
+            { frame: quarter * 2, value: p.y + 1 },
+            { frame: quarter * 3, value: p.y + 1 },
+            { frame: quarter * 4, value: 0 }
+        ]);
+        var e = new BABYLON.CubicEase();
+        e.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEOUT);
+        position.setEasingFunction(e);
+        model.animations.push(position);
+        // Scaling
+        var scaling = new BABYLON.Animation("", "scaling", 60, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        scaling.setKeys([
+            { frame: 0, value: BABYLON.Vector3.Zero() },
+            { frame: quarter * 2, value: new BABYLON.Vector3(1, 1, 1) }
+        ]);
+        var f = new BABYLON.BackEase(0.5);
+        f.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEOUT);
+        scaling.setEasingFunction(f);
+        model.animations.push(scaling);
+        // Rotation
+        var rotation = new BABYLON.Animation("", "rotation.y", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        rotation.setKeys([
+            { frame: 0, value: 0 },
+            { frame: quarter * 4, value: model.rotation.y + Math.PI * 2 }
+        ]);
+        rotation.setEasingFunction(e);
+        model.animations.push(rotation);
+        model.getScene().beginAnimation(model, 0, quarter * 4, false, 1);
+    };
     HexagonMap.prototype._assignResourceModel = function (h, game) {
-        var timer = new Timer(0, game.scene, { autostart: false, autodestroy: true });
+        var _this = this;
+        var timer = new Timer(500, game.scene, { autostart: false, autodestroy: true });
         if (h.resourceSlot.resource === Resources.Wood) {
             timer.callback = function () {
                 var wood = game.createInstanceAsset('trees');
@@ -191,6 +229,7 @@ var HexagonMap = (function () {
                 wood.position.copyFrom(h.center);
                 wood.rotation.y = Math.random() - 0.5;
                 h.resourceSlot.model = wood;
+                _this._createResourceAnimation(wood, 1000);
             };
         }
         if (h.resourceSlot.resource === Resources.Rock) {
@@ -199,6 +238,7 @@ var HexagonMap = (function () {
                 rock.setEnabled(true);
                 rock.position.copyFrom(h.center);
                 h.resourceSlot.model = rock;
+                _this._createResourceAnimation(rock, 1000);
             };
         }
         if (h.type === HexagonType.DeepWater) {
@@ -211,14 +251,15 @@ var HexagonMap = (function () {
                 }
             };
         }
-        // if (h.resourceSlot.resource === Resources.Meat) {
-        //     let boar = game.createInstanceAsset('boar');             
-        //     boar.setEnabled(true);
-        //     boar.position.copyFrom(h.center);
-        //     boar.position.y = 0.75;
-        //     boar.rotation.y = Math.random()-0.5;
-        //     h.resourceSlot.model = boar;
-        // }
+        if (h.resourceSlot.resource === Resources.Meat) {
+            timer.callback = function () {
+                var boar = game.createInstanceAsset('boar');
+                boar.position.copyFrom(h.center);
+                boar.rotation.y = Math.random() - 0.5;
+                h.resourceSlot.model = boar;
+                _this._createResourceAnimation(boar, 1000);
+            };
+        }
         // if (h.resourceSlot.resource === Resources.Empty && h.type === HexagonType.Land) {
         //     let grass = game.createInstanceAsset('grass');               
         //     grass.setEnabled(true);
@@ -245,6 +286,7 @@ var HexagonMap = (function () {
             console.log("ALL OVER");
             callback();
         };
+        schedulerResources.finishDelay = 1000;
         // Ressources scheduler
         var schedulerHexa = new Scheduler();
         schedulerHexa.whenAllOver = function () {

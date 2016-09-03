@@ -8,19 +8,20 @@ var Preloader = (function () {
         this._loader.onFinish = this.onFinish.bind(this);
     }
     Preloader.prototype.loadAssets = function () {
-        this._addMesh('wood');
-        this._addMesh('wood', 'trees');
-        this._addMesh('meat', 'meat');
-        this._addMesh('rock');
-        this._addMesh('grass');
-        this._addMesh('boar');
+        this._addMesh('collectibles/wood', 'wood');
+        this._addMesh('collectibles/meat', 'meat');
+        this._addMesh('collectibles/leg', 'leg');
+        this._addMesh('resources/wood', 'trees');
+        this._addMesh('resources/rock', 'rock');
+        this._addMesh('resources/boar', 'boar');
         this._addMesh('hexas', 'hexa-empty');
-        this._addMesh('drakkar');
         this._addMesh('hexas', 'hexa-selected');
         this._addMesh('hexas', 'hexa-water1');
         this._addMesh('hexas', 'hexa-water2');
         this._addMesh('hexas', 'hexa-beach');
+        this._addMesh('hexas', 'hexa-meat');
         this._addMesh('environment', 'whale');
+        this._addMesh('drakkar');
         this._addMesh('buildings', 'warehouse');
         this._loader.load();
     };

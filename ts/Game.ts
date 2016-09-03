@@ -78,7 +78,7 @@ class Game {
         // Load first level
         this._initGame();
 
-        this.scene.debugLayer.show();
+        // this.scene.debugLayer.show();
     }
 
     /**

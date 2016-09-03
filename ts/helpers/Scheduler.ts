@@ -9,6 +9,9 @@ class Scheduler {
     // A set of timers to look after
     private _timers : Array<Timer> = [];
     
+    // The number of ms waited afdter running the final callback
+    public finishDelay : number = 0;
+    
     // The number of finished animations. If this number is equals to the length of _animatable, the callback
     // function is called. 
     private _numberOfFinishedAnimations : number = 0;
@@ -21,7 +24,10 @@ class Scheduler {
         
         if (this._numberOfFinishedAnimations === this._timers.length){
             // Finish !
-            this.whenAllOver();
+            setTimeout(
+                this.whenAllOver.bind(this),
+                this.finishDelay
+            )
         }
     } 
     

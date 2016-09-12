@@ -13,8 +13,8 @@ var __extends = (this && this.__extends) || function (d, b) {
  */
 var BaseExtension = (function (_super) {
     __extends(BaseExtension, _super);
-    function BaseExtension(game, base) {
-        _super.call(this, game, base);
+    function BaseExtension(game, base, nbHexa) {
+        _super.call(this, game, base, nbHexa);
         // The set of hexagons. These hexagons does not contains any resources
         this.hexagons = [];
     }

@@ -54,7 +54,7 @@ var Game = (function () {
      */
     Game.prototype.createNewExtension = function () {
         if (!this._currentShape) {
-            this._currentShape = new BaseExtension(this, this.base);
+            this._currentShape = new BaseExtension(this, this.base, 2);
             // if (this._currentShape.canBuild()) {
             this._currentShape.preBuild();
         }
@@ -75,6 +75,15 @@ var Game = (function () {
         for (var _i = 0, _a = this._hoard; _i < _a.length; _i++) {
             var m = _a[_i];
             m.setStrategy(new ResourceStrategy(m, Resources.Rock));
+        }
+    };
+    /**
+     * Order to all minions to gather wood
+     */
+    Game.prototype.gatherFood = function () {
+        for (var _i = 0, _a = this._hoard; _i < _a.length; _i++) {
+            var m = _a[_i];
+            m.setStrategy(new ResourceStrategy(m, Resources.Meat));
         }
     };
     /**

@@ -51,7 +51,8 @@ var BuildingPoint = (function () {
  */
 var Building = (function (_super) {
     __extends(Building, _super);
-    function Building(game, base) {
+    function Building(game, base, nbhexa) {
+        if (nbhexa === void 0) { nbhexa = 4; }
         _super.call(this, '_building_', game.scene);
         // All resources incoming from builders. This building is nearly finished when resourcesIncoming == cost
         this._materialIncoming = [];
@@ -63,6 +64,7 @@ var Building = (function (_super) {
         this._points = [];
         this._game = game;
         this._base = base;
+        this._nbHexa = nbhexa;
         // Init the cost of this building
         this._initCost();
     }
@@ -74,7 +76,6 @@ var Building = (function (_super) {
         // Get a grid of hexgons composed of 3 rings (enough for 5 hexagons)
         var grid = MapHexagon.getDefaultGrid();
         var coordinates = grid.hexagon(0, 0, 3, true);
-        var size = 5; //Math.floor(((Math.random() * (6 - 3)) + 3)); // random [3;6[
         // Shuffle an array
         var shuffle = function (a) {
             var j, x, i;
@@ -117,7 +118,7 @@ var Building = (function (_super) {
         var center = grid.getCenterXY(currentHex.q, currentHex.r);
         var first = new BuildingPoint(new BABYLON.Vector3(center.x, 0, center.y), this);
         this._points.push(first);
-        for (var i = 0; i < size; i++) {
+        for (var i = 0; i < this._nbHexa; i++) {
             var next = getNext(currentHex.q, currentHex.r);
             if (!next)
                 break;

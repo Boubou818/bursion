@@ -35,6 +35,7 @@ class Preloader {
         
         this._addMesh('environment', 'whale');
         this._addMesh('drakkar');
+        this._addMesh('viking');
         this._addMesh('buildings', 'warehouse'); 
         
         this._loader.load();

@@ -16,19 +16,19 @@ var Minion = (function (_super) {
         _super.call(this, name, game.scene);
         this._game = game;
         // Give it a circular shape
-        this._child = BABYLON.Mesh.CreateSphere('', 3, 0.5, this.getScene());
-        var mat = new BABYLON.StandardMaterial('', this.getScene());
-        mat.diffuseColor = BABYLON.Color3.FromInts(127, 0, 155);
-        mat.specularColor = BABYLON.Color3.Black();
-        this._child.material = mat;
+        this._child = this._game.createCloneAsset('viking');
+        this._child.getScene().beginAnimation(this._child, 0, 120, true);
         this._child.parent = this;
         this._controller = new MinionController(this);
         this._controller.speed = 0.1;
+        var children = this._child.getDescendants();
+        console.log(children);
+        // this._controller.addAnimation('walk', 0, 120);
+        // this._controller.addAnimation('idle', 0, 120);
         this.base = this._game.base;
         this.currentHexagon = this.base.getStarterHex();
         // Update minion position
         this.position.copyFrom(this.currentHexagon.center);
-        this.position.y = 0.25;
         // At each destination, the current hexagon where the minion lives is updated.
         this._controller.atEachDestination = function (hx) {
             _this.currentHexagon = hx;
@@ -72,7 +72,6 @@ var Minion = (function (_super) {
             for (var _i = 0, path_1 = path; _i < path_1.length; _i++) {
                 var hex_1 = path_1[_i];
                 var tmp = hex_1.center;
-                tmp.y = 0.25;
                 this._controller.addDestination(tmp, hex_1);
             }
             this._controller.start();

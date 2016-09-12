@@ -11,8 +11,8 @@ class BaseExtension extends Building {
     // The set of hexagons. These hexagons does not contains any resources
     public hexagons : Array<MapHexagon> = []; 
       
-    constructor(game:Game, base : Base) {
-        super(game, base);
+    constructor(game:Game, base : Base, nbHexa?:number) {
+        super(game, base, nbHexa);
     }
     
     /**

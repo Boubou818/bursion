@@ -80,11 +80,16 @@ class ResourceStrategy extends WorkingStrategy {
 
 
     public applyStrategy() {
-        switch (this._currentState) {
+        switch (this._currentState) { 
 
             case this._states.IDLE:
                 // Look for the nearest resource point
-                if (this._findAndGoToNearestResource()) {
+                let nbOfHexaToTravel = this._findAndGoToNearestResource();
+                if (nbOfHexaToTravel === 0) {
+                    // If already on the resource
+                    this._currentState = this._states.AT_RESOURCE;
+                }
+                else if (nbOfHexaToTravel != -1) {
                     // Exit this state
                     this._currentState = this._states.TRAVELING_TO_RESOURCE;
                 } // else nothing to do, stay idle
@@ -108,7 +113,11 @@ class ResourceStrategy extends WorkingStrategy {
                 this._resourceModel.parent = this._minion;
 
                 // Find nearest warehouse
-                if (this._findAndGoToNearestWarehouse()) {
+                let nbHexToTravel = this._findAndGoToNearestWarehouse();
+                if (nbHexToTravel === 0) {
+                    // If already on a warehouse   
+                    this._currentState = this._states.AT_WAREHOUSE;
+                } else if (nbHexToTravel != -1) {
                     this._currentState = this._states.TRAVELING_TO_WAREHOUSE;
                 }
                 // Go to next state
@@ -148,15 +157,15 @@ class ResourceStrategy extends WorkingStrategy {
     /**
      * Find the nearest warehouse 
      */
-    private _findAndGoToNearestWarehouse(): boolean {
+    private _findAndGoToNearestWarehouse(): number {
         let warehouse: Warehouse = this._minion.getNearestWarehouse();
         if (warehouse) {
             this._warehouse = warehouse;
-            this._minion.moveTo(warehouse.workingSite);
-            return true;
+            let nbHexToTravel = this._minion.moveTo(warehouse.workingSite);
+            return nbHexToTravel;
         } else {
             console.warn('no warehouse found in base');
-            return false;
+            return -1;
         }
     }
 
@@ -164,17 +173,17 @@ class ResourceStrategy extends WorkingStrategy {
      * Find the nearest hexagon containing the resource to find, and move the 
      * minion to it. Returns false if no available resource.
      */
-    private _findAndGoToNearestResource(): boolean {
+    private _findAndGoToNearestResource(): number {
         let nearestHexagon = this._minion.getNearestResource(this._resource);
         if (nearestHexagon) {
             // Initalize minion's package
             this._package = {};
             this._package.slot = nearestHexagon.resourceSlot;
-            this._minion.moveTo(nearestHexagon);
-            return true;
+            let nbHexToTravel = this._minion.moveTo(nearestHexagon);
+            return nbHexToTravel;
         } else {
             console.warn('no such resource found in base : ', this._resource);
-            return false;
+            return -1;
         }
     }
 

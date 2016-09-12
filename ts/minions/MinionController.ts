@@ -1,3 +1,7 @@
+interface IAnimation {
+     [name: string]: {from:number, to:number};
+}
+
 class MinionController {
     
     static Epsilon : number = 0.1;
@@ -7,6 +11,9 @@ class MinionController {
     
     // The character skeleton (if any). Can be null
     public skeleton : BABYLON.Skeleton = null;
+    
+    // The array of animations (if the model has no skeleton)
+    public _animations : IAnimation = {};
         
     // The direction this character is heading to
     private _direction : BABYLON.Vector3 = new BABYLON.Vector3(0,0,0);
@@ -37,7 +44,7 @@ class MinionController {
         this._minion = minion;
 
         this.skeleton = minion.skeleton;
-
+        
         // Add move function to the character
         this._minion.getScene().registerBeforeRender(() => {
             this._move();
@@ -198,6 +205,8 @@ class MinionController {
     public addAnimation(name:string, from:number, to:number) {
         if (this.skeleton) {
             this.skeleton.createAnimationRange(name, from, to);
+        }else {
+            this._animations[name] = {from:from, to:to};
         }
     }
 
@@ -207,6 +216,9 @@ class MinionController {
     public playAnimation(name:string, loop:boolean, speed:number) {
         if (this.skeleton){
             this.skeleton.beginAnimation(name, loop, speed);
+        } else {            
+            let animation = this._animations[name];
+            this._minion.getScene().beginAnimation(this._minion, animation.from, animation.to, loop, speed);
         }
     }
 }

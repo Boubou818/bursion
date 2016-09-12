@@ -61,7 +61,12 @@ var ResourceStrategy = (function (_super) {
         switch (this._currentState) {
             case this._states.IDLE:
                 // Look for the nearest resource point
-                if (this._findAndGoToNearestResource()) {
+                var nbOfHexaToTravel = this._findAndGoToNearestResource();
+                if (nbOfHexaToTravel === 0) {
+                    // If already on the resource
+                    this._currentState = this._states.AT_RESOURCE;
+                }
+                else if (nbOfHexaToTravel != -1) {
                     // Exit this state
                     this._currentState = this._states.TRAVELING_TO_RESOURCE;
                 } // else nothing to do, stay idle
@@ -81,7 +86,12 @@ var ResourceStrategy = (function (_super) {
                 this._resourceModel.position.y = 1;
                 this._resourceModel.parent = this._minion;
                 // Find nearest warehouse
-                if (this._findAndGoToNearestWarehouse()) {
+                var nbHexToTravel = this._findAndGoToNearestWarehouse();
+                if (nbHexToTravel === 0) {
+                    // If already on a warehouse   
+                    this._currentState = this._states.AT_WAREHOUSE;
+                }
+                else if (nbHexToTravel != -1) {
                     this._currentState = this._states.TRAVELING_TO_WAREHOUSE;
                 }
                 // Go to next state
@@ -120,12 +130,12 @@ var ResourceStrategy = (function (_super) {
         var warehouse = this._minion.getNearestWarehouse();
         if (warehouse) {
             this._warehouse = warehouse;
-            this._minion.moveTo(warehouse.workingSite);
-            return true;
+            var nbHexToTravel = this._minion.moveTo(warehouse.workingSite);
+            return nbHexToTravel;
         }
         else {
             console.warn('no warehouse found in base');
-            return false;
+            return -1;
         }
     };
     /**
@@ -138,12 +148,12 @@ var ResourceStrategy = (function (_super) {
             // Initalize minion's package
             this._package = {};
             this._package.slot = nearestHexagon.resourceSlot;
-            this._minion.moveTo(nearestHexagon);
-            return true;
+            var nbHexToTravel = this._minion.moveTo(nearestHexagon);
+            return nbHexToTravel;
         }
         else {
             console.warn('no such resource found in base : ', this._resource);
-            return false;
+            return -1;
         }
     };
     /**

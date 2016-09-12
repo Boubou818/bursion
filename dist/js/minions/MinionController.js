@@ -3,6 +3,8 @@ var MinionController = (function () {
         var _this = this;
         // The character skeleton (if any). Can be null
         this.skeleton = null;
+        // The array of animations (if the model has no skeleton)
+        this._animations = {};
         // The direction this character is heading to
         this._direction = new BABYLON.Vector3(0, 0, 0);
         // The destination this character is heading to
@@ -158,6 +160,9 @@ var MinionController = (function () {
         if (this.skeleton) {
             this.skeleton.createAnimationRange(name, from, to);
         }
+        else {
+            this._animations[name] = { from: from, to: to };
+        }
     };
     /**
      * Play the given animation if skeleton found
@@ -165,6 +170,10 @@ var MinionController = (function () {
     MinionController.prototype.playAnimation = function (name, loop, speed) {
         if (this.skeleton) {
             this.skeleton.beginAnimation(name, loop, speed);
+        }
+        else {
+            var animation = this._animations[name];
+            this._minion.getScene().beginAnimation(this._minion, animation.from, animation.to, loop, speed);
         }
     };
     MinionController.Epsilon = 0.1;

@@ -187,36 +187,36 @@ var HexagonMap = (function () {
         var p = model.position;
         model.scaling.scaleInPlace(0);
         // Position animation
-        var position = new BABYLON.Animation("", "position.y", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-        position.setKeys([
-            { frame: 0, value: 0 },
-            { frame: quarter, value: p.y + 1 },
-            { frame: quarter * 2, value: p.y + 1 },
-            { frame: quarter * 3, value: p.y + 1 },
-            { frame: quarter * 4, value: 0 }
-        ]);
-        var e = new BABYLON.CubicEase();
-        e.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEOUT);
-        position.setEasingFunction(e);
-        model.animations.push(position);
+        // var position = new BABYLON.Animation("", "position.y", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        // position.setKeys([
+        //     { frame: 0, value: 0 },
+        //     { frame: quarter, value: p.y+1 },
+        //     { frame: quarter*2, value: p.y+1 },
+        //     { frame: quarter*3, value: p.y+1 },
+        //     { frame: quarter*4, value: 0 }
+        // ]);
+        // var e = new BABYLON.CubicEase();
+        // e.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEOUT); 
+        // position.setEasingFunction(e);
+        // model.animations.push(position);
         // Scaling
         var scaling = new BABYLON.Animation("", "scaling", 60, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
         scaling.setKeys([
             { frame: 0, value: BABYLON.Vector3.Zero() },
-            { frame: quarter * 2, value: new BABYLON.Vector3(1, 1, 1) }
+            { frame: quarter * 4, value: new BABYLON.Vector3(1, 1, 1) }
         ]);
-        var f = new BABYLON.BackEase(0.5);
+        var f = new BABYLON.ElasticEase();
         f.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEOUT);
         scaling.setEasingFunction(f);
         model.animations.push(scaling);
         // Rotation
-        var rotation = new BABYLON.Animation("", "rotation.y", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-        rotation.setKeys([
-            { frame: 0, value: 0 },
-            { frame: quarter * 4, value: model.rotation.y + Math.PI * 2 }
-        ]);
-        rotation.setEasingFunction(e);
-        model.animations.push(rotation);
+        // var rotation = new BABYLON.Animation("", "rotation.y", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        // rotation.setKeys([
+        //     { frame: 0, value: 0 },
+        //     { frame: quarter*4, value: model.rotation.y+Math.PI*2 }
+        // ]);
+        // rotation.setEasingFunction(e);
+        // model.animations.push(rotation);
         model.getScene().beginAnimation(model, 0, quarter * 4, false, 1);
     };
     HexagonMap.prototype._assignResourceModel = function (h, game) {

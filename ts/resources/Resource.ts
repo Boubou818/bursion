@@ -48,7 +48,9 @@ namespace Resources {
                 return game.assets['wood'].clone();
             case Resources.Rock:
                 let box = BABYLON.Mesh.CreateBox('rock', 0.5, game.scene);
-                return box;
+                return box;                
+            case Resources.Meat:
+                return game.assets['leg'].clone();
             default:
                 return game.assets['wood'];
         }

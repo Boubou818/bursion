@@ -79,13 +79,18 @@ abstract class Building extends BABYLON.Mesh{
     
     // The list of points composing this building
     protected _points : Array<BuildingPoint> = [];
+    
+    // The building will have exactly nbHexa + 1 hexagons
+    private _nbHexa : number;
             
-    constructor(game:Game, base : Base) {
+    constructor(game:Game, base : Base, nbhexa : number = 4) {
         super('_building_', game.scene); 
         
         this._game = game;
         
         this._base = base;
+        
+        this._nbHexa = nbhexa;
         
         // Init the cost of this building
         this._initCost();
@@ -99,9 +104,7 @@ abstract class Building extends BABYLON.Mesh{
         // Get a grid of hexgons composed of 3 rings (enough for 5 hexagons)
         let grid = MapHexagon.getDefaultGrid();
         let coordinates = grid.hexagon(0,0,3, true);
- 
-        let size = 5;//Math.floor(((Math.random() * (6 - 3)) + 3)); // random [3;6[
-        
+         
         // Shuffle an array
         let shuffle = (a) => {
             let j, x, i;
@@ -147,7 +150,7 @@ abstract class Building extends BABYLON.Mesh{
         let first = new BuildingPoint(new BABYLON.Vector3(center.x, 0, center.y), this);
         this._points.push(first);
         
-        for (let i=0; i<size; i++) {
+        for (let i=0; i< this._nbHexa; i++) {
             let next = getNext(currentHex.q, currentHex.r);
             if (!next) break;                        
             this._points.push(next.point);

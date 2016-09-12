@@ -86,7 +86,7 @@ class Game {
      */
     public createNewExtension() {
         if (!this._currentShape) {
-            this._currentShape = new BaseExtension(this, this.base);
+            this._currentShape = new BaseExtension(this, this.base, 2);
             // if (this._currentShape.canBuild()) {
                 this._currentShape.preBuild();
             // } else {
@@ -111,6 +111,14 @@ class Game {
     public gatherRock() {
         for (let m of this._hoard) {
             m.setStrategy(new ResourceStrategy(m, Resources.Rock));
+        }
+    }    
+    /**
+     * Order to all minions to gather wood
+     */
+    public gatherFood() {
+        for (let m of this._hoard) {
+            m.setStrategy(new ResourceStrategy(m, Resources.Meat));
         }
     }
     

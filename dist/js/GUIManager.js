@@ -114,8 +114,17 @@ var GUIManager = (function () {
         });
         // Add action to the button
         buttonRock.pointerEventObservable.add(this._game.gatherRock.bind(this._game), BABYLON.PrimitivePointerInfo.PointerUp);
+        // Gather food
+        var buttonFood = new BABYLON.Rectangle2D({ parent: this._canvas2D, id: "gatherFood", x: 480, y: 50, width: 120, height: 40,
+            fill: "#40C040FF",
+            children: [
+                new BABYLON.Text2D("Gather Food", { marginAlignment: "h: center, v: center" /*, fontName: "20pt kingthings_italiqueregular"*/ })
+            ]
+        });
+        // Add action to the button
+        buttonFood.pointerEventObservable.add(this._game.gatherFood.bind(this._game), BABYLON.PrimitivePointerInfo.PointerUp);
         // Gather wood
-        var buttonBuild = new BABYLON.Rectangle2D({ parent: this._canvas2D, id: "build", x: 480, y: 50, width: 120, height: 40,
+        var buttonBuild = new BABYLON.Rectangle2D({ parent: this._canvas2D, id: "build", x: 620, y: 50, width: 120, height: 40,
             fill: "#40C040FF",
             children: [
                 new BABYLON.Text2D("Build", { marginAlignment: "h: center, v: center" /*, fontName: "20pt kingthings_italiqueregular"*/ })

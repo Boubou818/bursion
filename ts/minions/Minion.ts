@@ -6,7 +6,7 @@
  */
 class Minion extends BABYLON.Mesh {
 
-    private _child : BABYLON.Mesh;
+    private _child : BABYLON.AbstractMesh;
 
     private _controller : MinionController;
 
@@ -35,22 +35,23 @@ class Minion extends BABYLON.Mesh {
         this._game = game;
 
         // Give it a circular shape
-        this._child = BABYLON.Mesh.CreateSphere('', 3, 0.5, this.getScene());
-        let mat = new BABYLON.StandardMaterial('', this.getScene());
-        mat.diffuseColor = BABYLON.Color3.FromInts(127, 0, 155);
-        mat.specularColor = BABYLON.Color3.Black();
-        this._child.material = mat;
+        this._child = this._game.createCloneAsset('viking');
+        this._child.getScene().beginAnimation(this._child, 0, 120, true);
 
         this._child.parent = this;
         this._controller = new MinionController(this);
         this._controller.speed = 0.1;
+        
+        let children = this._child.getDescendants();
+        console.log(children);
+        // this._controller.addAnimation('walk', 0, 120);
+        // this._controller.addAnimation('idle', 0, 120);
         
         this.base = this._game.base;
         this.currentHexagon = this.base.getStarterHex();
 
         // Update minion position
         this.position.copyFrom(this.currentHexagon.center);
-        this.position.y = 0.25;
 
         // At each destination, the current hexagon where the minion lives is updated.
         this._controller.atEachDestination = (hx:MapHexagon) => {
@@ -95,7 +96,6 @@ class Minion extends BABYLON.Mesh {
         } else {
             for (let hex of path) {
                 let tmp = hex.center;
-                tmp.y = 0.25;
                 this._controller.addDestination(tmp, hex);
             }
             this._controller.start();
